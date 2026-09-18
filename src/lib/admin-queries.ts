@@ -168,7 +168,10 @@ export interface DashboardMetrics {
   featuredBusinesses: number;
   totalOffers: number;
   activeOffers: number;
-  totalPassportHolders: number;
+  // Passports are state-wide by design (no area column) — only meaningful
+  // when the scope resolves to one clean state. null means "not
+  // applicable at this scope" (an area-only or multi-state manager).
+  totalPassportHolders: number | null;
   totalRedemptions: number;
   todaysRedemptions: number;
   thisMonthsRedemptions: number;
@@ -176,48 +179,55 @@ export interface DashboardMetrics {
 }
 
 export async function getDashboardMetrics(
-  opts: { stateId?: string } = {}
+  opts: { stateId?: string; areaIds?: string[] } = {}
 ): Promise<DashboardMetrics> {
   const supabase = await createClient();
 
+  const scopedAreaIds: string[] | null = opts.stateId
+    ? await getAreaIdsForState(opts.stateId)
+    : (opts.areaIds ?? null);
+
   let businessesQuery = supabase.from("businesses").select("id, status, featured, approval_status");
-  if (opts.stateId) {
-    const areaIds = await getAreaIdsForState(opts.stateId);
-    businessesQuery = businessesQuery.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
+  if (scopedAreaIds) {
+    businessesQuery = businessesQuery.in("passport_area_id", scopedAreaIds.length ? scopedAreaIds : [NO_MATCH_ID]);
   }
   const { data: businessRows } = await businessesQuery;
   const businesses = businessRows ?? [];
   const businessIds = businesses.map((b) => b.id as string);
 
-  let offers: { status: string }[] = [];
-  if (opts.stateId) {
+  let offers: { id: string; status: string }[] = [];
+  if (scopedAreaIds) {
     if (businessIds.length) {
-      const { data } = await supabase.from("offers").select("status").in("business_id", businessIds);
+      const { data } = await supabase.from("offers").select("id, status").in("business_id", businessIds);
       offers = data ?? [];
     }
   } else {
-    const { data } = await supabase.from("offers").select("status");
+    const { data } = await supabase.from("offers").select("id, status");
     offers = data ?? [];
   }
+  const offerIds = offers.map((o) => o.id);
 
-  let passportsQuery = supabase.from("passports").select("id");
-  if (opts.stateId) passportsQuery = passportsQuery.eq("state_id", opts.stateId);
-  const { data: passportRows } = await passportsQuery;
-  const passports = passportRows ?? [];
-  const passportIds = passports.map((p) => p.id as string);
-
+  // Redemptions scope via the business/offer chain regardless of
+  // granularity (state or a subset of areas within it) — precise either
+  // way, unlike passports below.
   let redemptions: { redeemed_at: string }[] = [];
-  if (opts.stateId) {
-    if (passportIds.length) {
-      const { data } = await supabase
-        .from("redemptions")
-        .select("redeemed_at")
-        .in("passport_id", passportIds);
+  if (scopedAreaIds) {
+    if (offerIds.length) {
+      const { data } = await supabase.from("redemptions").select("redeemed_at").in("offer_id", offerIds);
       redemptions = data ?? [];
     }
   } else {
     const { data } = await supabase.from("redemptions").select("redeemed_at");
     redemptions = data ?? [];
+  }
+
+  let totalPassportHolders: number | null = null;
+  if (opts.stateId) {
+    const { data } = await supabase.from("passports").select("id").eq("state_id", opts.stateId);
+    totalPassportHolders = (data ?? []).length;
+  } else if (!opts.areaIds) {
+    const { data } = await supabase.from("passports").select("id");
+    totalPassportHolders = (data ?? []).length;
   }
 
   const now = new Date();
@@ -231,7 +241,7 @@ export async function getDashboardMetrics(
     businessesPendingApproval: businesses.filter((b) => b.approval_status === "pending_review").length,
     totalOffers: offers.length,
     activeOffers: offers.filter((o) => o.status === "active").length,
-    totalPassportHolders: passports.length,
+    totalPassportHolders,
     totalRedemptions: redemptions.length,
     todaysRedemptions: redemptions.filter((r) => new Date(r.redeemed_at) >= startOfToday).length,
     thisMonthsRedemptions: redemptions.filter((r) => new Date(r.redeemed_at) >= startOfMonth).length,

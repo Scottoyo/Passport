@@ -34,16 +34,6 @@ export default async function AreaWorkspacePage({ params }: Props) {
   const currentUser = await getCurrentUser();
   if (!currentUser) redirect("/sign-in");
 
-  const canView = canManageArea(currentUser, areaId, "view_metrics");
-  const canBusinesses = canManageArea(currentUser, areaId, "manage_businesses");
-  const canSubareas = canManageArea(currentUser, areaId, "manage_subareas");
-  const canStaff = canManageArea(currentUser, areaId, "manage_staff");
-  const canMarketing = canManageArea(currentUser, areaId, "submit_marketing_requests");
-
-  if (!canView && !canBusinesses && !canSubareas && !canStaff && !canMarketing) {
-    redirect("/admin");
-  }
-
   const supabase = await createClient();
   const { data: area } = await supabase
     .from("passport_areas")
@@ -51,6 +41,16 @@ export default async function AreaWorkspacePage({ params }: Props) {
     .eq("id", areaId)
     .maybeSingle<PassportArea>();
   if (!area) notFound();
+
+  const canView = canManageArea(currentUser, areaId, "view_metrics", area.state_id);
+  const canBusinesses = canManageArea(currentUser, areaId, "manage_businesses", area.state_id);
+  const canSubareas = canManageArea(currentUser, areaId, "manage_subareas", area.state_id);
+  const canStaff = canManageArea(currentUser, areaId, "manage_staff", area.state_id);
+  const canMarketing = canManageArea(currentUser, areaId, "submit_marketing_requests", area.state_id);
+
+  if (!canView && !canBusinesses && !canSubareas && !canStaff && !canMarketing) {
+    redirect("/admin");
+  }
 
   const [{ data: subareas }, { data: businesses }, { data: staff }, { data: requests }, { data: managers }] =
     await Promise.all([

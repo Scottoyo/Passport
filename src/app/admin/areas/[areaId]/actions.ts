@@ -15,7 +15,26 @@ function slugify(value: string) {
 
 async function requireCapability(areaId: string, capability: AreaCapability) {
   const currentUser = await getCurrentUser();
-  if (!currentUser || !canManageArea(currentUser, areaId, capability)) {
+  if (!currentUser) {
+    throw new Error("You don't have permission to do that for this Passport Area.");
+  }
+
+  // canManageArea needs the area's state_id to know whether a state-level
+  // manager (not just a direct area_assignments row) covers this area —
+  // this check runs before any Supabase write, so a false negative here
+  // would block a legitimately-permitted state manager outright.
+  let stateId: string | null = null;
+  if (!currentUser.isNationalAdmin) {
+    const supabase = await createClient();
+    const { data: area } = await supabase
+      .from("passport_areas")
+      .select("state_id")
+      .eq("id", areaId)
+      .maybeSingle();
+    stateId = area?.state_id ?? null;
+  }
+
+  if (!canManageArea(currentUser, areaId, capability, stateId)) {
     throw new Error("You don't have permission to do that for this Passport Area.");
   }
   return currentUser;

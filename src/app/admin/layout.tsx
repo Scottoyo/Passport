@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser, assignedAreaIds } from "@/lib/permissions";
+import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAdminScope, getAllStatesForAdmin } from "@/lib/admin-scope";
 import { GlobalScopeSelector } from "@/components/admin/global-scope-selector";
@@ -15,7 +15,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const currentUser = await getCurrentUser();
   if (!currentUser) redirect("/sign-in?next=/admin");
 
-  const areaIds = assignedAreaIds(currentUser);
+  const areaIds = await getAccessibleAreaIds(currentUser);
   let areas: PassportArea[] = [];
   if (areaIds.length > 0) {
     const supabase = await createClient();

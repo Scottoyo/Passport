@@ -3,17 +3,49 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import type { PassportArea, State } from "@/lib/types/domain";
-import { createState, setStateStatus, createArea, setAreaStatus } from "./actions";
+import {
+  createState,
+  setStateStatus,
+  createArea,
+  setAreaStatus,
+  addStateManager,
+  removeStateManager,
+} from "./actions";
 import { StatusBadge } from "@/components/status-badge";
+
+const CAPABILITY_FIELDS: { key: string; label: string }[] = [
+  { key: "can_view_metrics", label: "View metrics" },
+  { key: "can_manage_businesses", label: "Manage businesses" },
+  { key: "can_manage_offers", label: "Manage offers" },
+  { key: "can_manage_subareas", label: "Manage subareas" },
+  { key: "can_submit_marketing_requests", label: "Submit marketing requests" },
+  { key: "can_manage_staff", label: "Manage local staff" },
+];
+
+interface StateManagerRow {
+  id: string;
+  profiles: { email: string } | null;
+  can_view_metrics: boolean;
+  can_manage_businesses: boolean;
+  can_manage_offers: boolean;
+  can_manage_subareas: boolean;
+  can_submit_marketing_requests: boolean;
+  can_manage_staff: boolean;
+}
 
 export default async function LocationsAdminPage() {
   const currentUser = await getCurrentUser();
   if (!currentUser?.isNationalAdmin) redirect("/admin");
 
   const supabase = await createClient();
-  const [{ data: states }, { data: areas }] = await Promise.all([
+  const [{ data: states }, { data: areas }, { data: stateManagers }] = await Promise.all([
     supabase.from("states").select("*").order("name").returns<State[]>(),
     supabase.from("passport_areas").select("*").order("name").returns<PassportArea[]>(),
+    supabase
+      .from("state_assignments")
+      .select(
+        "id, state_id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, profiles:user_id(email)"
+      ),
   ]);
 
   const areasByState = new Map<string, PassportArea[]>();
@@ -21,6 +53,13 @@ export default async function LocationsAdminPage() {
     const list = areasByState.get(area.state_id) ?? [];
     list.push(area);
     areasByState.set(area.state_id, list);
+  }
+
+  const managersByState = new Map<string, StateManagerRow[]>();
+  for (const m of (stateManagers ?? []) as unknown as (StateManagerRow & { state_id: string })[]) {
+    const list = managersByState.get(m.state_id) ?? [];
+    list.push(m);
+    managersByState.set(m.state_id, list);
   }
 
   return (
@@ -129,6 +168,56 @@ export default async function LocationsAdminPage() {
                 Add area
               </button>
             </form>
+
+            <div className="mt-4 border-t border-slate-100 pt-4">
+              <h3 className="text-sm font-semibold text-slate-700">State managers</h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Same capabilities as a Passport Area manager, but across every
+                area in {state.name} — current and future.
+              </p>
+              <ul className="mt-2 space-y-2">
+                {(managersByState.get(state.id) ?? []).map((m) => (
+                  <li key={m.id} className="rounded-lg bg-slate-50 p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-slate-800">{m.profiles?.email ?? "Unknown"}</span>
+                      <form action={removeStateManager.bind(null, m.id)}>
+                        <button className="text-xs font-semibold text-red-600 hover:text-red-700">
+                          Remove
+                        </button>
+                      </form>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {CAPABILITY_FIELDS.filter((f) => (m as unknown as Record<string, boolean>)[f.key])
+                        .map((f) => f.label)
+                        .join(", ") || "No capabilities granted"}
+                    </p>
+                  </li>
+                ))}
+                {(managersByState.get(state.id) ?? []).length === 0 && (
+                  <li className="text-sm text-slate-500">No state managers assigned yet.</li>
+                )}
+              </ul>
+              <form action={addStateManager.bind(null, state.id)} className="mt-3 space-y-3">
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="manager@example.com"
+                  className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+                <div className="flex flex-wrap gap-x-4 gap-y-2">
+                  {CAPABILITY_FIELDS.map((f) => (
+                    <label key={f.key} className="flex items-center gap-1.5 text-sm text-slate-700">
+                      <input type="checkbox" name={f.key} defaultChecked={f.key === "can_view_metrics"} />
+                      {f.label}
+                    </label>
+                  ))}
+                </div>
+                <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+                  Assign state manager
+                </button>
+              </form>
+            </div>
           </div>
         ))}
       </div>

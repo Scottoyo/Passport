@@ -91,3 +91,40 @@ export async function setAreaStatus(areaId: string, status: ContentStatus) {
   if (error) throw new Error(error.message);
   revalidatePath("/admin/locations");
 }
+
+export async function addStateManager(stateId: string, formData: FormData) {
+  await requireNationalAdmin();
+  const supabase = await createClient();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!email) throw new Error("An email is required to assign a state manager.");
+
+  const { data: profile } = await supabase.from("profiles").select("id").eq("email", email).maybeSingle();
+  if (!profile) {
+    throw new Error(
+      `No account found for ${email} yet — ask them to sign in once first, then assign them.`
+    );
+  }
+
+  const capabilities = {
+    can_view_metrics: formData.get("can_view_metrics") === "on",
+    can_manage_businesses: formData.get("can_manage_businesses") === "on",
+    can_manage_offers: formData.get("can_manage_offers") === "on",
+    can_manage_subareas: formData.get("can_manage_subareas") === "on",
+    can_submit_marketing_requests: formData.get("can_submit_marketing_requests") === "on",
+    can_manage_staff: formData.get("can_manage_staff") === "on",
+  };
+
+  const { error } = await supabase
+    .from("state_assignments")
+    .upsert({ user_id: profile.id, state_id: stateId, ...capabilities }, { onConflict: "user_id,state_id" });
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/locations");
+}
+
+export async function removeStateManager(assignmentId: string) {
+  await requireNationalAdmin();
+  const supabase = await createClient();
+  const { error } = await supabase.from("state_assignments").delete().eq("id", assignmentId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/locations");
+}

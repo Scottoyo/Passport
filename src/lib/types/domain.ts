@@ -134,6 +134,18 @@ export interface AreaAssignment {
   can_manage_staff: boolean;
 }
 
+export interface StateAssignment {
+  id: string;
+  user_id: string;
+  state_id: string;
+  can_view_metrics: boolean;
+  can_manage_businesses: boolean;
+  can_manage_offers: boolean;
+  can_manage_subareas: boolean;
+  can_submit_marketing_requests: boolean;
+  can_manage_staff: boolean;
+}
+
 export type AreaCapability =
   | "view_metrics"
   | "manage_businesses"
