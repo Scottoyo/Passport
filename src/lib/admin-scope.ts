@@ -1,18 +1,19 @@
 import "server-only";
 
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { State } from "@/lib/types/domain";
 
-// Shared "National vs. one state" filter used across the admin portal's list
-// pages. The URL carries the choice as ?state=<slug> so it survives
-// navigation/refresh and works without client-side data fetching, matching
-// how the rest of the admin portal is server-rendered.
+// Shared "National vs. one state" scope for the whole admin portal. It's a
+// single persistent choice (a cookie), set once from the selector in
+// admin/layout.tsx, rather than a per-page URL param — so it stays applied
+// as a national admin moves between Businesses, Categories, Featured
+// Offers, etc. without re-selecting it on every tab.
+export const ADMIN_SCOPE_COOKIE = "admin_scope_state";
 
-export async function resolveStateFilter(
-  searchParams: Record<string, string | string[] | undefined>
-): Promise<{ state: State | null }> {
-  const raw = searchParams.state;
-  const slug = Array.isArray(raw) ? raw[0] : raw;
+export async function getCurrentAdminScope(): Promise<{ state: State | null }> {
+  const cookieStore = await cookies();
+  const slug = cookieStore.get(ADMIN_SCOPE_COOKIE)?.value;
   if (!slug) return { state: null };
 
   const supabase = await createClient();

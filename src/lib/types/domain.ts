@@ -93,6 +93,7 @@ export interface Offer {
 
 export interface PassportProduct {
   id: string;
+  state_id: string;
   name: string;
   description: string | null;
   price_cents: number;
@@ -108,6 +109,7 @@ export interface Passport {
   id: string;
   owner_user_id: string;
   passport_product_id: string;
+  state_id: string;
   status: PassportStatus;
   purchased_at: string;
   expires_at: string;

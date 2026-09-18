@@ -31,32 +31,6 @@ async function attachOwners(passports: Passport[]): Promise<PassportWithOwner[]>
   return passports.map((p) => ({ ...p, owner: profileById.get(p.owner_user_id) ?? null }));
 }
 
-// State scope for passports is a proxy, not a true ownership boundary —
-// passports are deliberately nationwide (see docs/ARCHITECTURE.md). "State"
-// here means "has redeemed an offer at a business in this state."
-async function passportIdsWithActivityInState(stateId: string): Promise<string[]> {
-  const supabase = await createClient();
-  const areaIds = await getAreaIdsForState(stateId);
-  if (areaIds.length === 0) return [];
-
-  const { data: businesses } = await supabase
-    .from("businesses")
-    .select("id")
-    .in("passport_area_id", areaIds);
-  const businessIds = (businesses ?? []).map((b) => b.id as string);
-  if (businessIds.length === 0) return [];
-
-  const { data: offers } = await supabase.from("offers").select("id").in("business_id", businessIds);
-  const offerIds = (offers ?? []).map((o) => o.id as string);
-  if (offerIds.length === 0) return [];
-
-  const { data: redemptions } = await supabase
-    .from("redemptions")
-    .select("passport_id")
-    .in("offer_id", offerIds);
-  return [...new Set((redemptions ?? []).map((r) => r.passport_id as string))];
-}
-
 export async function getPassportsWithHolders(
   opts: { stateId?: string; expiredOnly?: boolean } = {}
 ): Promise<PassportWithOwner[]> {
@@ -64,8 +38,7 @@ export async function getPassportsWithHolders(
   let query = supabase.from("passports").select("*").order("purchased_at", { ascending: false });
 
   if (opts.stateId) {
-    const ids = await passportIdsWithActivityInState(opts.stateId);
-    query = query.in("id", ids.length ? ids : [NO_MATCH_ID]);
+    query = query.eq("state_id", opts.stateId);
   }
 
   const { data } = await query.returns<Passport[]>();
@@ -179,12 +152,12 @@ export async function getAllOffersNational(
   });
 }
 
-export async function getAllPassportProducts(): Promise<PassportProduct[]> {
+export async function getAllPassportProducts(
+  opts: { stateId?: string } = {}
+): Promise<PassportProduct[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("passport_products")
-    .select("*")
-    .order("price_cents")
-    .returns<PassportProduct[]>();
+  let query = supabase.from("passport_products").select("*").order("price_cents");
+  if (opts.stateId) query = query.eq("state_id", opts.stateId);
+  const { data } = await query.returns<PassportProduct[]>();
   return data ?? [];
 }

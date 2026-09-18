@@ -1,38 +1,26 @@
-import Link from "next/link";
-import { getActiveStates, getActivePassportProduct } from "@/lib/queries";
+import { getActiveStates } from "@/lib/queries";
 import { StatesBrowser } from "@/components/states-browser";
 
 export default async function HomePage() {
-  const [states, product] = await Promise.all([
-    getActiveStates(),
-    getActivePassportProduct(),
-  ]);
+  const states = await getActiveStates();
 
   return (
     <div>
       <section className="border-b border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-            One Passport. Savings everywhere.
+            A Passport for every state you explore.
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-            Buy the National Passport once and unlock exclusive offers at
-            participating restaurants, attractions, shops, and experiences in
-            every state we&apos;re live in &mdash; no separate local passport
-            required.
+            Each state has its own Passport — one purchase unlocks exclusive
+            offers at participating restaurants, attractions, shops, and
+            experiences all across that state. Visiting more than one?
+            Grab a Passport for each.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/passport"
-              className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
-            >
-              {product
-                ? `Get the Passport — $${(product.price_cents / 100).toFixed(2)}`
-                : "Get the Passport"}
-            </Link>
             <a
               href="#states"
-              className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-slate-400"
+              className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
             >
               Find your state
             </a>
@@ -44,22 +32,20 @@ export default async function HomePage() {
         <h2 className="text-center text-2xl font-bold text-slate-900">Why get a Passport</h2>
         <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <Benefit
-            title="Nationwide, one purchase"
-            body="Buy once and it works at every participating business in every state, immediately — not just where you were when you bought it."
+            title="Deep local savings"
+            body="Your state's Passport unlocks every participating business across that whole state — not just one city."
           />
           <Benefit
             title="Real savings, not gimmicks"
             body="Every offer is a real discount, freebie, or deal from a business that opted in — no fine print designed to make it unusable."
           />
-          {product && product.max_members > 1 && (
-            <Benefit
-              title="Bring the family"
-              body={`Your Passport covers up to ${product.max_members} people, so everyone in your group saves, not just the cardholder.`}
-            />
-          )}
           <Benefit
-            title="New places, all the time"
-            body="As new states and Passport Areas launch, they're instantly part of your Passport — nothing to renew or re-buy."
+            title="Bring the family"
+            body="Many Passports cover more than one person, so everyone in your group saves, not just the cardholder."
+          />
+          <Benefit
+            title="Collect every state"
+            body="Traveling to a new state? Its Passport is a separate purchase — and its own set of savings waiting for you."
           />
         </div>
       </section>
@@ -69,13 +55,13 @@ export default async function HomePage() {
           <div className="grid gap-10 sm:grid-cols-3">
             <HowItWorksStep
               step="1"
-              title="Buy one Passport"
-              body="A single purchase covers you nationwide — no separate Passport per city or state."
+              title="Buy your state's Passport"
+              body="One purchase covers every participating business in that state for its full duration."
             />
             <HowItWorksStep
               step="2"
               title="Find participating spots"
-              body="Browse by state, then by Passport Area, to discover local businesses and offers near you."
+              body="Browse by Passport Area within your state to discover local businesses and offers near you."
             />
             <HowItWorksStep
               step="3"
@@ -91,7 +77,7 @@ export default async function HomePage() {
           <h2 className="text-2xl font-bold text-slate-900">Find your state</h2>
           <p className="mt-1 text-slate-600">
             Search or hover the map, then click a state to see its
-            participating Passport Areas.
+            participating Passport Areas and get that state&apos;s Passport.
           </p>
         </div>
         <StatesBrowser states={states} />

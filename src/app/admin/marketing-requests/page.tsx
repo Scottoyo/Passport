@@ -1,25 +1,15 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
-import { resolveStateFilter, getAllStatesForAdmin, getAreaIdsForState, NO_MATCH_ID } from "@/lib/admin-scope";
-import { ScopeFilter } from "@/components/admin/scope-filter";
+import { getCurrentAdminScope, getAreaIdsForState, NO_MATCH_ID } from "@/lib/admin-scope";
 import type { MarketingRequest, PassportArea } from "@/lib/types/domain";
 import { updateMarketingRequestStatus } from "./actions";
 
-export default async function MarketingRequestsAdminPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function MarketingRequestsAdminPage() {
   const currentUser = await getCurrentUser();
   if (!currentUser?.isNationalAdmin) redirect("/admin");
 
-  const resolvedSearchParams = await searchParams;
-  const [{ state }, states] = await Promise.all([
-    resolveStateFilter(resolvedSearchParams),
-    getAllStatesForAdmin(),
-  ]);
-
+  const { state } = await getCurrentAdminScope();
   const supabase = await createClient();
   let requestsQuery = supabase
     .from("marketing_requests")
@@ -44,10 +34,6 @@ export default async function MarketingRequestsAdminPage({
         Requests submitted by managers and franchisees across every Passport
         Area.
       </p>
-
-      <div className="mt-6">
-        <ScopeFilter states={states} current={state} />
-      </div>
 
       <div className="mt-8 space-y-4">
         {(requests ?? []).map((r) => (

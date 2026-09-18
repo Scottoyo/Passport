@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/permissions";
-import { resolveStateFilter, getAllStatesForAdmin } from "@/lib/admin-scope";
+import { getCurrentAdminScope } from "@/lib/admin-scope";
 import { getPassportsWithHolders } from "@/lib/admin-queries";
-import { ScopeFilter } from "@/components/admin/scope-filter";
 import type { PassportStatus } from "@/lib/types/domain";
 
 const STATUS_STYLES: Record<PassportStatus, string> = {
@@ -11,34 +10,17 @@ const STATUS_STYLES: Record<PassportStatus, string> = {
   revoked: "bg-red-100 text-red-700",
 };
 
-export default async function PassportHoldersPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function PassportHoldersPage() {
   const currentUser = await getCurrentUser();
   if (!currentUser?.isNationalAdmin) redirect("/admin");
 
-  const resolvedSearchParams = await searchParams;
-  const [{ state }, states] = await Promise.all([
-    resolveStateFilter(resolvedSearchParams),
-    getAllStatesForAdmin(),
-  ]);
-
+  const { state } = await getCurrentAdminScope();
   const passports = await getPassportsWithHolders({ stateId: state?.id });
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900">Passport holders</h1>
       <p className="mt-1 text-slate-600">Every Passport that&apos;s been issued.</p>
-
-      <div className="mt-6">
-        <ScopeFilter
-          states={states}
-          current={state}
-          note="Passports are nationwide by design — a state filter here means “has redeemed an offer at a business in that state,” not ownership by that state."
-        />
-      </div>
 
       <ul className="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-200">
         {passports.map((p) => (

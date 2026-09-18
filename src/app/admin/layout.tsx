@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser, assignedAreaIds } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentAdminScope, getAllStatesForAdmin } from "@/lib/admin-scope";
+import { GlobalScopeSelector } from "@/components/admin/global-scope-selector";
 import type { PassportArea } from "@/lib/types/domain";
 
 // This layout is the app-level gatekeeper for the whole /admin section, but
@@ -39,8 +41,23 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     );
   }
 
+  const [{ state: scopeState }, allStates] = currentUser.isNationalAdmin
+    ? await Promise.all([getCurrentAdminScope(), getAllStatesForAdmin()])
+    : [{ state: null }, []];
+
   return (
-    <div className="mx-auto flex max-w-6xl gap-8 px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      {currentUser.isNationalAdmin && (
+        <div className="mb-6 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <p className="text-sm text-slate-600">
+            This selector applies across every admin section — Businesses,
+            Categories, Featured Offers, Passport Holders, and the rest —
+            until you change it.
+          </p>
+          <GlobalScopeSelector states={allStates} current={scopeState} />
+        </div>
+      )}
+      <div className="flex gap-8">
       <aside className="w-56 shrink-0">
         <nav className="space-y-1 text-sm">
           <Link href="/admin" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
@@ -122,6 +139,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         </nav>
       </aside>
       <div className="flex-1 min-w-0">{children}</div>
+      </div>
     </div>
   );
 }

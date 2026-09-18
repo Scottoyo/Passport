@@ -140,12 +140,13 @@ export async function getMyPassports(userId: string) {
   return data ?? [];
 }
 
-export async function getActivePassportProduct() {
+export async function getActivePassportProductForState(stateId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("passport_products")
     .select("*")
     .eq("status", "active")
+    .eq("state_id", stateId)
     .order("price_cents")
     .limit(1)
     .maybeSingle<PassportProduct>();

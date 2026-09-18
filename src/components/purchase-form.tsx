@@ -7,9 +7,11 @@ import { startPlaceholderPassport } from "@/app/passport/actions";
 export function PurchaseForm({
   passportProductId,
   isSignedIn,
+  next,
 }: {
   passportProductId: string;
   isSignedIn: boolean;
+  next: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -18,7 +20,7 @@ export function PurchaseForm({
   if (!isSignedIn) {
     return (
       <button
-        onClick={() => router.push(`/sign-in?next=/passport`)}
+        onClick={() => router.push(`/sign-in?next=${encodeURIComponent(next)}`)}
         className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
       >
         Sign in to get your Passport

@@ -1,24 +1,14 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/permissions";
-import { resolveStateFilter, getAllStatesForAdmin } from "@/lib/admin-scope";
+import { getCurrentAdminScope } from "@/lib/admin-scope";
 import { getAllOffersNational } from "@/lib/admin-queries";
-import { ScopeFilter } from "@/components/admin/scope-filter";
 import { setOfferFeatured } from "./actions";
 
-export default async function FeaturedOffersPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function FeaturedOffersPage() {
   const currentUser = await getCurrentUser();
   if (!currentUser?.isNationalAdmin) redirect("/admin");
 
-  const resolvedSearchParams = await searchParams;
-  const [{ state }, states] = await Promise.all([
-    resolveStateFilter(resolvedSearchParams),
-    getAllStatesForAdmin(),
-  ]);
-
+  const { state } = await getCurrentAdminScope();
   const offers = await getAllOffersNational({ stateId: state?.id });
 
   return (
@@ -28,10 +18,6 @@ export default async function FeaturedOffersPage({
         Feature an offer to highlight it. (Where featured offers surface on
         the public site is a follow-up.)
       </p>
-
-      <div className="mt-6">
-        <ScopeFilter states={states} current={state} />
-      </div>
 
       <ul className="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-200">
         {offers.map((o) => (

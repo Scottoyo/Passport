@@ -1,25 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/permissions";
-import { resolveStateFilter, getAllStatesForAdmin } from "@/lib/admin-scope";
+import { getCurrentAdminScope } from "@/lib/admin-scope";
 import { getAllBusinessesNational } from "@/lib/admin-queries";
-import { ScopeFilter } from "@/components/admin/scope-filter";
 import { StatusBadge } from "@/components/status-badge";
 
-export default async function BusinessesAdminPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function BusinessesAdminPage() {
   const currentUser = await getCurrentUser();
   if (!currentUser?.isNationalAdmin) redirect("/admin");
 
-  const resolvedSearchParams = await searchParams;
-  const [{ state }, states] = await Promise.all([
-    resolveStateFilter(resolvedSearchParams),
-    getAllStatesForAdmin(),
-  ]);
-
+  const { state } = await getCurrentAdminScope();
   const businesses = await getAllBusinessesNational({ stateId: state?.id });
 
   return (
@@ -29,10 +19,6 @@ export default async function BusinessesAdminPage({
         Every business across every Passport Area. To edit one, open its
         Passport Area&apos;s workspace.
       </p>
-
-      <div className="mt-6">
-        <ScopeFilter states={states} current={state} />
-      </div>
 
       <ul className="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-200">
         {businesses.map((b) => (

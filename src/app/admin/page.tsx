@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getCurrentUser, assignedAreaIds } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentAdminScope, getAreaIdsForState, NO_MATCH_ID } from "@/lib/admin-scope";
+import { getPassportsWithHolders } from "@/lib/admin-queries";
 import type { PassportArea } from "@/lib/types/domain";
 
 export default async function AdminDashboardPage() {
@@ -10,38 +12,61 @@ export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
   if (currentUser.isNationalAdmin) {
-    const [
-      { count: stateCount },
-      { count: areaCount },
-      { count: businessCount },
-      { count: pendingRequests },
-      { count: passportCount },
-      { count: expiredCount },
-    ] = await Promise.all([
-      supabase.from("states").select("*", { count: "exact", head: true }),
-      supabase.from("passport_areas").select("*", { count: "exact", head: true }),
-      supabase.from("businesses").select("*", { count: "exact", head: true }),
-      supabase
+    const { state } = await getCurrentAdminScope();
+    const scopedAreaIds = state ? await getAreaIdsForState(state.id) : null;
+
+    async function countAreas(): Promise<number> {
+      if (scopedAreaIds) return scopedAreaIds.length;
+      const { count } = await supabase.from("passport_areas").select("*", { count: "exact", head: true });
+      return count ?? 0;
+    }
+
+    async function countBusinesses(): Promise<number> {
+      const query = supabase.from("businesses").select("*", { count: "exact", head: true });
+      const { count } = scopedAreaIds
+        ? await query.in("passport_area_id", scopedAreaIds.length ? scopedAreaIds : [NO_MATCH_ID])
+        : await query;
+      return count ?? 0;
+    }
+
+    async function countPendingRequests(): Promise<number> {
+      const query = supabase
         .from("marketing_requests")
         .select("*", { count: "exact", head: true })
-        .eq("status", "submitted"),
-      supabase.from("passports").select("*", { count: "exact", head: true }),
-      supabase
-        .from("passports")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "expired"),
-    ]);
+        .eq("status", "submitted");
+      const { count } = scopedAreaIds
+        ? await query.in("passport_area_id", scopedAreaIds.length ? scopedAreaIds : [NO_MATCH_ID])
+        : await query;
+      return count ?? 0;
+    }
+
+    const areaCountPromise = countAreas();
+    const businessCountPromise = countBusinesses();
+    const pendingRequestsPromise = countPendingRequests();
+
+    const [{ count: stateCount }, areaCount, businessCount, pendingRequests, passports, expiredPassports] =
+      await Promise.all([
+        supabase.from("states").select("*", { count: "exact", head: true }),
+        areaCountPromise,
+        businessCountPromise,
+        pendingRequestsPromise,
+        getPassportsWithHolders({ stateId: state?.id }),
+        getPassportsWithHolders({ stateId: state?.id, expiredOnly: true }),
+      ]);
 
     return (
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">National admin dashboard</h1>
+        <h1 className="text-2xl font-bold text-slate-900">
+          National admin dashboard
+          {state && <span className="font-normal text-slate-500"> &mdash; {state.name}</span>}
+        </h1>
         <div className="mt-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
           <Stat label="States" value={stateCount ?? 0} />
-          <Stat label="Passport Areas" value={areaCount ?? 0} />
-          <Stat label="Businesses" value={businessCount ?? 0} />
-          <Stat label="Passport holders" value={passportCount ?? 0} />
-          <Stat label="Expired passports" value={expiredCount ?? 0} />
-          <Stat label="Pending requests" value={pendingRequests ?? 0} />
+          <Stat label="Passport Areas" value={areaCount} />
+          <Stat label="Businesses" value={businessCount} />
+          <Stat label="Passport holders" value={passports.length} />
+          <Stat label="Expired passports" value={expiredPassports.length} />
+          <Stat label="Pending requests" value={pendingRequests} />
         </div>
         <div className="mt-8 flex flex-wrap gap-4">
           <Link href="/admin/locations" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
