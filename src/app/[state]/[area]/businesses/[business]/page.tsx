@@ -7,7 +7,9 @@ import {
   getBusinessBySlug,
   getOffersForBusiness,
 } from "@/lib/queries";
+import { createClient } from "@/lib/supabase/server";
 import { OfferCard } from "@/components/offer-card";
+import { toggleFavorite } from "./actions";
 
 interface Props {
   params: Promise<{ state: string; area: string; business: string }>;
@@ -34,6 +36,22 @@ export default async function BusinessPage({ params }: Props) {
 
   const offers = await getOffersForBusiness(business.id);
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let isFavorited = false;
+  if (user) {
+    const { data: favorite } = await supabase
+      .from("business_favorites")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("business_id", business.id)
+      .maybeSingle();
+    isFavorited = Boolean(favorite);
+  }
+  const currentPath = `/${state.slug}/${area.slug}/businesses/${business.slug}`;
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <nav className="text-sm text-slate-500">
@@ -48,7 +66,29 @@ export default async function BusinessPage({ params }: Props) {
         <span className="text-slate-700">{business.name}</span>
       </nav>
 
-      <h1 className="mt-2 text-3xl font-bold text-slate-900">{business.name}</h1>
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <h1 className="text-3xl font-bold text-slate-900">{business.name}</h1>
+        {user ? (
+          <form action={toggleFavorite.bind(null, business.id, currentPath)}>
+            <button
+              className={
+                isFavorited
+                  ? "rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-700"
+                  : "rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
+              }
+            >
+              {isFavorited ? "Saved ★" : "Save business"}
+            </button>
+          </form>
+        ) : (
+          <Link
+            href={`/sign-in?next=${encodeURIComponent(currentPath)}`}
+            className="text-sm font-semibold text-slate-500 hover:text-slate-700"
+          >
+            Sign in to save
+          </Link>
+        )}
+      </div>
       <p className="mt-1 text-slate-500">
         {[business.address_line1, business.city, business.state_code]
           .filter(Boolean)

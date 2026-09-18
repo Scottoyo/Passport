@@ -120,6 +120,17 @@ export interface Passport {
   purchased_at: string;
   expires_at: string;
   payment_reference: string | null;
+  travel_start_date: string | null;
+  travel_end_date: string | null;
+}
+
+export interface Redemption {
+  id: string;
+  passport_id: string;
+  offer_id: string;
+  redeemed_member_id: string | null;
+  redeemed_by_staff_id: string | null;
+  redeemed_at: string;
 }
 
 export interface AreaAssignment {
@@ -166,8 +177,20 @@ export interface MarketingRequest {
 
 export interface Profile {
   id: string;
+  first_name: string | null;
+  last_name: string | null;
   full_name: string | null;
   email: string | null;
   phone: string | null;
+  age_range: string | null;
+  suspended_at: string | null;
+  deleted_at: string | null;
+  created_at: string;
+}
+
+export interface BusinessFavorite {
+  id: string;
+  user_id: string;
+  business_id: string;
   created_at: string;
 }

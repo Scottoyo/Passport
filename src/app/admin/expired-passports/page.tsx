@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/permissions";
 import { getCurrentAdminScope } from "@/lib/admin-scope";
@@ -21,9 +22,13 @@ export default async function ExpiredPassportsPage() {
         {passports.map((p) => (
           <li key={p.id} className="flex items-center justify-between gap-4 px-6 py-3">
             <div>
-              <p className="text-sm font-medium text-slate-900">
-                {p.owner?.email ?? p.owner?.full_name ?? "Unknown holder"}
-              </p>
+              {p.owner ? (
+                <Link href={`/admin/passport-holders/${p.owner.id}`} className="text-sm font-medium text-slate-900 hover:underline">
+                  {p.owner.full_name || p.owner.email || "Unknown holder"}
+                </Link>
+              ) : (
+                <p className="text-sm font-medium text-slate-900">Unknown holder</p>
+              )}
               <p className="text-xs text-slate-500">
                 Purchased {new Date(p.purchased_at).toLocaleDateString()}
               </p>

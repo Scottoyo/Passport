@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/permissions";
 import { getProfilesWithoutPassports } from "@/lib/admin-queries";
@@ -20,7 +21,9 @@ export default async function ProfilesWithoutPassportsPage() {
         {profiles.map((p) => (
           <li key={p.id} className="flex items-center justify-between gap-4 px-6 py-3">
             <div>
-              <p className="text-sm font-medium text-slate-900">{p.full_name ?? p.email ?? "Unnamed"}</p>
+              <Link href={`/admin/passport-holders/${p.id}`} className="text-sm font-medium text-slate-900 hover:underline">
+                {p.full_name || p.email || "Unnamed"}
+              </Link>
               <p className="text-xs text-slate-500">{p.email}</p>
             </div>
             <span className="text-xs text-slate-500">

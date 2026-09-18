@@ -124,6 +124,16 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
               )}
             </>
           )}
+          {!currentUser.isNationalAdmin && currentUser.stateAssignments.length > 0 && (
+            <div className="pt-4">
+              <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Customers
+              </p>
+              <Link href="/admin/passport-holders" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Passport holders
+              </Link>
+            </div>
+          )}
           {areas.length > 0 && (
             <div className="pt-4">
               <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">

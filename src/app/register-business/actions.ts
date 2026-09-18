@@ -45,7 +45,7 @@ export async function registerBusiness(formData: FormData) {
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email: workEmail,
     password,
-    options: { data: { full_name: `${firstName} ${lastName}` } },
+    options: { data: { first_name: firstName, last_name: lastName } },
   });
 
   if (signUpError) {

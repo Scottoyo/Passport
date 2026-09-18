@@ -4,11 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import { getAreaIdsForState, NO_MATCH_ID } from "@/lib/admin-scope";
 import type {
   Business,
+  BusinessFavorite,
   Offer,
   PassportArea,
   PassportProduct,
   Passport,
   Profile,
+  Redemption,
   State,
 } from "@/lib/types/domain";
 
@@ -19,26 +21,40 @@ import type {
 
 export interface PassportWithOwner extends Passport {
   owner: Profile | null;
+  stateName: string | null;
 }
 
 async function attachOwners(passports: Passport[]): Promise<PassportWithOwner[]> {
   const supabase = await createClient();
   const ownerIds = [...new Set(passports.map((p) => p.owner_user_id))];
-  const { data: profiles } = ownerIds.length
-    ? await supabase.from("profiles").select("*").in("id", ownerIds).returns<Profile[]>()
-    : { data: [] as Profile[] };
+  const stateIds = [...new Set(passports.map((p) => p.state_id))];
+  const [{ data: profiles }, { data: states }] = await Promise.all([
+    ownerIds.length
+      ? supabase.from("profiles").select("*").in("id", ownerIds).returns<Profile[]>()
+      : Promise.resolve({ data: [] as Profile[] }),
+    stateIds.length
+      ? supabase.from("states").select("id, name").in("id", stateIds)
+      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+  ]);
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
-  return passports.map((p) => ({ ...p, owner: profileById.get(p.owner_user_id) ?? null }));
+  const stateNameById = new Map((states ?? []).map((s) => [s.id as string, s.name as string]));
+  return passports.map((p) => ({
+    ...p,
+    owner: profileById.get(p.owner_user_id) ?? null,
+    stateName: stateNameById.get(p.state_id) ?? null,
+  }));
 }
 
 export async function getPassportsWithHolders(
-  opts: { stateId?: string; expiredOnly?: boolean } = {}
+  opts: { stateId?: string; stateIds?: string[]; expiredOnly?: boolean } = {}
 ): Promise<PassportWithOwner[]> {
   const supabase = await createClient();
   let query = supabase.from("passports").select("*").order("purchased_at", { ascending: false });
 
   if (opts.stateId) {
     query = query.eq("state_id", opts.stateId);
+  } else if (opts.stateIds) {
+    query = query.in("state_id", opts.stateIds.length ? opts.stateIds : [NO_MATCH_ID]);
   }
 
   const { data } = await query.returns<Passport[]>();
@@ -62,6 +78,104 @@ export async function getProfilesWithoutPassports(): Promise<Profile[]> {
   ]);
   const ownerIds = new Set((passports ?? []).map((p) => p.owner_user_id as string));
   return (profiles ?? []).filter((p) => !ownerIds.has(p.id));
+}
+
+export async function getHolderProfile(profileId: string): Promise<Profile | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("profiles").select("*").eq("id", profileId).returns<Profile[]>();
+  return data?.[0] ?? null;
+}
+
+export interface PassportWithDetails extends Passport {
+  stateName: string | null;
+  productName: string | null;
+  priceCents: number | null;
+}
+
+// Every passport a holder has ever had, newest first — this doubles as
+// "order history" (a passport row *is* the purchase; there's no separate
+// orders table in this schema).
+export async function getPassportsForHolder(profileId: string): Promise<PassportWithDetails[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("passports")
+    .select("*")
+    .eq("owner_user_id", profileId)
+    .order("purchased_at", { ascending: false })
+    .returns<Passport[]>();
+  const passports = data ?? [];
+
+  const stateIds = [...new Set(passports.map((p) => p.state_id))];
+  const productIds = [...new Set(passports.map((p) => p.passport_product_id))];
+  const [{ data: states }, { data: products }] = await Promise.all([
+    stateIds.length
+      ? supabase.from("states").select("*").in("id", stateIds).returns<State[]>()
+      : Promise.resolve({ data: [] as State[] }),
+    productIds.length
+      ? supabase.from("passport_products").select("*").in("id", productIds).returns<PassportProduct[]>()
+      : Promise.resolve({ data: [] as PassportProduct[] }),
+  ]);
+  const stateById = new Map((states ?? []).map((s) => [s.id, s]));
+  const productById = new Map((products ?? []).map((p) => [p.id, p]));
+
+  return passports.map((p) => ({
+    ...p,
+    stateName: stateById.get(p.state_id)?.name ?? null,
+    productName: productById.get(p.passport_product_id)?.name ?? null,
+    priceCents: productById.get(p.passport_product_id)?.price_cents ?? null,
+  }));
+}
+
+export interface RedemptionWithDetails extends Redemption {
+  offerTitle: string;
+  businessName: string;
+}
+
+export async function getRedemptionsForPassports(passportIds: string[]): Promise<RedemptionWithDetails[]> {
+  if (passportIds.length === 0) return [];
+  const supabase = await createClient();
+  const { data: redemptions } = await supabase
+    .from("redemptions")
+    .select("*")
+    .in("passport_id", passportIds)
+    .order("redeemed_at", { ascending: false })
+    .returns<Redemption[]>();
+  const list = redemptions ?? [];
+
+  const offerIds = [...new Set(list.map((r) => r.offer_id))];
+  const { data: offers } = offerIds.length
+    ? await supabase.from("offers").select("*").in("id", offerIds).returns<Offer[]>()
+    : { data: [] as Offer[] };
+  const businessIds = [...new Set((offers ?? []).map((o) => o.business_id))];
+  const { data: businesses } = businessIds.length
+    ? await supabase.from("businesses").select("id, name").in("id", businessIds)
+    : { data: [] as { id: string; name: string }[] };
+
+  const offerById = new Map((offers ?? []).map((o) => [o.id, o]));
+  const businessNameById = new Map((businesses ?? []).map((b) => [b.id as string, b.name as string]));
+
+  return list.map((r) => {
+    const offer = offerById.get(r.offer_id);
+    return {
+      ...r,
+      offerTitle: offer?.title ?? "Unknown offer",
+      businessName: offer ? businessNameById.get(offer.business_id) ?? "Unknown business" : "Unknown business",
+    };
+  });
+}
+
+export async function getFavoriteBusinessesForHolder(userId: string): Promise<BusinessWithLocation[]> {
+  const supabase = await createClient();
+  const { data: favorites } = await supabase
+    .from("business_favorites")
+    .select("*")
+    .eq("user_id", userId)
+    .returns<BusinessFavorite[]>();
+  const businessIds = (favorites ?? []).map((f) => f.business_id);
+  if (businessIds.length === 0) return [];
+
+  const { data: businesses } = await supabase.from("businesses").select("*").in("id", businessIds).returns<Business[]>();
+  return attachLocations(businesses ?? []);
 }
 
 export interface BusinessWithLocation extends Business {
