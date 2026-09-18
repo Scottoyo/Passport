@@ -17,6 +17,7 @@ const RESERVED_SEGMENTS = new Set([
   "faq",
   "states",
   "register-business",
+  "create-profile",
 ]);
 
 export function RegisterBusinessLink({ className }: { className?: string }) {
