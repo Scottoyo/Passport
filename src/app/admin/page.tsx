@@ -43,21 +43,6 @@ export default async function AdminDashboardPage() {
             highlight="amber"
           />
         </div>
-
-        <div className="mt-8 flex flex-wrap gap-4">
-          <Link href="/admin/locations" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
-            Manage states &amp; areas &rarr;
-          </Link>
-          <Link href="/admin/businesses" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
-            Review businesses &rarr;
-          </Link>
-          <Link href="/admin/passport-holders" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
-            View passport holders &rarr;
-          </Link>
-          <Link href="/admin/marketing-requests" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
-            Review marketing requests &rarr;
-          </Link>
-        </div>
       </div>
     );
   }
