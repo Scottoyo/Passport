@@ -100,7 +100,7 @@ asks for — one `page.tsx` per hierarchy level, not one per place.
 
 ## Permissions and RLS
 
-Three tiers, enforced in Postgres, not just hidden in the UI:
+Four tiers, enforced in Postgres, not just hidden in the UI:
 
 1. **National admins** (`national_admins` table) — full read/write on every
    table, every status, every area.
