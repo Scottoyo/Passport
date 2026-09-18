@@ -48,6 +48,13 @@ export default async function AreaPage({ params }: Props) {
         <p className="mt-4 max-w-2xl text-slate-600">{area.description}</p>
       )}
 
+      <Link
+        href={`/${state.slug}/passport`}
+        className="mt-6 inline-block rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+      >
+        Get the {state.name} Passport
+      </Link>
+
       {subareas.length > 0 && (
         <section className="mt-10">
           <h2 className="text-xl font-semibold text-slate-900">Neighborhoods</h2>

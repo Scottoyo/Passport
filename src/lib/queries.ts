@@ -45,6 +45,32 @@ export async function getAreasForState(stateId: string) {
   return data ?? [];
 }
 
+export interface AreaWithState extends PassportArea {
+  stateName: string;
+  stateSlug: string;
+}
+
+// Every active region nationwide, with its state attached — the primary
+// data source for the region-first Passport picker (most visitors think in
+// terms of "my region" first, state is really just how a Passport happens
+// to be priced/sold).
+export async function getActiveAreasWithStates(): Promise<AreaWithState[]> {
+  const supabase = await createClient();
+  const [{ data: areas }, { data: states }] = await Promise.all([
+    supabase.from("passport_areas").select("*").returns<PassportArea[]>(),
+    supabase.from("states").select("id, name, slug").returns<Pick<State, "id" | "name" | "slug">[]>(),
+  ]);
+  const stateById = new Map((states ?? []).map((s) => [s.id, s]));
+
+  return (areas ?? [])
+    .map((area) => {
+      const state = stateById.get(area.state_id);
+      return state ? { ...area, stateName: state.name, stateSlug: state.slug } : null;
+    })
+    .filter((area): area is AreaWithState => area !== null)
+    .sort((a, b) => a.stateName.localeCompare(b.stateName) || a.name.localeCompare(b.name));
+}
+
 export async function getAreaBySlug(stateId: string, areaSlug: string) {
   const supabase = await createClient();
   const { data } = await supabase

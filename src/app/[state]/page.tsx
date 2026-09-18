@@ -30,6 +30,13 @@ export default async function StatePage({ params }: Props) {
         <p className="mt-2 max-w-2xl text-slate-600">{state.intro_copy}</p>
       )}
 
+      <Link
+        href={`/${state.slug}/passport`}
+        className="mt-6 inline-block rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+      >
+        Get the {state.name} Passport
+      </Link>
+
       <h2 className="mt-10 text-xl font-semibold text-slate-900">
         Passport Areas in {state.name}
       </h2>
