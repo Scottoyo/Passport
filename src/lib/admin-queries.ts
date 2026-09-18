@@ -175,15 +175,12 @@ export interface DashboardMetrics {
   businessesPendingApproval: number;
 }
 
-// "Pending approval" has no dedicated status in the schema — this treats a
-// business still in `draft` as pending, the closest existing concept
-// (created by a manager, not yet launched by anyone with lifecycle access).
 export async function getDashboardMetrics(
   opts: { stateId?: string } = {}
 ): Promise<DashboardMetrics> {
   const supabase = await createClient();
 
-  let businessesQuery = supabase.from("businesses").select("id, status, featured");
+  let businessesQuery = supabase.from("businesses").select("id, status, featured, approval_status");
   if (opts.stateId) {
     const areaIds = await getAreaIdsForState(opts.stateId);
     businessesQuery = businessesQuery.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
@@ -231,7 +228,7 @@ export async function getDashboardMetrics(
     totalBusinesses: businesses.length,
     activeBusinesses: businesses.filter((b) => b.status === "active").length,
     featuredBusinesses: businesses.filter((b) => b.featured).length,
-    businessesPendingApproval: businesses.filter((b) => b.status === "draft").length,
+    businessesPendingApproval: businesses.filter((b) => b.approval_status === "pending_review").length,
     totalOffers: offers.length,
     activeOffers: offers.filter((o) => o.status === "active").length,
     totalPassportHolders: passports.length,

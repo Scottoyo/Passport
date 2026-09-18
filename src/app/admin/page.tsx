@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
     return (
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
-          National admin dashboard
+          Admin Dashboard
           {state && <span className="font-normal text-slate-500"> &mdash; {state.name}</span>}
         </h1>
         <p className="mt-1 text-slate-600">

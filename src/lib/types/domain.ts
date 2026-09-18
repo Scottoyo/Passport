@@ -48,6 +48,8 @@ export interface Category {
   sort_order: number;
 }
 
+export type BusinessApprovalStatus = "pending_review" | "approved" | "rejected";
+
 export interface Business {
   id: string;
   passport_area_id: string;
@@ -68,6 +70,9 @@ export interface Business {
   website_url: string | null;
   hero_image_url: string | null;
   featured: boolean;
+  approval_status: BusinessApprovalStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
 }
 
 export type DiscountType =
