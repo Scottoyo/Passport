@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/permissions";
 import { signOut } from "@/app/auth/actions";
+import { RegisterBusinessLink } from "@/components/register-business-link";
 
 export async function SiteHeader() {
   const currentUser = await getCurrentUser();
@@ -35,7 +36,7 @@ export async function SiteHeader() {
               </button>
             </form>
           </>
-        ) : (
+        ) : currentUser ? (
           <>
             <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 sm:flex">
               <Link href="/#states" className="hover:text-slate-900">
@@ -46,21 +47,41 @@ export async function SiteHeader() {
               </Link>
             </nav>
             <div className="flex items-center gap-3 text-sm font-medium">
-              {currentUser ? (
-                <Link
-                  href="/account"
-                  className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
-                >
-                  My Passport
-                </Link>
-              ) : (
-                <Link
-                  href="/sign-in"
-                  className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
-                >
-                  Sign in
-                </Link>
-              )}
+              <Link
+                href="/account"
+                className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
+              >
+                My Passport
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 lg:flex">
+              <Link href="/" className="hover:text-slate-900">
+                Home
+              </Link>
+              <Link href="/#states" className="hover:text-slate-900">
+                Discover
+              </Link>
+              <Link href="/faq" className="hover:text-slate-900">
+                FAQ
+              </Link>
+            </nav>
+            <div className="flex flex-wrap items-center justify-end gap-3 text-sm font-medium">
+              <Link href="/sign-in" className="text-slate-600 hover:text-slate-900">
+                Login
+              </Link>
+              <Link
+                href="/passport"
+                className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
+              >
+                Get the Passport
+              </Link>
+              <Link href="/sign-in" className="hidden text-slate-600 hover:text-slate-900 lg:inline">
+                Create a Profile
+              </Link>
+              <RegisterBusinessLink className="hidden rounded-full border border-slate-300 px-4 py-2 text-slate-700 hover:border-slate-500 lg:inline" />
             </div>
           </>
         )}
