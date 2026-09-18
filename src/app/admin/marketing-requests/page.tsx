@@ -1,20 +1,37 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
+import { resolveStateFilter, getAllStatesForAdmin, getAreaIdsForState, NO_MATCH_ID } from "@/lib/admin-scope";
+import { ScopeFilter } from "@/components/admin/scope-filter";
 import type { MarketingRequest, PassportArea } from "@/lib/types/domain";
 import { updateMarketingRequestStatus } from "./actions";
 
-export default async function MarketingRequestsAdminPage() {
+export default async function MarketingRequestsAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const currentUser = await getCurrentUser();
   if (!currentUser?.isNationalAdmin) redirect("/admin");
 
+  const resolvedSearchParams = await searchParams;
+  const [{ state }, states] = await Promise.all([
+    resolveStateFilter(resolvedSearchParams),
+    getAllStatesForAdmin(),
+  ]);
+
   const supabase = await createClient();
+  let requestsQuery = supabase
+    .from("marketing_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (state) {
+    const areaIds = await getAreaIdsForState(state.id);
+    requestsQuery = requestsQuery.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
+  }
+
   const [{ data: requests }, { data: areas }] = await Promise.all([
-    supabase
-      .from("marketing_requests")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .returns<MarketingRequest[]>(),
+    requestsQuery.returns<MarketingRequest[]>(),
     supabase.from("passport_areas").select("*").returns<PassportArea[]>(),
   ]);
 
@@ -27,6 +44,10 @@ export default async function MarketingRequestsAdminPage() {
         Requests submitted by managers and franchisees across every Passport
         Area.
       </p>
+
+      <div className="mt-6">
+        <ScopeFilter states={states} current={state} />
+      </div>
 
       <div className="mt-8 space-y-4">
         {(requests ?? []).map((r) => (

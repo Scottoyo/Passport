@@ -14,7 +14,7 @@ export async function SiteHeader() {
           National Passport
         </Link>
         <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 sm:flex">
-          <Link href="/states" className="hover:text-slate-900">
+          <Link href="/#states" className="hover:text-slate-900">
             Explore States
           </Link>
           <Link href="/passport" className="hover:text-slate-900">

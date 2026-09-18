@@ -51,9 +51,56 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
               <Link href="/admin/locations" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                 States &amp; Areas
               </Link>
+
+              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Customers
+              </p>
+              <Link href="/admin/passport-holders" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Passport holders
+              </Link>
+              <Link href="/admin/profiles-without-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Profiles without passports
+              </Link>
+              <Link href="/admin/expired-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Expired passports
+              </Link>
+
+              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Catalog
+              </p>
+              <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Businesses
+              </Link>
+              <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Featured offers
+              </Link>
+              <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Categories
+              </Link>
+              <Link href="/admin/passport-products" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Passport products
+              </Link>
+
+              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Operations
+              </p>
               <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                 Marketing requests
               </Link>
+
+              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Coming soon
+              </p>
+              {["Admin notifications", "Promo codes", "Referral program", "Business passport sales", "Marketing products"].map(
+                (label) => (
+                  <span
+                    key={label}
+                    className="block cursor-not-allowed rounded-lg px-3 py-2 font-medium text-slate-400"
+                  >
+                    {label}
+                  </span>
+                )
+              )}
             </>
           )}
           {areas.length > 0 && (

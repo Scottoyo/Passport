@@ -86,6 +86,7 @@ export interface Offer {
   discount_value: number | null;
   redemptions_per_passport: number;
   status: ContentStatus;
+  featured: boolean;
   starts_at: string | null;
   ends_at: string | null;
 }
@@ -141,4 +142,12 @@ export interface MarketingRequest {
   details: string | null;
   status: "submitted" | "in_review" | "approved" | "declined" | "completed";
   admin_notes: string | null;
+}
+
+export interface Profile {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  created_at: string;
 }

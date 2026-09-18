@@ -10,29 +10,45 @@ export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
   if (currentUser.isNationalAdmin) {
-    const [{ count: stateCount }, { count: areaCount }, { count: businessCount }, { count: pendingRequests }] =
-      await Promise.all([
-        supabase.from("states").select("*", { count: "exact", head: true }),
-        supabase.from("passport_areas").select("*", { count: "exact", head: true }),
-        supabase.from("businesses").select("*", { count: "exact", head: true }),
-        supabase
-          .from("marketing_requests")
-          .select("*", { count: "exact", head: true })
-          .eq("status", "submitted"),
-      ]);
+    const [
+      { count: stateCount },
+      { count: areaCount },
+      { count: businessCount },
+      { count: pendingRequests },
+      { count: passportCount },
+      { count: expiredCount },
+    ] = await Promise.all([
+      supabase.from("states").select("*", { count: "exact", head: true }),
+      supabase.from("passport_areas").select("*", { count: "exact", head: true }),
+      supabase.from("businesses").select("*", { count: "exact", head: true }),
+      supabase
+        .from("marketing_requests")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "submitted"),
+      supabase.from("passports").select("*", { count: "exact", head: true }),
+      supabase
+        .from("passports")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "expired"),
+    ]);
 
     return (
       <div>
         <h1 className="text-2xl font-bold text-slate-900">National admin dashboard</h1>
-        <div className="mt-6 grid gap-4 sm:grid-cols-4">
+        <div className="mt-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
           <Stat label="States" value={stateCount ?? 0} />
           <Stat label="Passport Areas" value={areaCount ?? 0} />
           <Stat label="Businesses" value={businessCount ?? 0} />
+          <Stat label="Passport holders" value={passportCount ?? 0} />
+          <Stat label="Expired passports" value={expiredCount ?? 0} />
           <Stat label="Pending requests" value={pendingRequests ?? 0} />
         </div>
-        <div className="mt-8 flex gap-4">
+        <div className="mt-8 flex flex-wrap gap-4">
           <Link href="/admin/locations" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
             Manage states &amp; areas &rarr;
+          </Link>
+          <Link href="/admin/passport-holders" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
+            View passport holders &rarr;
           </Link>
           <Link href="/admin/marketing-requests" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
             Review marketing requests &rarr;

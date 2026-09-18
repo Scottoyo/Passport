@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import usaMap from "@svg-maps/usa";
 import type { State } from "@/lib/types/domain";
 
@@ -65,7 +66,7 @@ export function StateMap({ states }: { states: State[] }) {
           )}
           {states.map((state) => (
             <li key={state.id}>
-              <a
+              <Link
                 href={`/${state.slug}`}
                 className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
               >
@@ -73,7 +74,7 @@ export function StateMap({ states }: { states: State[] }) {
                 <span aria-hidden className="text-slate-400">
                   &rarr;
                 </span>
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
