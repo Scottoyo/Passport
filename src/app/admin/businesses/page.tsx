@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/permissions";
 import { getCurrentAdminScope } from "@/lib/admin-scope";
 import { getAllBusinessesNational } from "@/lib/admin-queries";
 import { StatusBadge } from "@/components/status-badge";
+import { setBusinessFeatured } from "./actions";
 
 export default async function BusinessesAdminPage() {
   const currentUser = await getCurrentUser();
@@ -32,6 +33,17 @@ export default async function BusinessesAdminPage() {
             </div>
             <div className="flex items-center gap-3">
               <StatusBadge status={b.status} />
+              <form action={setBusinessFeatured.bind(null, b.id, !b.featured)}>
+                <button
+                  className={
+                    b.featured
+                      ? "rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-700"
+                      : "rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500"
+                  }
+                >
+                  {b.featured ? "Featured — unfeature" : "Feature"}
+                </button>
+              </form>
               <Link
                 href={`/admin/areas/${b.passport_area_id}`}
                 className="text-sm font-semibold text-slate-700 hover:underline"

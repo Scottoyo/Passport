@@ -161,3 +161,82 @@ export async function getAllPassportProducts(
   const { data } = await query.returns<PassportProduct[]>();
   return data ?? [];
 }
+
+export interface DashboardMetrics {
+  totalBusinesses: number;
+  activeBusinesses: number;
+  featuredBusinesses: number;
+  totalOffers: number;
+  activeOffers: number;
+  totalPassportHolders: number;
+  totalRedemptions: number;
+  todaysRedemptions: number;
+  thisMonthsRedemptions: number;
+  businessesPendingApproval: number;
+}
+
+// "Pending approval" has no dedicated status in the schema — this treats a
+// business still in `draft` as pending, the closest existing concept
+// (created by a manager, not yet launched by anyone with lifecycle access).
+export async function getDashboardMetrics(
+  opts: { stateId?: string } = {}
+): Promise<DashboardMetrics> {
+  const supabase = await createClient();
+
+  let businessesQuery = supabase.from("businesses").select("id, status, featured");
+  if (opts.stateId) {
+    const areaIds = await getAreaIdsForState(opts.stateId);
+    businessesQuery = businessesQuery.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
+  }
+  const { data: businessRows } = await businessesQuery;
+  const businesses = businessRows ?? [];
+  const businessIds = businesses.map((b) => b.id as string);
+
+  let offers: { status: string }[] = [];
+  if (opts.stateId) {
+    if (businessIds.length) {
+      const { data } = await supabase.from("offers").select("status").in("business_id", businessIds);
+      offers = data ?? [];
+    }
+  } else {
+    const { data } = await supabase.from("offers").select("status");
+    offers = data ?? [];
+  }
+
+  let passportsQuery = supabase.from("passports").select("id");
+  if (opts.stateId) passportsQuery = passportsQuery.eq("state_id", opts.stateId);
+  const { data: passportRows } = await passportsQuery;
+  const passports = passportRows ?? [];
+  const passportIds = passports.map((p) => p.id as string);
+
+  let redemptions: { redeemed_at: string }[] = [];
+  if (opts.stateId) {
+    if (passportIds.length) {
+      const { data } = await supabase
+        .from("redemptions")
+        .select("redeemed_at")
+        .in("passport_id", passportIds);
+      redemptions = data ?? [];
+    }
+  } else {
+    const { data } = await supabase.from("redemptions").select("redeemed_at");
+    redemptions = data ?? [];
+  }
+
+  const now = new Date();
+  const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+
+  return {
+    totalBusinesses: businesses.length,
+    activeBusinesses: businesses.filter((b) => b.status === "active").length,
+    featuredBusinesses: businesses.filter((b) => b.featured).length,
+    businessesPendingApproval: businesses.filter((b) => b.status === "draft").length,
+    totalOffers: offers.length,
+    activeOffers: offers.filter((o) => o.status === "active").length,
+    totalPassportHolders: passports.length,
+    totalRedemptions: redemptions.length,
+    todaysRedemptions: redemptions.filter((r) => new Date(r.redeemed_at) >= startOfToday).length,
+    thisMonthsRedemptions: redemptions.filter((r) => new Date(r.redeemed_at) >= startOfMonth).length,
+  };
+}

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { getCurrentUser, assignedAreaIds } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentAdminScope, getAreaIdsForState, NO_MATCH_ID } from "@/lib/admin-scope";
-import { getPassportsWithHolders } from "@/lib/admin-queries";
+import { getCurrentAdminScope } from "@/lib/admin-scope";
+import { getDashboardMetrics } from "@/lib/admin-queries";
 import type { PassportArea } from "@/lib/types/domain";
 
 export default async function AdminDashboardPage() {
@@ -13,46 +13,7 @@ export default async function AdminDashboardPage() {
 
   if (currentUser.isNationalAdmin) {
     const { state } = await getCurrentAdminScope();
-    const scopedAreaIds = state ? await getAreaIdsForState(state.id) : null;
-
-    async function countAreas(): Promise<number> {
-      if (scopedAreaIds) return scopedAreaIds.length;
-      const { count } = await supabase.from("passport_areas").select("*", { count: "exact", head: true });
-      return count ?? 0;
-    }
-
-    async function countBusinesses(): Promise<number> {
-      const query = supabase.from("businesses").select("*", { count: "exact", head: true });
-      const { count } = scopedAreaIds
-        ? await query.in("passport_area_id", scopedAreaIds.length ? scopedAreaIds : [NO_MATCH_ID])
-        : await query;
-      return count ?? 0;
-    }
-
-    async function countPendingRequests(): Promise<number> {
-      const query = supabase
-        .from("marketing_requests")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "submitted");
-      const { count } = scopedAreaIds
-        ? await query.in("passport_area_id", scopedAreaIds.length ? scopedAreaIds : [NO_MATCH_ID])
-        : await query;
-      return count ?? 0;
-    }
-
-    const areaCountPromise = countAreas();
-    const businessCountPromise = countBusinesses();
-    const pendingRequestsPromise = countPendingRequests();
-
-    const [{ count: stateCount }, areaCount, businessCount, pendingRequests, passports, expiredPassports] =
-      await Promise.all([
-        supabase.from("states").select("*", { count: "exact", head: true }),
-        areaCountPromise,
-        businessCountPromise,
-        pendingRequestsPromise,
-        getPassportsWithHolders({ stateId: state?.id }),
-        getPassportsWithHolders({ stateId: state?.id, expiredOnly: true }),
-      ]);
+    const metrics = await getDashboardMetrics({ stateId: state?.id });
 
     return (
       <div>
@@ -60,17 +21,35 @@ export default async function AdminDashboardPage() {
           National admin dashboard
           {state && <span className="font-normal text-slate-500"> &mdash; {state.name}</span>}
         </h1>
-        <div className="mt-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          <Stat label="States" value={stateCount ?? 0} />
-          <Stat label="Passport Areas" value={areaCount} />
-          <Stat label="Businesses" value={businessCount} />
-          <Stat label="Passport holders" value={passports.length} />
-          <Stat label="Expired passports" value={expiredPassports.length} />
-          <Stat label="Pending requests" value={pendingRequests} />
+        <p className="mt-1 text-slate-600">
+          System metrics, redemption performance, and administrative health
+          indicators.
+        </p>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Stat label="Total businesses" value={metrics.totalBusinesses} sub="Platform partners registered" />
+          <Stat label="Active businesses" value={metrics.activeBusinesses} sub="Currently live on site" />
+          <Stat label="Featured businesses" value={metrics.featuredBusinesses} sub="Highlighted on homepage" />
+          <Stat label="Total offers" value={metrics.totalOffers} sub="Offers configured" />
+          <Stat label="Active offers" value={metrics.activeOffers} sub="Eligible for redemption" />
+          <Stat label="Total passport holders" value={metrics.totalPassportHolders} sub="Registered consumer accounts" />
+          <Stat label="Total redemptions" value={metrics.totalRedemptions} sub="Lifetime perks redeemed" highlight />
+          <Stat label="Today's redemptions" value={metrics.todaysRedemptions} sub="Completed since midnight UTC" />
+          <Stat label="This month's redemptions" value={metrics.thisMonthsRedemptions} sub="Completed this calendar month" />
+          <Stat
+            label="Businesses pending approval"
+            value={metrics.businessesPendingApproval}
+            sub="Awaiting admin review"
+            highlight="amber"
+          />
         </div>
+
         <div className="mt-8 flex flex-wrap gap-4">
           <Link href="/admin/locations" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
             Manage states &amp; areas &rarr;
+          </Link>
+          <Link href="/admin/businesses" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
+            Review businesses &rarr;
           </Link>
           <Link href="/admin/passport-holders" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
             View passport holders &rarr;
@@ -109,11 +88,30 @@ export default async function AdminDashboardPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Stat({
+  label,
+  value,
+  sub,
+  highlight,
+}: {
+  label: string;
+  value: number;
+  sub: string;
+  highlight?: "amber" | true;
+}) {
+  const style =
+    highlight === "amber"
+      ? "border-amber-200 bg-amber-50"
+      : highlight
+        ? "border-slate-200 bg-slate-100"
+        : "border-slate-200";
+  const valueStyle = highlight === "amber" ? "text-amber-700" : "text-slate-900";
+
   return (
-    <div className="rounded-2xl border border-slate-200 p-6">
-      <p className="text-2xl font-bold text-slate-900">{value}</p>
-      <p className="text-sm text-slate-500">{label}</p>
+    <div className={`rounded-2xl border p-6 ${style}`}>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className={`mt-2 text-2xl font-bold ${valueStyle}`}>{value}</p>
+      <p className="mt-1 text-sm text-slate-500">{sub}</p>
     </div>
   );
 }

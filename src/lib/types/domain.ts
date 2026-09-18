@@ -67,6 +67,7 @@ export interface Business {
   phone: string | null;
   website_url: string | null;
   hero_image_url: string | null;
+  featured: boolean;
 }
 
 export type DiscountType =
