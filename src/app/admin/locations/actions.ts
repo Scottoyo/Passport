@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/permissions";
+import { getCurrentUser, hasStateCapability } from "@/lib/permissions";
 import type { ContentStatus } from "@/lib/types/domain";
 
 function slugify(value: string) {
@@ -17,6 +17,17 @@ async function requireNationalAdmin() {
   const currentUser = await getCurrentUser();
   if (!currentUser?.isNationalAdmin) {
     throw new Error("Only national admins can manage states and Passport Areas.");
+  }
+  return currentUser;
+}
+
+// National admins or a state manager with manage_subareas for this
+// specific state — the state-level analog of what that capability means
+// for an area manager creating subareas (creating the next level down).
+async function requireStateAccess(stateId: string) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser || !hasStateCapability(currentUser, stateId, "manage_subareas")) {
+    throw new Error("You don't have permission to manage regions in this state.");
   }
   return currentUser;
 }
@@ -55,17 +66,39 @@ export async function setStateStatus(stateId: string, status: ContentStatus) {
   revalidatePath("/admin/locations");
 }
 
-export async function createArea(formData: FormData) {
+export async function updateStateDetails(stateId: string, formData: FormData) {
   await requireNationalAdmin();
   const supabase = await createClient();
 
+  const name = String(formData.get("name") ?? "").trim();
+  const abbreviation = String(formData.get("abbreviation") ?? "").trim().toUpperCase();
+  const introCopy = String(formData.get("intro_copy") ?? "").trim();
+
+  if (!name || abbreviation.length !== 2) {
+    throw new Error("A state needs a name and a 2-letter abbreviation.");
+  }
+
+  const { error } = await supabase
+    .from("states")
+    .update({ name, abbreviation, intro_copy: introCopy || null })
+    .eq("id", stateId);
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/locations");
+}
+
+export async function createArea(formData: FormData) {
   const stateId = String(formData.get("state_id") ?? "");
+  if (!stateId) throw new Error("A Passport Area needs a state.");
+  await requireStateAccess(stateId);
+  const supabase = await createClient();
+
   const name = String(formData.get("name") ?? "").trim();
   const tagline = String(formData.get("tagline") ?? "").trim();
   const slug = slugify(name);
 
-  if (!stateId || !name) {
-    throw new Error("A Passport Area needs a state and a name.");
+  if (!name) {
+    throw new Error("A Passport Area needs a name.");
   }
 
   const { error } = await supabase
@@ -77,8 +110,14 @@ export async function createArea(formData: FormData) {
 }
 
 export async function setAreaStatus(areaId: string, status: ContentStatus) {
-  await requireNationalAdmin();
   const supabase = await createClient();
+  const { data: area } = await supabase
+    .from("passport_areas")
+    .select("state_id")
+    .eq("id", areaId)
+    .maybeSingle();
+  if (!area) throw new Error("Passport Area not found.");
+  await requireStateAccess(area.state_id);
 
   const { error } = await supabase
     .from("passport_areas")

@@ -101,6 +101,26 @@ export function canManageArea(
   return currentUser.stateAssignments.some((s) => s.state_id === stateId && hasCapability(s, capability));
 }
 
+// Pure state-level check (no area_assignments fallback) — used for things
+// scoped to the state itself, like creating a region or deciding whether
+// to show the region-manager section at all.
+export function hasStateCapability(
+  currentUser: CurrentUser,
+  stateId: string,
+  capability: AreaCapability
+): boolean {
+  if (currentUser.isNationalAdmin) return true;
+  return currentUser.stateAssignments.some((s) => s.state_id === stateId && hasCapability(s, capability));
+}
+
+// True if the user is a state manager (any capability) for this state,
+// regardless of which specific capability — used to gate visibility of the
+// region-manager roster, which any state manager can see/manage subject to
+// the per-capability ceiling enforced by RLS.
+export function isStateManager(currentUser: CurrentUser, stateId: string): boolean {
+  return currentUser.stateAssignments.some((s) => s.state_id === stateId);
+}
+
 export function assignedAreaIds(currentUser: CurrentUser): string[] {
   return [...new Set(currentUser.areaAssignments.map((a) => a.passport_area_id))];
 }

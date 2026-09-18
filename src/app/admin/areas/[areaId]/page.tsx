@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { getCurrentUser, canManageArea } from "@/lib/permissions";
+import { getCurrentUser, canManageArea, isStateManager } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import type { Business, MarketingRequest, PassportArea, Subarea } from "@/lib/types/domain";
 import { StatusBadge } from "@/components/status-badge";
@@ -52,6 +52,19 @@ export default async function AreaWorkspacePage({ params }: Props) {
     redirect("/admin");
   }
 
+  // A state manager for this area's state can manage the region-manager
+  // roster too (not just national admins) — RLS enforces the actual
+  // capability ceiling on what they can grant; this just decides whether
+  // to show the section at all.
+  const isNationalAdmin = currentUser.isNationalAdmin;
+  const canManageUsers = isNationalAdmin || isStateManager(currentUser, area.state_id);
+  const ownStateAssignment = currentUser.stateAssignments.find((s) => s.state_id === area.state_id);
+  function canGrant(key: string): boolean {
+    if (isNationalAdmin) return true;
+    if (!ownStateAssignment) return false;
+    return Boolean((ownStateAssignment as unknown as Record<string, boolean>)[key]);
+  }
+
   const [{ data: subareas }, { data: businesses }, { data: staff }, { data: requests }, { data: managers }] =
     await Promise.all([
       supabase.from("subareas").select("*").eq("passport_area_id", areaId).order("name").returns<Subarea[]>(),
@@ -75,7 +88,7 @@ export default async function AreaWorkspacePage({ params }: Props) {
             .order("created_at", { ascending: false })
             .returns<MarketingRequest[]>()
         : Promise.resolve({ data: null }),
-      currentUser.isNationalAdmin
+      canManageUsers
         ? supabase
             .from("area_assignments")
             .select(
@@ -255,13 +268,14 @@ export default async function AreaWorkspacePage({ params }: Props) {
         </section>
       )}
 
-      {currentUser.isNationalAdmin && (
+      {canManageUsers && (
         <section className="mt-8 rounded-2xl border border-slate-200 p-6">
           <h2 className="font-semibold text-slate-900">Managers &amp; franchisees</h2>
           <p className="mt-1 text-sm text-slate-500">
             Assign who can manage this area and exactly what they can do
             here. National admins always retain full access regardless of
             what&apos;s granted below.
+            {!isNationalAdmin && " You can only grant capabilities you hold yourself."}
           </p>
           <ul className="mt-3 space-y-2">
             {(
@@ -305,12 +319,23 @@ export default async function AreaWorkspacePage({ params }: Props) {
               className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
             <div className="flex flex-wrap gap-x-4 gap-y-2">
-              {CAPABILITY_FIELDS.map((f) => (
-                <label key={f.key} className="flex items-center gap-1.5 text-sm text-slate-700">
-                  <input type="checkbox" name={f.key} defaultChecked={f.key === "can_view_metrics"} />
-                  {f.label}
-                </label>
-              ))}
+              {CAPABILITY_FIELDS.map((f) => {
+                const allowed = canGrant(f.key);
+                return (
+                  <label
+                    key={f.key}
+                    className={`flex items-center gap-1.5 text-sm ${allowed ? "text-slate-700" : "text-slate-300"}`}
+                  >
+                    <input
+                      type="checkbox"
+                      name={f.key}
+                      disabled={!allowed}
+                      defaultChecked={allowed && f.key === "can_view_metrics"}
+                    />
+                    {f.label}
+                  </label>
+                );
+              })}
             </div>
             <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
               Assign manager
