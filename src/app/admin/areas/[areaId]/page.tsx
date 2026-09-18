@@ -106,7 +106,7 @@ export default async function AreaWorkspacePage({ params }: Props) {
       </div>
       <p className="mt-1 text-sm text-slate-500">
         State/area lifecycle (launch/pause) is managed by national admins under
-        States &amp; Areas.
+        States &amp; Regions.
       </p>
 
       {canSubareas && (

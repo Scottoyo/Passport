@@ -196,7 +196,7 @@ export default async function AccountPage({
             href="/passport"
             className="inline-block text-sm font-semibold text-slate-700 hover:text-slate-900"
           >
-            Get a Passport for another state &rarr;
+            Get A Passport For Another Region &rarr;
           </Link>
         </div>
       )}

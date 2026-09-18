@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getCurrentUser, hasStateCapability } from "@/lib/permissions";
+import { getCurrentUser, hasStateCapability, isStateManager } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { NO_MATCH_ID } from "@/lib/admin-scope";
 import type { PassportArea, State } from "@/lib/types/domain";
 import {
-  createState,
   setStateStatus,
   updateStateDetails,
   createArea,
@@ -13,6 +12,7 @@ import {
   addStateManager,
   removeStateManager,
 } from "./actions";
+import { addAreaManager, removeAreaManager } from "../areas/[areaId]/actions";
 import { StatusBadge } from "@/components/status-badge";
 import { Overlay } from "@/components/admin/overlay";
 
@@ -34,6 +34,10 @@ interface StateManagerRow {
   can_manage_subareas: boolean;
   can_submit_marketing_requests: boolean;
   can_manage_staff: boolean;
+}
+
+interface AreaManagerRow extends StateManagerRow {
+  passport_area_id: string;
 }
 
 export default async function LocationsAdminPage({
@@ -61,14 +65,20 @@ export default async function LocationsAdminPage({
 
   let areas: PassportArea[] = [];
   let stateManagers: StateManagerRow[] = [];
+  let areaManagersByAreaId = new Map<string, AreaManagerRow[]>();
+  const canManageUsers = selected ? isNationalAdmin || isStateManager(currentUser, selected.id) : false;
+
   if (selected) {
-    const [{ data: areaRows }, { data: mgrRows }] = await Promise.all([
-      supabase
-        .from("passport_areas")
-        .select("*")
-        .eq("state_id", selected.id)
-        .order("name")
-        .returns<PassportArea[]>(),
+    const { data: areaRows } = await supabase
+      .from("passport_areas")
+      .select("*")
+      .eq("state_id", selected.id)
+      .order("name")
+      .returns<PassportArea[]>();
+    areas = areaRows ?? [];
+    const areaIds = areas.map((a) => a.id);
+
+    const [{ data: mgrRows }, { data: areaMgrRows }] = await Promise.all([
       isNationalAdmin
         ? supabase
             .from("state_assignments")
@@ -77,9 +87,21 @@ export default async function LocationsAdminPage({
             )
             .eq("state_id", selected.id)
         : Promise.resolve({ data: null }),
+      canManageUsers && areaIds.length
+        ? supabase
+            .from("area_assignments")
+            .select(
+              "id, passport_area_id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, profiles:user_id(email)"
+            )
+            .in("passport_area_id", areaIds)
+        : Promise.resolve({ data: null }),
     ]);
-    areas = areaRows ?? [];
     stateManagers = (mgrRows ?? []) as unknown as StateManagerRow[];
+
+    const areaManagers = (areaMgrRows ?? []) as unknown as AreaManagerRow[];
+    areaManagersByAreaId = new Map(
+      areas.map((a) => [a.id, areaManagers.filter((m) => m.passport_area_id === a.id)])
+    );
   }
 
   const canEditRegions = selected ? hasStateCapability(currentUser, selected.id, "manage_subareas") : false;
@@ -87,42 +109,12 @@ export default async function LocationsAdminPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">States &amp; Passport Areas</h1>
+      <h1 className="text-2xl font-bold text-slate-900">States &amp; Regions</h1>
       <p className="mt-1 text-slate-600">
         {isNationalAdmin
           ? "Select a state to view or edit it, its regions, and its managers."
           : "Select your state to view or edit its regions and their managers."}
       </p>
-
-      {isNationalAdmin && (
-        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900">Add a state</h2>
-          <form action={createState} className="mt-4 flex flex-wrap items-end gap-3">
-            <label className="text-sm">
-              <span className="mb-1 block text-slate-600">Name</span>
-              <input
-                name="name"
-                required
-                placeholder="Georgia"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              />
-            </label>
-            <label className="text-sm">
-              <span className="mb-1 block text-slate-600">Abbreviation</span>
-              <input
-                name="abbreviation"
-                required
-                maxLength={2}
-                placeholder="GA"
-                className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm uppercase"
-              />
-            </label>
-            <button className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-700">
-              Add state
-            </button>
-          </form>
-        </section>
-      )}
 
       <ul className="mt-8 divide-y divide-slate-100 rounded-2xl border border-slate-200">
         {(states ?? []).map((state) => (
@@ -155,14 +147,17 @@ export default async function LocationsAdminPage({
               state={selected}
               areas={areas}
               stateManagers={stateManagers}
+              areaManagersByAreaId={areaManagersByAreaId}
               isNationalAdmin={isNationalAdmin}
               canEditRegions={canEditRegions}
+              canManageUsers={canManageUsers}
             />
           ) : (
             <StateViewPanel
               state={selected}
               areas={areas}
               stateManagers={stateManagers}
+              areaManagersByAreaId={areaManagersByAreaId}
               isNationalAdmin={isNationalAdmin}
               canEdit={canEdit}
             />
@@ -173,16 +168,30 @@ export default async function LocationsAdminPage({
   );
 }
 
+function ManagerBadge({ kind }: { kind: "state" | "region" }) {
+  return kind === "state" ? (
+    <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
+      State manager
+    </span>
+  ) : (
+    <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-semibold text-teal-700">
+      Region manager
+    </span>
+  );
+}
+
 function StateViewPanel({
   state,
   areas,
   stateManagers,
+  areaManagersByAreaId,
   isNationalAdmin,
   canEdit,
 }: {
   state: State;
   areas: PassportArea[];
   stateManagers: StateManagerRow[];
+  areaManagersByAreaId: Map<string, AreaManagerRow[]>;
   isNationalAdmin: boolean;
   canEdit: boolean;
 }) {
@@ -198,23 +207,39 @@ function StateViewPanel({
 
       <h3 className="mt-6 text-sm font-semibold text-slate-700">Regions</h3>
       <ul className="mt-2 divide-y divide-slate-100">
-        {areas.map((area) => (
-          <li key={area.id} className="flex items-center justify-between py-2">
-            <Link href={`/admin/areas/${area.id}`} className="text-sm font-medium text-slate-800 hover:underline">
-              {area.name}
-            </Link>
-            <StatusBadge status={area.status} />
-          </li>
-        ))}
+        {areas.map((area) => {
+          const managers = areaManagersByAreaId.get(area.id) ?? [];
+          return (
+            <li key={area.id} className="py-2">
+              <div className="flex items-center justify-between">
+                <Link href={`/admin/areas/${area.id}`} className="text-sm font-medium text-slate-800 hover:underline">
+                  {area.name}
+                </Link>
+                <StatusBadge status={area.status} />
+              </div>
+              {managers.length > 0 && (
+                <ul className="mt-1.5 space-y-1">
+                  {managers.map((m) => (
+                    <li key={m.id} className="flex items-center gap-2 text-xs text-slate-600">
+                      <ManagerBadge kind="region" />
+                      {m.profiles?.email ?? "Unknown"}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          );
+        })}
         {areas.length === 0 && <li className="py-2 text-sm text-slate-500">No regions yet.</li>}
       </ul>
 
       {isNationalAdmin && (
         <>
           <h3 className="mt-6 text-sm font-semibold text-slate-700">State managers</h3>
-          <ul className="mt-2 space-y-1">
+          <ul className="mt-2 space-y-1.5">
             {stateManagers.map((m) => (
-              <li key={m.id} className="text-sm text-slate-600">
+              <li key={m.id} className="flex items-center gap-2 text-sm text-slate-600">
+                <ManagerBadge kind="state" />
                 {m.profiles?.email ?? "Unknown"}
               </li>
             ))}
@@ -241,14 +266,18 @@ function StateEditPanel({
   state,
   areas,
   stateManagers,
+  areaManagersByAreaId,
   isNationalAdmin,
   canEditRegions,
+  canManageUsers,
 }: {
   state: State;
   areas: PassportArea[];
   stateManagers: StateManagerRow[];
+  areaManagersByAreaId: Map<string, AreaManagerRow[]>;
   isNationalAdmin: boolean;
   canEditRegions: boolean;
+  canManageUsers: boolean;
 }) {
   return (
     <div>
@@ -305,24 +334,72 @@ function StateEditPanel({
 
       <h3 className="mt-6 text-sm font-semibold text-slate-700">Regions</h3>
       <ul className="mt-2 divide-y divide-slate-100">
-        {areas.map((area) => (
-          <li key={area.id} className="flex items-center justify-between py-2">
-            <Link href={`/admin/areas/${area.id}`} className="text-sm font-medium text-slate-800 hover:underline">
-              {area.name}
-            </Link>
-            <div className="flex items-center gap-3">
-              <StatusBadge status={area.status} />
-              {canEditRegions && (
-                <StatusActions
-                  current={area.status}
-                  launch={setAreaStatus.bind(null, area.id, "active")}
-                  pause={setAreaStatus.bind(null, area.id, "paused")}
-                  draft={setAreaStatus.bind(null, area.id, "draft")}
-                />
+        {areas.map((area) => {
+          const managers = areaManagersByAreaId.get(area.id) ?? [];
+          return (
+            <li key={area.id} className="py-3">
+              <div className="flex items-center justify-between">
+                <Link href={`/admin/areas/${area.id}`} className="text-sm font-medium text-slate-800 hover:underline">
+                  {area.name}
+                </Link>
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={area.status} />
+                  {canEditRegions && (
+                    <StatusActions
+                      current={area.status}
+                      launch={setAreaStatus.bind(null, area.id, "active")}
+                      pause={setAreaStatus.bind(null, area.id, "paused")}
+                      draft={setAreaStatus.bind(null, area.id, "draft")}
+                    />
+                  )}
+                </div>
+              </div>
+
+              {canManageUsers && (
+                <div className="mt-2 rounded-lg bg-slate-50 p-3">
+                  <ul className="space-y-1.5">
+                    {managers.map((m) => (
+                      <li key={m.id} className="flex items-center justify-between gap-2">
+                        <span className="flex items-center gap-2 text-xs text-slate-600">
+                          <ManagerBadge kind="region" />
+                          {m.profiles?.email ?? "Unknown"}
+                        </span>
+                        <form action={removeAreaManager.bind(null, area.id, m.id)}>
+                          <button className="text-xs font-semibold text-red-600 hover:text-red-700">
+                            Remove
+                          </button>
+                        </form>
+                      </li>
+                    ))}
+                    {managers.length === 0 && (
+                      <li className="text-xs text-slate-500">No region managers assigned yet.</li>
+                    )}
+                  </ul>
+                  <form action={addAreaManager.bind(null, area.id)} className="mt-2 space-y-2">
+                    <input
+                      name="email"
+                      type="email"
+                      required
+                      placeholder="manager@example.com"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs"
+                    />
+                    <div className="flex flex-wrap gap-x-3 gap-y-1">
+                      {CAPABILITY_FIELDS.map((f) => (
+                        <label key={f.key} className="flex items-center gap-1 text-xs text-slate-700">
+                          <input type="checkbox" name={f.key} defaultChecked={f.key === "can_view_metrics"} />
+                          {f.label}
+                        </label>
+                      ))}
+                    </div>
+                    <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                      Add region manager
+                    </button>
+                  </form>
+                </div>
               )}
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
         {areas.length === 0 && <li className="py-2 text-sm text-slate-500">No regions yet.</li>}
       </ul>
 
@@ -361,9 +438,12 @@ function StateEditPanel({
           </p>
           <ul className="mt-2 space-y-2">
             {stateManagers.map((m) => (
-              <li key={m.id} className="rounded-lg bg-slate-50 p-3">
+              <li key={m.id} className="rounded-lg bg-indigo-50/60 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-800">{m.profiles?.email ?? "Unknown"}</span>
+                  <span className="flex items-center gap-2 text-sm font-medium text-slate-800">
+                    <ManagerBadge kind="state" />
+                    {m.profiles?.email ?? "Unknown"}
+                  </span>
                   <form action={removeStateManager.bind(null, m.id)}>
                     <button className="text-xs font-semibold text-red-600 hover:text-red-700">
                       Remove

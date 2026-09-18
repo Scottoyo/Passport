@@ -2,6 +2,6 @@
 // stable, human-looking one from its id so there's something to display
 // without adding a redundant generated identifier to the schema.
 export function formatPassportNumber(passportId: string): string {
-  const hex = passportId.replace(/-/g, "").slice(0, 12).toUpperCase();
-  return hex.match(/.{1,4}/g)?.join(" ") ?? hex;
+  const hex = passportId.replace(/-/g, "").slice(0, 9).toUpperCase();
+  return hex.match(/.{1,3}/g)?.join(" ") ?? hex;
 }

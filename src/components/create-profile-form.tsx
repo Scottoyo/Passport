@@ -11,7 +11,7 @@ export function CreateProfileForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{ signedIn: boolean } | null>(null);
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -21,29 +21,19 @@ export function CreateProfileForm() {
       const result = await createProfile(formData);
       if (result.error) {
         setError(result.error);
+      } else if (result.signedIn) {
+        router.push("/account");
       } else {
-        setSuccess({ signedIn: Boolean(result.signedIn) });
+        setNeedsEmailConfirmation(true);
       }
     });
   }
 
-  if (success) {
+  if (needsEmailConfirmation) {
     return (
       <div className="text-center">
         <h2 className="text-xl font-semibold text-slate-900">Profile created</h2>
-        {success.signedIn ? (
-          <>
-            <p className="mt-2 text-slate-600">You&apos;re all set — let&apos;s find you a Passport.</p>
-            <button
-              onClick={() => router.push("/account")}
-              className="mt-6 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
-            >
-              Go to my profile
-            </button>
-          </>
-        ) : (
-          <p className="mt-2 text-slate-600">Check your email to confirm your account before signing in.</p>
-        )}
+        <p className="mt-2 text-slate-600">Check your email to confirm your account before signing in.</p>
       </div>
     );
   }

@@ -32,24 +32,6 @@ async function requireStateAccess(stateId: string) {
   return currentUser;
 }
 
-export async function createState(formData: FormData) {
-  await requireNationalAdmin();
-  const supabase = await createClient();
-
-  const name = String(formData.get("name") ?? "").trim();
-  const abbreviation = String(formData.get("abbreviation") ?? "").trim().toUpperCase();
-  const slug = slugify(name);
-
-  if (!name || abbreviation.length !== 2) {
-    throw new Error("A state needs a name and a 2-letter abbreviation.");
-  }
-
-  const { error } = await supabase.from("states").insert({ name, slug, abbreviation });
-  if (error) throw new Error(error.message);
-
-  revalidatePath("/admin/locations");
-}
-
 export async function setStateStatus(stateId: string, status: ContentStatus) {
   await requireNationalAdmin();
   const supabase = await createClient();

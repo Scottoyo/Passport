@@ -17,24 +17,70 @@ export default async function ProfilesWithoutPassportsPage() {
         filter here — profiles aren&apos;t tied to a state.
       </p>
 
-      <ul className="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-200">
-        {profiles.map((p) => (
-          <li key={p.id} className="flex items-center justify-between gap-4 px-6 py-3">
-            <div>
-              <Link href={`/admin/passport-holders/${p.id}`} className="text-sm font-medium text-slate-900 hover:underline">
-                {p.full_name || p.email || "Unnamed"}
-              </Link>
-              <p className="text-xs text-slate-500">{p.email}</p>
-            </div>
-            <span className="text-xs text-slate-500">
-              Signed up {new Date(p.created_at).toLocaleDateString()}
-            </span>
-          </li>
-        ))}
-        {profiles.length === 0 && (
-          <li className="px-6 py-4 text-sm text-slate-500">Everyone who&apos;s signed in owns a Passport.</li>
-        )}
-      </ul>
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
+        <table className="min-w-full divide-y divide-slate-100 text-sm">
+          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr>
+              <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Contact</th>
+              <th className="px-4 py-3">Age range</th>
+              <th className="px-4 py-3">Joined</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {profiles.map((p) => (
+              <tr key={p.id}>
+                <td className="px-4 py-3">
+                  <Link
+                    href={`/admin/passport-holders/${p.id}`}
+                    className="font-medium text-slate-900 hover:underline"
+                  >
+                    {p.full_name || p.email || "Unnamed"}
+                  </Link>
+                </td>
+                <td className="px-4 py-3 text-slate-500">
+                  <p>{p.email ?? "—"}</p>
+                  <p>{p.phone ?? ""}</p>
+                </td>
+                <td className="px-4 py-3 text-slate-500">{p.age_range ?? "—"}</td>
+                <td className="px-4 py-3 text-slate-500">{new Date(p.created_at).toLocaleDateString()}</td>
+                <td className="px-4 py-3">
+                  {p.deleted_at ? (
+                    <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">
+                      Deleted
+                    </span>
+                  ) : p.suspended_at ? (
+                    <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+                      Suspended
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800">
+                      Active
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <Link
+                    href={`/admin/passport-holders/${p.id}`}
+                    className="font-semibold text-slate-700 hover:underline"
+                  >
+                    View &rarr;
+                  </Link>
+                </td>
+              </tr>
+            ))}
+            {profiles.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-4 text-sm text-slate-500">
+                  Everyone who&apos;s signed in owns a Passport.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

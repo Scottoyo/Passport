@@ -204,6 +204,7 @@ export async function addAreaManager(areaId: string, formData: FormData) {
     );
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/areas/${areaId}`);
+  revalidatePath("/admin/locations");
 }
 
 export async function removeAreaManager(areaId: string, assignmentId: string) {
@@ -212,6 +213,7 @@ export async function removeAreaManager(areaId: string, assignmentId: string) {
   const { error } = await supabase.from("area_assignments").delete().eq("id", assignmentId);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/areas/${areaId}`);
+  revalidatePath("/admin/locations");
 }
 
 export async function createMarketingRequest(areaId: string, formData: FormData) {
