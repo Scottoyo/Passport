@@ -3,6 +3,9 @@
 import type { State } from "@/lib/types/domain";
 import { setAdminScope } from "@/app/admin/scope-actions";
 
+// Caller passes `key={current?.slug ?? "national"}` — remounting on every
+// confirmed scope change is what keeps defaultValue (an *initial*-only
+// value) from ever showing a stale selection.
 export function GlobalScopeSelector({
   states,
   current,

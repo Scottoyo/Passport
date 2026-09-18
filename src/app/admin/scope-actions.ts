@@ -8,18 +8,20 @@ export async function setAdminScope(formData: FormData) {
   const slug = String(formData.get("state") ?? "");
   const cookieStore = await cookies();
 
+  // Always the same explicit path ("/", not "/admin") on every set/clear —
+  // a cookie's default path is derived from whichever URL the request that
+  // sets it was made to, which varies depending on which admin page the
+  // selector was changed from ("/admin" vs. "/admin/passport-holders" etc.
+  // don't share a default path), so relying on any default here is how the
+  // previous bug happened. Pin it to "/" so there's only ever one path.
   if (slug) {
     cookieStore.set(ADMIN_SCOPE_COOKIE, slug, {
-      path: "/admin",
+      path: "/",
       maxAge: 60 * 60 * 24 * 365,
     });
   } else {
-    // cookieStore.delete(name) clears a cookie at the default "/" path —
-    // it doesn't match (and so doesn't clear) one set at path "/admin",
-    // leaving the old selection stuck. Overwrite it at the same path
-    // with maxAge 0 instead, which reliably clears it.
     cookieStore.set(ADMIN_SCOPE_COOKIE, "", {
-      path: "/admin",
+      path: "/",
       maxAge: 0,
     });
   }

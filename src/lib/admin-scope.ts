@@ -9,7 +9,11 @@ import type { State } from "@/lib/types/domain";
 // admin/layout.tsx, rather than a per-page URL param — so it stays applied
 // as a national admin moves between Businesses, Categories, Featured
 // Offers, etc. without re-selecting it on every tab.
-export const ADMIN_SCOPE_COOKIE = "admin_scope_state";
+// Renamed (was admin_scope_state) to orphan any stale cookies left behind
+// by an earlier bug where clearing it didn't match the path it was set
+// with, so old browsers get a guaranteed-clean slate rather than a stray
+// duplicate cookie shadowing the real one.
+export const ADMIN_SCOPE_COOKIE = "admin_scope";
 
 export async function getCurrentAdminScope(): Promise<{ state: State | null }> {
   const cookieStore = await cookies();

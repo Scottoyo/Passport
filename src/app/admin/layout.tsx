@@ -54,7 +54,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             Categories, Featured Offers, Passport Holders, and the rest —
             until you change it.
           </p>
-          <GlobalScopeSelector states={allStates} current={scopeState} />
+          <GlobalScopeSelector
+            key={scopeState?.slug ?? "national"}
+            states={allStates}
+            current={scopeState}
+          />
         </div>
       )}
       <div className="flex gap-8">
