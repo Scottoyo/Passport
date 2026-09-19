@@ -12,11 +12,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* This app has no dark theme - every page is built with explicit light
+   colors (bg-white, text-slate-900, etc.). Respecting the visitor's OS
+   dark-mode preference here would flip the page background near-black
+   while those explicit text/border colors stay light-mode, producing
+   unreadable low-contrast sections. Force light unconditionally instead. */
+:root {
+  color-scheme: light;
 }
 
 body {
