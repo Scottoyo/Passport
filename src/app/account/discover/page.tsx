@@ -10,7 +10,7 @@ export default async function AccountDiscoverPage() {
   if (!user) redirect("/sign-in?next=/account/discover");
 
   const passports = await getMyPassports(user.id);
-  if (passports.length === 0) redirect("/passport");
+  if (passports.length === 0) redirect("/states");
 
   const { data: area } = await supabase
     .from("passport_areas")

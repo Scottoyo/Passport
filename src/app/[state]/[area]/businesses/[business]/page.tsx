@@ -11,6 +11,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { OfferCard, type OfferCta } from "@/components/offer-card";
 import { ShareButton } from "@/components/share-button";
+import { FavoriteButton } from "@/components/favorite-button";
 import type { BusinessHoursDay } from "@/lib/types/domain";
 import { toggleFavorite } from "./actions";
 
@@ -199,19 +200,12 @@ export default async function BusinessPage({ params }: Props) {
           </a>
         ))}
         <ShareButton path={currentPath} title={business.name} />
-        {user && (
-          <form action={toggleFavorite.bind(null, business.id, currentPath)}>
-            <button
-              className={
-                isFavorited
-                  ? "rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-700"
-                  : "rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
-              }
-            >
-              {isFavorited ? "Saved ★" : "Save"}
-            </button>
-          </form>
-        )}
+        <FavoriteButton
+          isSignedIn={Boolean(user)}
+          isFavorited={isFavorited}
+          toggleAction={toggleFavorite.bind(null, business.id, currentPath)}
+          passportHref={`/${state.slug}/${area.slug}/passport`}
+        />
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">

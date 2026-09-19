@@ -85,8 +85,7 @@ export default async function AreaPassportPage({ params, searchParams }: Props) 
         <div>
           <h3 className="font-semibold text-slate-900">Valid in {area.name}</h3>
           <p className="mt-1 text-sm text-slate-600">
-            Works at any participating business in {area.name} — not
-            other regions, even within the same state.
+            Works at any participating business in {area.name}.
           </p>
         </div>
       </div>

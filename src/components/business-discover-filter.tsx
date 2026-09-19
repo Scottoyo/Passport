@@ -13,18 +13,20 @@ export function BusinessDiscoverFilter({
   q,
   categoryId,
   categories,
+  subarea,
 }: {
   basePath: string;
   q: string;
   categoryId: string;
   categories: FilterOption[];
+  subarea?: string;
 }) {
   const router = useRouter();
 
   function submit(form: HTMLFormElement) {
     const data = new FormData(form);
     const params = new URLSearchParams();
-    for (const key of ["q", "category"]) {
+    for (const key of ["q", "category", "subarea"]) {
       const value = String(data.get(key) ?? "").trim();
       if (value) params.set(key, value);
     }
@@ -43,6 +45,7 @@ export function BusinessDiscoverFilter({
       onChange={(e) => submit(e.currentTarget)}
       className="mt-6 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 p-4"
     >
+      <input type="hidden" name="subarea" value={subarea ?? ""} />
       <label className="text-sm">
         <span className="mb-1 block text-slate-600">Search businesses</span>
         <input
@@ -66,7 +69,7 @@ export function BusinessDiscoverFilter({
       <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
         Search
       </button>
-      {(q || categoryId) && (
+      {(q || categoryId || subarea) && (
         <button
           type="button"
           onClick={() => router.push(basePath)}

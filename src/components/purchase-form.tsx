@@ -23,10 +23,10 @@ export function PurchaseForm({
   if (!isSignedIn) {
     return (
       <button
-        onClick={() => router.push(`/sign-in?next=${encodeURIComponent(next)}`)}
+        onClick={() => router.push(`/passport/create-profile?next=${encodeURIComponent(next)}`)}
         className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
       >
-        Sign in to get your Passport
+        Get Your Passport
       </button>
     );
   }

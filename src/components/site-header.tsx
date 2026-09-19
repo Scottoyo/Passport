@@ -2,9 +2,12 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/permissions";
 import { signOut } from "@/app/auth/actions";
 import { RegisterBusinessLink } from "@/components/register-business-link";
+import { hasAnyPassport } from "@/lib/queries";
 
 export async function SiteHeader() {
   const currentUser = await getCurrentUser();
+  const ownsPassport =
+    currentUser && !currentUser.isNationalAdmin ? await hasAnyPassport(currentUser.id) : false;
 
   return (
     <header className="border-b border-slate-200">
@@ -48,7 +51,7 @@ export async function SiteHeader() {
                 href="/account"
                 className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
               >
-                My Passport
+                {ownsPassport ? "My Passport" : "My Profile"}
               </Link>
               <form action={signOut}>
                 <button className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900">
@@ -80,6 +83,12 @@ export async function SiteHeader() {
                 className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
               >
                 Get Your Passport
+              </Link>
+              <Link
+                href="/create-profile"
+                className="rounded-full border border-slate-300 px-4 py-2 text-slate-700 hover:border-slate-500"
+              >
+                Create a Profile
               </Link>
               <RegisterBusinessLink className="rounded-full border border-slate-300 px-4 py-2 text-slate-700 hover:border-slate-500" />
             </div>

@@ -218,6 +218,16 @@ export async function getMyPassports(userId: string) {
   return data ?? [];
 }
 
+export async function hasAnyPassport(userId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("passports")
+    .select("id")
+    .eq("owner_user_id", userId)
+    .limit(1);
+  return Boolean(data?.length);
+}
+
 // "Does this user have a redeemable Passport for this region" — checks both
 // status and expires_at since nothing in this app sweeps status on expiry.
 export async function getActivePassportForArea(userId: string, areaId: string) {

@@ -14,7 +14,19 @@ import { BusinessDiscoverFilter } from "@/components/business-discover-filter";
 
 interface Props {
   params: Promise<{ state: string; area: string }>;
-  searchParams: Promise<{ q?: string; category?: string }>;
+  searchParams: Promise<{ q?: string; category?: string; subarea?: string }>;
+}
+
+function buildAreaFilterHref(
+  basePath: string,
+  params: { q?: string; categoryId?: string; subarea?: string }
+) {
+  const qs = new URLSearchParams();
+  if (params.q) qs.set("q", params.q);
+  if (params.categoryId) qs.set("category", params.categoryId);
+  if (params.subarea) qs.set("subarea", params.subarea);
+  const s = qs.toString();
+  return s ? `${basePath}?${s}` : basePath;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -32,12 +44,18 @@ export default async function AreaPage({ params, searchParams }: Props) {
   const area = await getAreaBySlug(state.id, areaSlug);
   if (!area) notFound();
 
-  const { q: qParam, category: categoryId } = await searchParams;
+  const { q: qParam, category: categoryId, subarea: subareaSlug } = await searchParams;
   const q = (qParam ?? "").trim();
 
-  const [subareas, businesses, categories] = await Promise.all([
-    getSubareasForArea(area.id),
-    getBusinessesForArea(area.id, { q: q || undefined, categoryId: categoryId || undefined }),
+  const subareas = await getSubareasForArea(area.id);
+  const activeSubarea = subareaSlug ? subareas.find((s) => s.slug === subareaSlug) : null;
+
+  const [businesses, categories] = await Promise.all([
+    getBusinessesForArea(area.id, {
+      q: q || undefined,
+      categoryId: categoryId || undefined,
+      subareaId: activeSubarea?.id,
+    }),
     getCategories([state.id]),
   ]);
   const primaryOffers = await getPrimaryOffersForBusinesses(businesses.map((b) => b.id));
@@ -75,11 +93,29 @@ export default async function AreaPage({ params, searchParams }: Props) {
         <section className="mt-10">
           <h2 className="text-xl font-semibold text-slate-900">Neighborhoods</h2>
           <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href={buildAreaFilterHref(`/${state.slug}/${area.slug}`, { q, categoryId })}
+              className={
+                !activeSubarea
+                  ? "rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+                  : "rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-500"
+              }
+            >
+              All Neighborhoods
+            </Link>
             {subareas.map((subarea) => (
               <Link
                 key={subarea.id}
-                href={`/${state.slug}/${area.slug}/${subarea.slug}`}
-                className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-500"
+                href={buildAreaFilterHref(`/${state.slug}/${area.slug}`, {
+                  q,
+                  categoryId,
+                  subarea: subarea.slug,
+                })}
+                className={
+                  activeSubarea?.id === subarea.id
+                    ? "rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+                    : "rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-500"
+                }
               >
                 {subarea.name}
               </Link>
@@ -90,17 +126,18 @@ export default async function AreaPage({ params, searchParams }: Props) {
 
       <section className="mt-10">
         <h2 className="text-xl font-semibold text-slate-900">
-          Participating businesses
+          {activeSubarea ? `Participating businesses in ${activeSubarea.name}` : "Participating businesses"}
         </h2>
         <BusinessDiscoverFilter
           basePath={`/${state.slug}/${area.slug}`}
           q={q}
           categoryId={categoryId ?? ""}
+          subarea={subareaSlug ?? ""}
           categories={categories.map((c) => ({ value: c.id, label: c.name }))}
         />
         {businesses.length === 0 ? (
           <p className="mt-4 text-slate-600">
-            {q || categoryId
+            {q || categoryId || activeSubarea
               ? "No businesses match your search."
               : `No businesses are live in ${area.name} yet.`}
           </p>
