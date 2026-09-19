@@ -4,17 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentAdminScope, getAreaIdsForState, narrowAreaIds, NO_MATCH_ID } from "@/lib/admin-scope";
 import { MARKETING_SERVICES, type MarketingService } from "@/lib/marketing-services";
 import type { MarketingRequest, PassportArea } from "@/lib/types/domain";
-import { updateMarketingRequestStatus } from "./actions";
+import { MarketingRequestsTable, type MarketingRequestRow } from "@/components/admin/marketing-requests-table";
 
 type Bucket = "pending" | "scheduled" | "live" | "completed" | "declined";
-
-const BUCKET_LABELS: Record<Bucket, string> = {
-  pending: "Pending",
-  scheduled: "Approved & Scheduled",
-  live: "Live",
-  completed: "Completed",
-  declined: "Declined",
-};
 
 function bucketFor(status: MarketingRequest["status"]): Bucket {
   if (status === "submitted" || status === "in_review") return "pending";
@@ -138,6 +130,19 @@ function ServiceSection({
   };
   for (const r of requests) counts[bucketFor(r.status)] += 1;
 
+  const rows: MarketingRequestRow[] = requests.map((r) => ({
+    id: r.id,
+    title: r.title,
+    details: r.details,
+    status: r.status,
+    start_date: r.start_date,
+    end_date: r.end_date,
+    admin_notes: r.admin_notes,
+    created_at: r.created_at,
+    businessName: r.business_id ? (businessNameById.get(r.business_id) ?? "Unknown business") : null,
+    areaName: areaNameById.get(r.passport_area_id) ?? "Unknown area",
+  }));
+
   return (
     <section className="mt-8">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -152,17 +157,7 @@ function ServiceSection({
         <StatChip label="Completed" value={counts.completed} />
       </div>
 
-      <div className="mt-4 space-y-4">
-        {requests.map((r) => (
-          <RequestCard
-            key={r.id}
-            request={r}
-            areaName={areaNameById.get(r.passport_area_id) ?? "Unknown area"}
-            businessName={r.business_id ? (businessNameById.get(r.business_id) ?? "Unknown business") : null}
-          />
-        ))}
-        {requests.length === 0 && <p className="text-sm text-slate-500">No requests yet.</p>}
-      </div>
+      <MarketingRequestsTable requests={rows} price={service.price} serviceLabel={service.label} />
     </section>
   );
 }
@@ -176,86 +171,3 @@ function StatChip({ label, value, highlight }: { label: string; value: number; h
   );
 }
 
-function RequestCard({
-  request: r,
-  areaName,
-  businessName,
-}: {
-  request: MarketingRequest;
-  areaName: string;
-  businessName: string | null;
-}) {
-  const bucket = bucketFor(r.status);
-  return (
-    <div className={`rounded-2xl border p-6 ${bucket === "declined" ? "border-slate-200 bg-slate-50 opacity-75" : "border-slate-200"}`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            {businessName ?? areaName}
-            {businessName ? ` · ${areaName}` : ""}
-          </p>
-          <h3 className="font-semibold text-slate-900">{r.title}</h3>
-        </div>
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-          {BUCKET_LABELS[bucket]}
-        </span>
-      </div>
-      {r.details && <p className="mt-2 text-sm text-slate-600">{r.details}</p>}
-      {(r.start_date || r.end_date) && (
-        <p className="mt-2 text-xs text-slate-500">
-          Scheduled: {r.start_date ?? "?"} &ndash; {r.end_date ?? "?"}
-        </p>
-      )}
-
-      <form action={updateMarketingRequestStatus.bind(null, r.id, "in_review")} className="mt-4 space-y-2">
-        <textarea
-          name="admin_notes"
-          defaultValue={r.admin_notes ?? ""}
-          placeholder="Notes for the requester"
-          rows={2}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        />
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            name="start_date"
-            type="date"
-            defaultValue={r.start_date ?? ""}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
-          <input
-            name="end_date"
-            type="date"
-            defaultValue={r.end_date ?? ""}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <StatusButton status="in_review" requestId={r.id} label="Mark in review" />
-          <StatusButton status="approved" requestId={r.id} label="Approve" />
-          <StatusButton status="live" requestId={r.id} label="Mark live" />
-          <StatusButton status="completed" requestId={r.id} label="Mark complete" />
-          <StatusButton status="declined" requestId={r.id} label="Decline" />
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function StatusButton({
-  status,
-  requestId,
-  label,
-}: {
-  status: MarketingRequest["status"];
-  requestId: string;
-  label: string;
-}) {
-  return (
-    <button
-      formAction={updateMarketingRequestStatus.bind(null, requestId, status)}
-      className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500"
-    >
-      {label}
-    </button>
-  );
-}
