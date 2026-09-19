@@ -12,7 +12,11 @@ export default async function AccountLayout({ children }: LayoutProps<"/account"
   if (!user) redirect("/sign-in?next=/account");
 
   const [{ data: profile }, events] = await Promise.all([
-    supabase.from("profiles").select("notifications_last_read_at").eq("id", user.id).maybeSingle<Profile>(),
+    supabase
+      .from("profiles")
+      .select("full_name, notifications_last_read_at")
+      .eq("id", user.id)
+      .maybeSingle<Profile>(),
     getRegionEventsForUser(user.id),
   ]);
 
@@ -36,7 +40,7 @@ export default async function AccountLayout({ children }: LayoutProps<"/account"
       <div className="flex gap-8">
         <aside className="w-56 shrink-0">
           <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">My Account</p>
-          <p className="mb-4 px-3 text-sm text-slate-500">{user.email}</p>
+          {profile?.full_name && <p className="mb-4 px-3 text-sm text-slate-500">{profile.full_name}</p>}
           <nav className="space-y-1 text-sm">
             {nav.map((item) => (
               <Link

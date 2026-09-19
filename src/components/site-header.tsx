@@ -39,8 +39,8 @@ export async function SiteHeader() {
               <Link href="/#states" className="hover:text-slate-900">
                 Explore States
               </Link>
-              <Link href="/passport" className="hover:text-slate-900">
-                Get the Passport
+              <Link href="/account/discover" className="hover:text-slate-900">
+                Discover
               </Link>
             </nav>
             <div className="flex items-center gap-3 text-sm font-medium">
@@ -50,6 +50,12 @@ export async function SiteHeader() {
               >
                 My Passport
               </Link>
+              <form action={signOut}>
+                <button className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900">
+                  <SignOutIcon />
+                  Log Out
+                </button>
+              </form>
             </div>
           </>
         ) : (
@@ -75,10 +81,7 @@ export async function SiteHeader() {
               >
                 Get the Passport
               </Link>
-              <Link href="/create-profile" className="hidden text-slate-600 hover:text-slate-900 lg:inline">
-                Create a Profile
-              </Link>
-              <RegisterBusinessLink className="hidden rounded-full border border-slate-300 px-4 py-2 text-slate-700 hover:border-slate-500 lg:inline" />
+              <RegisterBusinessLink className="rounded-full border border-slate-300 px-4 py-2 text-slate-700 hover:border-slate-500" />
             </div>
           </>
         )}
