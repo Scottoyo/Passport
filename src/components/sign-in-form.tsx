@@ -4,11 +4,12 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { getPostSignInRedirect } from "@/app/auth/actions";
 
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/account";
+  const explicitNext = searchParams.get("next");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
@@ -24,7 +25,11 @@ function SignInForm() {
       setErrorMessage(error.message);
       return;
     }
-    router.push(next);
+    // No explicit `next` (e.g. a deep-linked redirect back to whatever page
+    // required sign-in) - land managers on /admin, everyone else on
+    // /account, instead of always assuming a passport holder.
+    const destination = explicitNext || (await getPostSignInRedirect());
+    router.push(destination);
     router.refresh();
   }
 
