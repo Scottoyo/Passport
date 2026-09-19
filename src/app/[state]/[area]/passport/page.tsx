@@ -1,24 +1,30 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getStateBySlug, getActivePassportProductForState } from "@/lib/queries";
+import { getStateBySlug, getAreaBySlug, getActivePassportProductForArea } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { PurchaseForm } from "@/components/purchase-form";
 
-export async function generateMetadata({
-  params,
-}: PageProps<"/[state]/passport">): Promise<Metadata> {
-  const { state: stateSlug } = await params;
-  const state = await getStateBySlug(stateSlug);
-  return { title: state ? `${state.name} Passport` : "Passport" };
+interface Props {
+  params: Promise<{ state: string; area: string }>;
 }
 
-export default async function StatePassportPage({ params }: PageProps<"/[state]/passport">) {
-  const { state: stateSlug } = await params;
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { state: stateSlug, area: areaSlug } = await params;
+  const state = await getStateBySlug(stateSlug);
+  if (!state) return { title: "Passport" };
+  const area = await getAreaBySlug(state.id, areaSlug);
+  return { title: area ? `${area.name} Passport` : "Passport" };
+}
+
+export default async function AreaPassportPage({ params }: Props) {
+  const { state: stateSlug, area: areaSlug } = await params;
   const state = await getStateBySlug(stateSlug);
   if (!state) notFound();
+  const area = await getAreaBySlug(state.id, areaSlug);
+  if (!area) notFound();
 
   const [product, supabase] = await Promise.all([
-    getActivePassportProductForState(state.id),
+    getActivePassportProductForArea(area.id),
     createClient(),
   ]);
   const {
@@ -27,11 +33,11 @@ export default async function StatePassportPage({ params }: PageProps<"/[state]/
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-bold text-slate-900">The {state.name} Passport</h1>
+      <h1 className="text-3xl font-bold text-slate-900">The {area.name} Passport</h1>
       <p className="mt-4 text-lg text-slate-600">
-        One purchase unlocks every participating business in {state.name} —
-        this Passport is only valid in {state.name}. Exploring another state
-        too? You&apos;ll need a separate Passport for it.
+        One purchase unlocks every participating business in {area.name} —
+        this Passport is only valid in {area.name}. Exploring another
+        region too? You&apos;ll need a separate Passport for it.
       </p>
 
       {product ? (
@@ -51,13 +57,13 @@ export default async function StatePassportPage({ params }: PageProps<"/[state]/
             <PurchaseForm
               passportProductId={product.id}
               isSignedIn={Boolean(user)}
-              next={`/${state.slug}/passport`}
+              next={`/${state.slug}/${area.slug}/passport`}
             />
           </div>
         </div>
       ) : (
         <p className="mt-10 text-slate-600">
-          {state.name} Passport pricing isn&apos;t published yet — check back soon.
+          {area.name} Passport pricing isn&apos;t published yet — check back soon.
         </p>
       )}
 
@@ -65,8 +71,8 @@ export default async function StatePassportPage({ params }: PageProps<"/[state]/
         <div>
           <h3 className="font-semibold text-slate-900">How it works</h3>
           <p className="mt-1 text-sm text-slate-600">
-            Buy once, then browse {state.name}&apos;s Passport Areas to find
-            participating businesses and their offers.
+            Buy once, then browse {area.name} to find participating
+            businesses and their offers.
           </p>
         </div>
         <div>
@@ -77,10 +83,10 @@ export default async function StatePassportPage({ params }: PageProps<"/[state]/
           </p>
         </div>
         <div>
-          <h3 className="font-semibold text-slate-900">Valid statewide</h3>
+          <h3 className="font-semibold text-slate-900">Valid in {area.name}</h3>
           <p className="mt-1 text-sm text-slate-600">
-            Works at any participating business anywhere in {state.name} —
-            not just the area you bought it in.
+            Works at any participating business in {area.name} — not
+            other regions, even within the same state.
           </p>
         </div>
       </div>

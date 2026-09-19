@@ -16,19 +16,27 @@ export async function createPassportProduct(formData: FormData) {
   await requireNationalAdmin();
   const supabase = await createClient();
 
-  const stateId = String(formData.get("state_id") ?? "");
+  const areaId = String(formData.get("passport_area_id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const priceDollars = Number(formData.get("price") ?? 0);
   const durationDays = Number(formData.get("duration_days") ?? 365);
   const maxMembers = Number(formData.get("max_members") ?? 1);
 
-  if (!stateId || !name || !Number.isFinite(priceDollars) || priceDollars < 0) {
-    throw new Error("A Passport product needs a state, a name, and a valid price.");
+  if (!areaId || !name || !Number.isFinite(priceDollars) || priceDollars < 0) {
+    throw new Error("A Passport product needs a region, a name, and a valid price.");
   }
 
+  const { data: area, error: areaError } = await supabase
+    .from("passport_areas")
+    .select("state_id")
+    .eq("id", areaId)
+    .maybeSingle();
+  if (areaError || !area) throw new Error("That region couldn't be found.");
+
   const { error } = await supabase.from("passport_products").insert({
-    state_id: stateId,
+    passport_area_id: areaId,
+    state_id: area.state_id,
     name,
     description: description || null,
     price_cents: Math.round(priceDollars * 100),

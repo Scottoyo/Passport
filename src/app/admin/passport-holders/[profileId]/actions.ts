@@ -109,18 +109,22 @@ export async function reassignPassportState(passportId: string, profileId: strin
   await requireNationalAdmin();
   const supabase = await createClient();
   const passportProductId = String(formData.get("passport_product_id") ?? "");
-  if (!passportProductId) throw new Error("Choose a state's Passport product to reassign to.");
+  if (!passportProductId) throw new Error("Choose a region's Passport product to reassign to.");
 
   const { data: product, error: productError } = await supabase
     .from("passport_products")
-    .select("state_id")
+    .select("state_id, passport_area_id")
     .eq("id", passportProductId)
     .maybeSingle();
   if (productError || !product) throw new Error("That Passport product couldn't be found.");
 
   const { error } = await supabase
     .from("passports")
-    .update({ passport_product_id: passportProductId, state_id: product.state_id })
+    .update({
+      passport_product_id: passportProductId,
+      state_id: product.state_id,
+      passport_area_id: product.passport_area_id,
+    })
     .eq("id", passportId);
   if (error) throw new Error(error.message);
 

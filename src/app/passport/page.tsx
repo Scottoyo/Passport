@@ -1,15 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getActiveAreasWithStates, getActiveStates } from "@/lib/queries";
+import { getActiveAreasWithStates } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Get the Passport" };
 
-// Region-first picker: most visitors think in terms of their region, not
-// their state — but a Passport is still priced and purchased per state
-// (see docs/ARCHITECTURE.md), so every region here routes into
-// /[state]/passport, the same purchase page a state pick would.
+// Region-first picker: a Passport is priced and purchased per region (see
+// docs/ARCHITECTURE.md) — every region here routes into
+// /[state]/[area]/passport, the actual purchase page for that region.
 export default async function PassportChooserPage() {
-  const [areas, states] = await Promise.all([getActiveAreasWithStates(), getActiveStates()]);
+  const areas = await getActiveAreasWithStates();
 
   const areasByState = new Map<string, typeof areas>();
   for (const area of areas) {
@@ -22,8 +21,8 @@ export default async function PassportChooserPage() {
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
       <h1 className="text-3xl font-bold text-slate-900">Get the Passport</h1>
       <p className="mt-4 text-lg text-slate-600">
-        Find your region below to get started. A Passport is priced per
-        state, so picking your region takes you straight to your state&apos;s
+        Find your region below to get started — a Passport is priced and
+        sold per region, so picking yours takes you straight to its
         pricing and purchase page.
       </p>
 
@@ -40,7 +39,7 @@ export default async function PassportChooserPage() {
                 {stateAreas.map((area) => (
                   <li key={area.id}>
                     <Link
-                      href={`/${stateSlug}/passport`}
+                      href={`/${stateSlug}/${area.slug}/passport`}
                       className="flex items-center justify-between px-6 py-4 text-sm font-medium text-slate-700 hover:bg-slate-100"
                     >
                       {area.name}
@@ -56,27 +55,10 @@ export default async function PassportChooserPage() {
         </div>
       )}
 
-      <div className="mt-12 border-t border-slate-200 pt-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Don&apos;t see your region? Browse by state
-        </h2>
-        <ul className="mt-3 flex flex-wrap gap-2">
-          {states.map((state) => (
-            <li key={state.id}>
-              <Link
-                href={`/${state.slug}/passport`}
-                className="inline-block rounded-full border border-slate-300 px-4 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-500"
-              >
-                {state.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       <p className="mt-8 text-sm text-slate-500">
-        Visiting more than one state? You&apos;ll need a separate Passport
-        for each &mdash; each one only unlocks offers in its own state.
+        Visiting more than one region? You&apos;ll need a separate
+        Passport for each &mdash; each one only unlocks offers in its own
+        region.
       </p>
     </div>
   );

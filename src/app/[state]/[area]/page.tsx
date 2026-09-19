@@ -49,10 +49,10 @@ export default async function AreaPage({ params }: Props) {
       )}
 
       <Link
-        href={`/${state.slug}/passport`}
+        href={`/${state.slug}/${area.slug}/passport`}
         className="mt-6 inline-block rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
       >
-        Get the {state.name} Passport
+        Get the {area.name} Passport
       </Link>
 
       {subareas.length > 0 && (

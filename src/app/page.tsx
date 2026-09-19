@@ -12,10 +12,10 @@ export default async function HomePage() {
             A Passport for every state you explore.
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-            Each state has its own Passport — one purchase unlocks exclusive
-            offers at participating restaurants, attractions, shops, and
-            experiences all across that state. Visiting more than one?
-            Grab a Passport for each.
+            Each region has its own Passport — one purchase unlocks
+            exclusive offers at participating restaurants, attractions,
+            shops, and experiences across that region. Visiting more than
+            one? Grab a Passport for each.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <a
@@ -33,7 +33,7 @@ export default async function HomePage() {
         <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <Benefit
             title="Deep local savings"
-            body="Your state's Passport unlocks every participating business across that whole state — not just one city."
+            body="Your region's Passport unlocks every participating business across that whole region."
           />
           <Benefit
             title="Real savings, not gimmicks"

@@ -22,7 +22,7 @@ export async function startPlaceholderPassport(passportProductId: string) {
 
   const { data: product } = await supabase
     .from("passport_products")
-    .select("duration_days, state_id")
+    .select("duration_days, state_id, passport_area_id")
     .eq("id", passportProductId)
     .single();
 
@@ -37,6 +37,7 @@ export async function startPlaceholderPassport(passportProductId: string) {
     owner_user_id: user.id,
     passport_product_id: passportProductId,
     state_id: product.state_id,
+    passport_area_id: product.passport_area_id,
     status: "active",
     expires_at: expiresAt.toISOString(),
     payment_reference: "PLACEHOLDER-NO-PAYMENT-PROCESSOR",

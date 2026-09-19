@@ -22,26 +22,33 @@ import type {
 export interface PassportWithOwner extends Passport {
   owner: Profile | null;
   stateName: string | null;
+  areaName: string | null;
 }
 
 async function attachOwners(passports: Passport[]): Promise<PassportWithOwner[]> {
   const supabase = await createClient();
   const ownerIds = [...new Set(passports.map((p) => p.owner_user_id))];
   const stateIds = [...new Set(passports.map((p) => p.state_id))];
-  const [{ data: profiles }, { data: states }] = await Promise.all([
+  const areaIds = [...new Set(passports.map((p) => p.passport_area_id))];
+  const [{ data: profiles }, { data: states }, { data: areas }] = await Promise.all([
     ownerIds.length
       ? supabase.from("profiles").select("*").in("id", ownerIds).returns<Profile[]>()
       : Promise.resolve({ data: [] as Profile[] }),
     stateIds.length
       ? supabase.from("states").select("id, name").in("id", stateIds)
       : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+    areaIds.length
+      ? supabase.from("passport_areas").select("id, name").in("id", areaIds)
+      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
   ]);
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
   const stateNameById = new Map((states ?? []).map((s) => [s.id as string, s.name as string]));
+  const areaNameById = new Map((areas ?? []).map((a) => [a.id as string, a.name as string]));
   return passports.map((p) => ({
     ...p,
     owner: profileById.get(p.owner_user_id) ?? null,
     stateName: stateNameById.get(p.state_id) ?? null,
+    areaName: areaNameById.get(p.passport_area_id) ?? null,
   }));
 }
 
@@ -88,6 +95,7 @@ export async function getHolderProfile(profileId: string): Promise<Profile | nul
 
 export interface PassportWithDetails extends Passport {
   stateName: string | null;
+  areaName: string | null;
   productName: string | null;
   priceCents: number | null;
 }
@@ -106,21 +114,27 @@ export async function getPassportsForHolder(profileId: string): Promise<Passport
   const passports = data ?? [];
 
   const stateIds = [...new Set(passports.map((p) => p.state_id))];
+  const areaIds = [...new Set(passports.map((p) => p.passport_area_id))];
   const productIds = [...new Set(passports.map((p) => p.passport_product_id))];
-  const [{ data: states }, { data: products }] = await Promise.all([
+  const [{ data: states }, { data: areas }, { data: products }] = await Promise.all([
     stateIds.length
       ? supabase.from("states").select("*").in("id", stateIds).returns<State[]>()
       : Promise.resolve({ data: [] as State[] }),
+    areaIds.length
+      ? supabase.from("passport_areas").select("*").in("id", areaIds).returns<PassportArea[]>()
+      : Promise.resolve({ data: [] as PassportArea[] }),
     productIds.length
       ? supabase.from("passport_products").select("*").in("id", productIds).returns<PassportProduct[]>()
       : Promise.resolve({ data: [] as PassportProduct[] }),
   ]);
   const stateById = new Map((states ?? []).map((s) => [s.id, s]));
+  const areaById = new Map((areas ?? []).map((a) => [a.id, a]));
   const productById = new Map((products ?? []).map((p) => [p.id, p]));
 
   return passports.map((p) => ({
     ...p,
     stateName: stateById.get(p.state_id)?.name ?? null,
+    areaName: areaById.get(p.passport_area_id)?.name ?? null,
     productName: productById.get(p.passport_product_id)?.name ?? null,
     priceCents: productById.get(p.passport_product_id)?.price_cents ?? null,
   }));

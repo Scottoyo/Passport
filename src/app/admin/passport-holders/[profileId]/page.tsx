@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/permissions";
 import { getAllStatesForAdmin } from "@/lib/admin-scope";
+import { createClient } from "@/lib/supabase/server";
 import {
   getHolderProfile,
   getPassportsForHolder,
@@ -62,8 +63,15 @@ export default async function PassportHolderDetailPage({
   ]);
 
   let productsByState: { state: State; products: PassportProduct[] }[] = [];
+  let areaNameById = new Map<string, string>();
   if (currentUser.isNationalAdmin) {
-    const [allProducts, allStates] = await Promise.all([getAllPassportProducts(), getAllStatesForAdmin()]);
+    const supabase = await createClient();
+    const [allProducts, allStates, { data: allAreas }] = await Promise.all([
+      getAllPassportProducts(),
+      getAllStatesForAdmin(),
+      supabase.from("passport_areas").select("id, name"),
+    ]);
+    areaNameById = new Map((allAreas ?? []).map((a) => [a.id as string, a.name as string]));
     const productsByStateId = new Map<string, PassportProduct[]>();
     for (const product of allProducts) {
       const list = productsByStateId.get(product.state_id) ?? [];
@@ -181,14 +189,16 @@ export default async function PassportHolderDetailPage({
       <section className={cardClass}>
         <h2 className="font-semibold text-slate-900">State / Region</h2>
         <p className="mt-1 text-xs text-slate-500">
-          A Passport is valid anywhere in its state — there&apos;s no separate region scope on a Passport itself.
-          {!currentUser.isNationalAdmin && " Only a national admin can reassign a Passport to a different state."}
+          A Passport is valid only in the region it was purchased for.
+          {!currentUser.isNationalAdmin && " Only a national admin can reassign a Passport to a different region."}
         </p>
         <ul className="mt-4 divide-y divide-slate-100">
           {passports.map((p) => (
             <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div>
-                <p className="text-sm font-medium text-slate-900">{p.stateName ?? "Unknown state"}</p>
+                <p className="text-sm font-medium text-slate-900">
+                  {p.areaName ?? "Unknown region"}, {p.stateName ?? "Unknown state"}
+                </p>
                 <p className="text-xs text-slate-500">Expires {new Date(p.expires_at).toLocaleDateString()}</p>
               </div>
               {currentUser.isNationalAdmin && productsByState.length > 0 && (
@@ -198,7 +208,7 @@ export default async function PassportHolderDetailPage({
                       <optgroup key={state.id} label={state.name}>
                         {products.map((product) => (
                           <option key={product.id} value={product.id}>
-                            {product.name}
+                            {areaNameById.get(product.passport_area_id) ?? "Unknown region"} — {product.name}
                           </option>
                         ))}
                       </optgroup>

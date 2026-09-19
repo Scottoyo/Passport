@@ -6,12 +6,12 @@ const FAQS = [
   {
     question: "How does the Passport work?",
     answer:
-      "Each state has its own Passport. Buy the one for the state you're visiting, then show it at checkout at any participating business in that state to redeem their offer.",
+      "Each region has its own Passport. Buy the one for the region you're visiting, then show it at checkout at any participating business in that region to redeem their offer.",
   },
   {
-    question: "Is my Passport valid in other states?",
+    question: "Is my Passport valid in other regions?",
     answer:
-      "No — a Passport only unlocks offers in the state it was purchased for. Visiting more than one state? You'll need a separate Passport for each.",
+      "No — a Passport only unlocks offers in the region it was purchased for, even other regions in the same state. Visiting more than one region? You'll need a separate Passport for each.",
   },
   {
     question: "How many people does a Passport cover?",

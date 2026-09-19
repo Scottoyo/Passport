@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getMyPassports } from "@/lib/queries";
-import type { Profile, State } from "@/lib/types/domain";
+import type { PassportArea, Profile } from "@/lib/types/domain";
 import { updateMyProfile, updateMyPassportDates } from "./actions";
 
 export const metadata: Metadata = { title: "My Passport" };
@@ -36,11 +36,11 @@ export default async function AccountPage({
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>(),
   ]);
 
-  const stateIds = [...new Set(passports.map((p) => p.state_id))];
-  const { data: states } = stateIds.length
-    ? await supabase.from("states").select("*").in("id", stateIds).returns<State[]>()
-    : { data: [] as State[] };
-  const stateById = new Map((states ?? []).map((s) => [s.id, s]));
+  const areaIds = [...new Set(passports.map((p) => p.passport_area_id))];
+  const { data: areas } = areaIds.length
+    ? await supabase.from("passport_areas").select("*").in("id", areaIds).returns<PassportArea[]>()
+    : { data: [] as PassportArea[] };
+  const areaById = new Map((areas ?? []).map((a) => [a.id, a]));
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
@@ -133,13 +133,13 @@ export default async function AccountPage({
       ) : (
         <div className="mt-4 space-y-4">
           {passports.map((passport) => {
-            const state = stateById.get(passport.state_id);
+            const area = areaById.get(passport.passport_area_id);
             return (
               <div key={passport.id} className="rounded-2xl border border-slate-200 p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-slate-900">
-                      {state?.name ?? "Unknown state"} Passport
+                      {area?.name ?? "Unknown region"} Passport
                     </span>
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -159,7 +159,7 @@ export default async function AccountPage({
                   Purchased {new Date(passport.purchased_at).toLocaleDateString()}
                 </p>
                 <p className="mt-4 text-sm text-slate-600">
-                  Valid at any participating business in {state?.name ?? "its state"}{" "}
+                  Valid at any participating business in {area?.name ?? "its region"}{" "}
                   — show this Passport at checkout to redeem an offer.
                 </p>
 

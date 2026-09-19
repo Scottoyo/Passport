@@ -48,7 +48,9 @@ export default async function PassportHoldersPage() {
               <tr key={p.id}>
                 <td className="px-4 py-3">
                   <p className="font-medium text-slate-900">{formatPassportNumber(p.id)}</p>
-                  <p className="text-xs text-slate-500">{p.stateName ?? "Unknown state"}</p>
+                  <p className="text-xs text-slate-500">
+                    {p.areaName ?? "Unknown region"}, {p.stateName ?? "Unknown state"}
+                  </p>
                 </td>
                 <td className="px-4 py-3 text-slate-900">
                   {p.owner?.full_name || p.owner?.email || "Unknown holder"}
