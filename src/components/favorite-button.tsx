@@ -8,30 +8,58 @@ export function FavoriteButton({
   isFavorited,
   toggleAction,
   passportHref,
+  variant = "pill",
 }: {
   isSignedIn: boolean;
   isFavorited: boolean;
   toggleAction: () => Promise<void>;
   passportHref: string;
+  variant?: "pill" | "icon";
 }) {
   const [showModal, setShowModal] = useState(false);
 
-  const buttonClass = isFavorited
-    ? "rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-700"
-    : "rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500";
+  const buttonClass =
+    variant === "icon"
+      ? `flex h-9 w-9 items-center justify-center rounded-full border shadow-sm ${
+          isFavorited
+            ? "border-red-200 bg-white text-red-500"
+            : "border-slate-200 bg-white/90 text-slate-500 hover:text-red-500"
+        }`
+      : isFavorited
+        ? "rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-700"
+        : "rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500";
+
+  const label = variant === "icon" ? null : isFavorited ? "Favorited ★" : "Favorite";
+  const icon =
+    variant === "icon" ? (
+      <HeartIcon filled={isFavorited} />
+    ) : null;
 
   if (isSignedIn) {
     return (
       <form action={toggleAction}>
-        <button className={buttonClass}>{isFavorited ? "Favorited ★" : "Favorite"}</button>
+        <button type="submit" className={buttonClass} aria-label={isFavorited ? "Remove favorite" : "Add favorite"}>
+          {icon}
+          {label}
+        </button>
       </form>
     );
   }
 
   return (
     <>
-      <button type="button" className={buttonClass} onClick={() => setShowModal(true)}>
-        Favorite
+      <button
+        type="button"
+        className={buttonClass}
+        aria-label={isFavorited ? "Remove favorite" : "Add favorite"}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setShowModal(true);
+        }}
+      >
+        {icon}
+        {label}
       </button>
 
       {showModal && (
@@ -82,5 +110,24 @@ export function FavoriteButton({
         </div>
       )}
     </>
+  );
+}
+
+function HeartIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.5"
+      className="h-4 w-4"
+      aria-hidden
+    >
+      <path
+        d="M10 17.5s-6.5-4.06-6.5-8.5A3.75 3.75 0 0 1 10 6.5 3.75 3.75 0 0 1 16.5 9c0 4.44-6.5 8.5-6.5 8.5Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

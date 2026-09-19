@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser, canManageArea, getAccessibleAreaIds } from "@/lib/permissions";
-import { getCurrentAdminScope, NO_MATCH_ID } from "@/lib/admin-scope";
+import { getCurrentAdminScope, getAreaIdsForState, narrowAreaIds, NO_MATCH_ID } from "@/lib/admin-scope";
 import { getAllBusinessesNational } from "@/lib/admin-queries";
 import { getCategories } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -52,29 +52,36 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
   const featured = params.featured ?? "";
   const areaId = params.area ?? "";
 
-  const adminScope = isNationalAdmin ? (await getCurrentAdminScope()).state : null;
+  const { state: adminScopeState, area: scopeArea } = await getCurrentAdminScope();
   let scopeStateIds: string[] | undefined;
-  let scopeAreaIds: string[] | undefined;
+  // Businesses fetch scope, narrowed by region when one's selected -
+  // scopeStateIds above stays state-wide regardless (it only feeds
+  // getCategories, and categories have no region/area column).
+  let businessAreaIds: string[] | null = null;
   if (isNationalAdmin) {
-    scopeStateIds = adminScope ? [adminScope.id] : undefined;
+    const state = adminScopeState;
+    scopeStateIds = state ? [state.id] : undefined;
+    if (state) {
+      const stateAreaIds = await getAreaIdsForState(state.id);
+      businessAreaIds = narrowAreaIds(stateAreaIds, scopeArea);
+    }
   } else if (currentUser.stateAssignments.length > 0) {
     scopeStateIds = [...new Set(currentUser.stateAssignments.map((s) => s.state_id))];
+    const stateAreaIdLists = await Promise.all(scopeStateIds.map((id) => getAreaIdsForState(id)));
+    businessAreaIds = narrowAreaIds(stateAreaIdLists.flat(), scopeArea);
   } else {
-    scopeAreaIds = await getAccessibleAreaIds(currentUser);
+    const accessibleAreaIds = await getAccessibleAreaIds(currentUser);
+    businessAreaIds = narrowAreaIds(accessibleAreaIds, scopeArea);
     const supabase = await createClient();
     const { data: areaRows } = await supabase
       .from("passport_areas")
       .select("state_id")
-      .in("id", scopeAreaIds.length ? scopeAreaIds : [NO_MATCH_ID]);
+      .in("id", accessibleAreaIds.length ? accessibleAreaIds : [NO_MATCH_ID]);
     scopeStateIds = [...new Set((areaRows ?? []).map((a) => a.state_id as string))];
   }
 
   const [allBusinesses, categories] = await Promise.all([
-    isNationalAdmin
-      ? getAllBusinessesNational({ stateId: adminScope?.id })
-      : scopeAreaIds
-        ? getAllBusinessesNational({ areaIds: scopeAreaIds })
-        : getAllBusinessesNational({ stateIds: scopeStateIds }),
+    getAllBusinessesNational(businessAreaIds ? { areaIds: businessAreaIds } : {}),
     getCategories(scopeStateIds),
   ]);
 

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
-import { getCurrentAdminScope } from "@/lib/admin-scope";
+import { getCurrentAdminScope, getAreaIdsForState, narrowAreaIds } from "@/lib/admin-scope";
 import { getAllOffersNational } from "@/lib/admin-queries";
 import { setOfferFeatured } from "./actions";
 
@@ -15,9 +15,15 @@ export default async function FeaturedOffersPage() {
     redirect("/admin");
   }
 
-  const offers = currentUser.isNationalAdmin
-    ? await getAllOffersNational({ stateId: (await getCurrentAdminScope()).state?.id })
-    : await getAllOffersNational({ areaIds: await getAccessibleAreaIds(currentUser) });
+  const { state, area } = await getCurrentAdminScope();
+  const baseAreaIds = currentUser.isNationalAdmin
+    ? state
+      ? await getAreaIdsForState(state.id)
+      : null
+    : await getAccessibleAreaIds(currentUser);
+  const scopedAreaIds = baseAreaIds ? narrowAreaIds(baseAreaIds, area) : null;
+
+  const offers = await getAllOffersNational(scopedAreaIds ? { areaIds: scopedAreaIds } : {});
 
   return (
     <div>

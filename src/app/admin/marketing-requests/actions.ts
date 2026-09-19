@@ -34,10 +34,17 @@ export async function updateMarketingRequestStatus(
 
   const supabase = await createClient();
   const adminNotes = String(formData.get("admin_notes") ?? "").trim();
+  const startDate = String(formData.get("start_date") ?? "").trim();
+  const endDate = String(formData.get("end_date") ?? "").trim();
 
   const { error } = await supabase
     .from("marketing_requests")
-    .update({ status, admin_notes: adminNotes || null })
+    .update({
+      status,
+      admin_notes: adminNotes || null,
+      ...(startDate ? { start_date: startDate } : {}),
+      ...(endDate ? { end_date: endDate } : {}),
+    })
     .eq("id", requestId);
 
   if (error) throw new Error(error.message);

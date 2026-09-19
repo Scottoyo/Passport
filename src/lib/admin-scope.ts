@@ -2,7 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import type { State } from "@/lib/types/domain";
+import type { State, PassportArea } from "@/lib/types/domain";
 
 // Shared "National vs. one state" scope for the whole admin portal. It's a
 // single persistent choice (a cookie), set once from the selector in
@@ -15,18 +15,37 @@ import type { State } from "@/lib/types/domain";
 // duplicate cookie shadowing the real one.
 export const ADMIN_SCOPE_COOKIE = "admin_scope";
 
-export async function getCurrentAdminScope(): Promise<{ state: State | null }> {
+// A second, optional narrowing within the state scope above (or within a
+// manager's own accessible regions) — one specific passport_areas.id.
+// Stored by id, not slug: area slugs are only unique within a state, not
+// globally, unlike state slugs.
+export const ADMIN_SCOPE_AREA_COOKIE = "admin_scope_area";
+
+export async function getCurrentAdminScope(): Promise<{ state: State | null; area: PassportArea | null }> {
   const cookieStore = await cookies();
   const slug = cookieStore.get(ADMIN_SCOPE_COOKIE)?.value;
-  if (!slug) return { state: null };
+  const areaId = cookieStore.get(ADMIN_SCOPE_AREA_COOKIE)?.value;
 
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("states")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle<State>();
-  return { state: data ?? null };
+  const [{ data: stateData }, { data: areaData }] = await Promise.all([
+    slug
+      ? supabase.from("states").select("*").eq("slug", slug).maybeSingle<State>()
+      : Promise.resolve({ data: null }),
+    areaId
+      ? supabase.from("passport_areas").select("*").eq("id", areaId).maybeSingle<PassportArea>()
+      : Promise.resolve({ data: null }),
+  ]);
+  return { state: stateData ?? null, area: areaData ?? null };
+}
+
+// Every page that scopes by area calls this once it has its own base set of
+// area ids (a national admin's selected state's areas, or a manager's
+// accessible areas) — narrows to just the selected region when it's a real
+// member of that base set, otherwise silently ignores a stale/mismatched
+// selection (e.g. left over after switching states) rather than erroring.
+export function narrowAreaIds(baseAreaIds: string[], selectedArea: PassportArea | null): string[] {
+  if (selectedArea && baseAreaIds.includes(selectedArea.id)) return [selectedArea.id];
+  return baseAreaIds;
 }
 
 export async function getAllStatesForAdmin(): Promise<State[]> {

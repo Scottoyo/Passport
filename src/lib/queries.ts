@@ -135,7 +135,7 @@ export async function getSubareaBySlug(areaId: string, subareaSlug: string) {
 
 export async function getBusinessesForArea(
   areaId: string,
-  opts: { subareaId?: string; categoryId?: string; q?: string } = {}
+  opts: { subareaId?: string; categoryId?: string; q?: string; featured?: boolean } = {}
 ) {
   const supabase = await createClient();
   let query = supabase
@@ -146,6 +146,7 @@ export async function getBusinessesForArea(
   if (opts.subareaId) query = query.eq("subarea_id", opts.subareaId);
   if (opts.categoryId) query = query.eq("category_id", opts.categoryId);
   if (opts.q) query = query.ilike("name", `%${opts.q}%`);
+  if (opts.featured) query = query.eq("featured", true);
   const { data } = await query.returns<Business[]>();
   return data ?? [];
 }
@@ -226,6 +227,12 @@ export async function hasAnyPassport(userId: string) {
     .eq("owner_user_id", userId)
     .limit(1);
   return Boolean(data?.length);
+}
+
+export async function getFavoritedBusinessIds(userId: string): Promise<Set<string>> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("business_favorites").select("business_id").eq("user_id", userId);
+  return new Set((data ?? []).map((f) => f.business_id as string));
 }
 
 // "Does this user have a redeemable Passport for this region" — checks both
@@ -319,6 +326,16 @@ export async function getRegionEventsForUser(userId: string): Promise<RegionEven
       };
     })
     .filter((e): e is RegionEventWithDetails => e !== null);
+}
+
+export async function getNotificationsLastReadAt(userId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("notifications_last_read_at")
+    .eq("id", userId)
+    .maybeSingle();
+  return (data?.notifications_last_read_at as string | null) ?? null;
 }
 
 export interface SubareaVisitProgress {

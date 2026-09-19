@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getFavoriteBusinessesForHolder } from "@/lib/admin-queries";
 import { getPrimaryOffersForBusinesses } from "@/lib/queries";
 import { BusinessCard } from "@/components/business-card";
+import { toggleFavorite } from "@/app/[state]/[area]/businesses/[business]/actions";
 
 export default async function FavoritesPage() {
   const supabase = await createClient();
@@ -43,6 +44,12 @@ export default async function FavoritesPage() {
                 business={business}
                 href={href}
                 offer={primaryOffers.get(business.id) ?? null}
+                favorite={{
+                  isSignedIn: true,
+                  isFavorited: true,
+                  toggleAction: toggleFavorite.bind(null, business.id, "/account/favorites"),
+                  passportHref: href !== "#" ? `/${stateSlug}/${area?.slug}/passport` : "/",
+                }}
               />
             );
           })}

@@ -1,50 +1,13 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPortalBusinessAccess } from "@/lib/portal-queries";
+import { MARKETING_SERVICES } from "@/lib/marketing-services";
+import type { MarketingRequest } from "@/lib/types/domain";
 import { createBusinessMarketingRequest } from "../actions";
 
 interface Props {
   params: Promise<{ businessId: string }>;
 }
-
-const SERVICES = [
-  {
-    key: "Featured Business",
-    price: "$75.00",
-    description: "Stand out with a featured placement across the platform.",
-    features: ["Featured placement", "Increased visibility", "Priority exposure"],
-  },
-  {
-    key: "Email Marketing",
-    price: "$50.00",
-    description: "Reach Passport holders directly in their inbox.",
-    features: ["Target Passport holders", "Reach upcoming visitors", "Campaign reporting"],
-  },
-  {
-    key: "SMS Marketing",
-    price: "$50.00",
-    description: "Send targeted promotional messages to opted-in Passport holders.",
-    features: ["Reach opted-in holders", "Target relevant audiences", "Campaign reporting"],
-  },
-  {
-    key: "Sponsored Promotion",
-    price: "$40.00",
-    description: "Boost an existing promotion so it receives additional visibility.",
-    features: ["Increased visibility", "Featured placement", "Performance metrics"],
-  },
-  {
-    key: "Social Media Post",
-    price: "$60.00",
-    description: "Put your business, event, or offer in front of the platform's social audience.",
-    features: ["Dedicated social post", "Campaign scheduling", "Performance reporting"],
-  },
-  {
-    key: "Custom Campaign",
-    price: "Custom",
-    description: "Looking for something bigger? Combine multiple channels into one campaign.",
-    features: ["Featured placement", "Email", "SMS", "Sponsored promotions"],
-  },
-];
 
 export default async function PortalMarketingPage({ params }: Props) {
   const { businessId } = await params;
@@ -61,7 +24,8 @@ export default async function PortalMarketingPage({ params }: Props) {
     .from("marketing_requests")
     .select("*")
     .eq("business_id", businessId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .returns<MarketingRequest[]>();
 
   return (
     <div>
@@ -72,10 +36,10 @@ export default async function PortalMarketingPage({ params }: Props) {
       </p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {SERVICES.map((service) => (
+        {MARKETING_SERVICES.map((service) => (
           <div key={service.key} className="rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-slate-900">{service.key}</h3>
+              <h3 className="font-semibold text-slate-900">{service.label}</h3>
               <span className="text-sm font-semibold text-slate-500">{service.price}</span>
             </div>
             <p className="mt-2 text-sm text-slate-600">{service.description}</p>
@@ -135,6 +99,11 @@ export default async function PortalMarketingPage({ params }: Props) {
                 <span className="text-sm font-medium text-slate-800">{r.title}</span>
                 <span className="text-xs font-semibold capitalize text-slate-500">{r.status}</span>
               </div>
+              {(r.start_date || r.end_date) && (
+                <p className="mt-1 text-xs text-slate-500">
+                  Scheduled: {r.start_date ?? "?"} &ndash; {r.end_date ?? "?"}
+                </p>
+              )}
               {r.admin_notes && (
                 <p className="mt-1 text-xs text-slate-500">Manager note: {r.admin_notes}</p>
               )}

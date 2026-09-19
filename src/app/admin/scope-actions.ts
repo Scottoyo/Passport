@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { ADMIN_SCOPE_COOKIE } from "@/lib/admin-scope";
+import { ADMIN_SCOPE_COOKIE, ADMIN_SCOPE_AREA_COOKIE } from "@/lib/admin-scope";
 
 export async function setAdminScope(formData: FormData) {
   const slug = String(formData.get("state") ?? "");
@@ -21,6 +21,29 @@ export async function setAdminScope(formData: FormData) {
     });
   } else {
     cookieStore.set(ADMIN_SCOPE_COOKIE, "", {
+      path: "/",
+      maxAge: 0,
+    });
+  }
+
+  // Changing state always clears any region narrowing — the previously
+  // selected region almost certainly doesn't belong to the new state.
+  cookieStore.set(ADMIN_SCOPE_AREA_COOKIE, "", { path: "/", maxAge: 0 });
+
+  revalidatePath("/admin", "layout");
+}
+
+export async function setAdminAreaScope(formData: FormData) {
+  const areaId = String(formData.get("area") ?? "");
+  const cookieStore = await cookies();
+
+  if (areaId) {
+    cookieStore.set(ADMIN_SCOPE_AREA_COOKIE, areaId, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  } else {
+    cookieStore.set(ADMIN_SCOPE_AREA_COOKIE, "", {
       path: "/",
       maxAge: 0,
     });

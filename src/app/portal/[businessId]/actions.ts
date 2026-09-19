@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { MARKETING_SERVICES, type MarketingServiceType } from "@/lib/marketing-services";
 
 async function requirePortalAccess(businessId: string) {
   const supabase = await createClient();
@@ -31,13 +32,14 @@ async function requirePortalAccess(businessId: string) {
 
 export async function createBusinessMarketingRequest(
   businessId: string,
-  serviceType: string,
+  serviceType: MarketingServiceType,
   formData: FormData
 ) {
   const { user, business } = await requirePortalAccess(businessId);
   const supabase = await createClient();
 
-  const title = String(formData.get("title") ?? "").trim() || serviceType;
+  const service = MARKETING_SERVICES.find((s) => s.key === serviceType);
+  const title = service?.label ?? serviceType;
   const details = String(formData.get("details") ?? "").trim();
   const startDate = String(formData.get("start_date") ?? "").trim();
   const endDate = String(formData.get("end_date") ?? "").trim();
@@ -48,9 +50,7 @@ export async function createBusinessMarketingRequest(
   if (!details) throw new Error("Please describe what you're looking for.");
 
   const detailParts = [
-    `Service: ${serviceType}`,
     details,
-    startDate || endDate ? `Preferred dates: ${startDate || "?"} – ${endDate || "?"}` : null,
     contactName ? `Contact: ${contactName}` : null,
     contactEmail ? `Contact email: ${contactEmail}` : null,
     contactPhone ? `Contact phone: ${contactPhone}` : null,
@@ -62,6 +62,9 @@ export async function createBusinessMarketingRequest(
     requested_by: user.id,
     title,
     details: detailParts.join("\n"),
+    service_type: serviceType,
+    start_date: startDate || null,
+    end_date: endDate || null,
   });
   if (error) throw new Error(error.message);
   revalidatePath(`/portal/${businessId}/marketing`);

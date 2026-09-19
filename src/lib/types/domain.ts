@@ -203,11 +203,16 @@ export type AreaCapability =
 export interface MarketingRequest {
   id: string;
   passport_area_id: string;
+  business_id: string | null;
   requested_by: string;
   title: string;
   details: string | null;
-  status: "submitted" | "in_review" | "approved" | "declined" | "completed";
+  status: "submitted" | "in_review" | "approved" | "live" | "declined" | "completed";
+  service_type: string | null;
+  start_date: string | null;
+  end_date: string | null;
   admin_notes: string | null;
+  created_at: string;
 }
 
 export interface NotificationPreferences {

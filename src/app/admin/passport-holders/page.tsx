@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
-import { getCurrentAdminScope } from "@/lib/admin-scope";
+import { getCurrentAdminScope, getAreaIdsForState, narrowAreaIds } from "@/lib/admin-scope";
 import { getPassportsWithHolders } from "@/lib/admin-queries";
 import { formatPassportNumber } from "@/lib/format";
 import type { PassportStatus } from "@/lib/types/domain";
@@ -24,9 +24,15 @@ export default async function PassportHoldersPage() {
     redirect("/admin");
   }
 
-  const passports = currentUser.isNationalAdmin
-    ? await getPassportsWithHolders({ stateId: (await getCurrentAdminScope()).state?.id })
-    : await getPassportsWithHolders({ areaIds: await getAccessibleAreaIds(currentUser) });
+  const { state, area } = await getCurrentAdminScope();
+  const baseAreaIds = currentUser.isNationalAdmin
+    ? state
+      ? await getAreaIdsForState(state.id)
+      : null
+    : await getAccessibleAreaIds(currentUser);
+  const scopedAreaIds = baseAreaIds ? narrowAreaIds(baseAreaIds, area) : null;
+
+  const passports = await getPassportsWithHolders(scopedAreaIds ? { areaIds: scopedAreaIds } : {});
 
   return (
     <div>

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import {
@@ -108,17 +107,6 @@ export default async function BusinessPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-      <nav className="text-sm text-slate-500">
-        <Link href={`/${state.slug}`} className="hover:text-slate-700">
-          {state.name}
-        </Link>
-        <span className="mx-2">/</span>
-        <Link href={`/${state.slug}/${area.slug}`} className="hover:text-slate-700">
-          {area.name}
-        </Link>
-        <span className="mx-2">/</span>
-        <span className="text-slate-700">{business.name}</span>
-      </nav>
 
       {business.hero_image_url && (
         // eslint-disable-next-line @next/next/no-img-element

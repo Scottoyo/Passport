@@ -22,5 +22,5 @@ export default async function AccountDiscoverPage() {
   const { data: state } = await supabase.from("states").select("slug").eq("id", area.state_id).maybeSingle();
   if (!state) redirect("/");
 
-  redirect(`/${state.slug}/${area.slug}`);
+  redirect(`/${state.slug}/${area.slug}/discover`);
 }

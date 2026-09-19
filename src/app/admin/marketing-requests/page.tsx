@@ -1,9 +1,36 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentAdminScope, getAreaIdsForState, NO_MATCH_ID } from "@/lib/admin-scope";
+import { getCurrentAdminScope, getAreaIdsForState, narrowAreaIds, NO_MATCH_ID } from "@/lib/admin-scope";
+import { MARKETING_SERVICES, type MarketingService } from "@/lib/marketing-services";
 import type { MarketingRequest, PassportArea } from "@/lib/types/domain";
 import { updateMarketingRequestStatus } from "./actions";
+
+type Bucket = "pending" | "scheduled" | "live" | "completed" | "declined";
+
+const BUCKET_LABELS: Record<Bucket, string> = {
+  pending: "Pending",
+  scheduled: "Approved & Scheduled",
+  live: "Live",
+  completed: "Completed",
+  declined: "Declined",
+};
+
+function bucketFor(status: MarketingRequest["status"]): Bucket {
+  if (status === "submitted" || status === "in_review") return "pending";
+  if (status === "approved") return "scheduled";
+  if (status === "live") return "live";
+  if (status === "completed") return "completed";
+  return "declined";
+}
+
+const LEGACY_SERVICE: MarketingService = {
+  key: "custom_campaign",
+  label: "Other / Legacy",
+  price: "",
+  description: "Requests submitted before service categories were tracked.",
+  features: [],
+};
 
 export default async function MarketingRequestsAdminPage() {
   const currentUser = await getCurrentUser();
@@ -20,69 +47,196 @@ export default async function MarketingRequestsAdminPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (isNationalAdmin) {
-    const { state } = await getCurrentAdminScope();
-    if (state) {
-      const areaIds = await getAreaIdsForState(state.id);
-      requestsQuery = requestsQuery.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
-    }
-  } else {
-    const areaIds = await getAccessibleAreaIds(currentUser);
-    requestsQuery = requestsQuery.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
+  const { state, area } = await getCurrentAdminScope();
+  const baseAreaIds = isNationalAdmin
+    ? state
+      ? await getAreaIdsForState(state.id)
+      : null
+    : await getAccessibleAreaIds(currentUser);
+  if (baseAreaIds) {
+    const scopedAreaIds = narrowAreaIds(baseAreaIds, area);
+    requestsQuery = requestsQuery.in("passport_area_id", scopedAreaIds.length ? scopedAreaIds : [NO_MATCH_ID]);
   }
 
   const [{ data: requests }, { data: areas }] = await Promise.all([
     requestsQuery.returns<MarketingRequest[]>(),
     supabase.from("passport_areas").select("*").returns<PassportArea[]>(),
   ]);
+  const allRequests = requests ?? [];
+
+  const businessIds = [...new Set(allRequests.map((r) => r.business_id).filter((id): id is string => Boolean(id)))];
+  const { data: businesses } = businessIds.length
+    ? await supabase.from("businesses").select("id, name").in("id", businessIds)
+    : { data: [] as { id: string; name: string }[] };
 
   const areaNameById = new Map((areas ?? []).map((a) => [a.id, a.name]));
+  const businessNameById = new Map((businesses ?? []).map((b) => [b.id as string, b.name as string]));
+
+  const byService = new Map<string, MarketingRequest[]>();
+  const legacy: MarketingRequest[] = [];
+  for (const r of allRequests) {
+    if (r.service_type) {
+      const list = byService.get(r.service_type) ?? [];
+      list.push(r);
+      byService.set(r.service_type, list);
+    } else {
+      legacy.push(r);
+    }
+  }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Marketing requests</h1>
+      <h1 className="text-2xl font-bold text-slate-900">Marketing</h1>
       <p className="mt-1 text-slate-600">
-        Requests submitted by managers and franchisees across every Passport
-        Area.
+        Requests submitted by businesses, managers, and franchisees across every Passport Area.
       </p>
 
-      <div className="mt-8 space-y-4">
-        {(requests ?? []).map((r) => (
-          <div key={r.id} className="rounded-2xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  {areaNameById.get(r.passport_area_id) ?? "Unknown area"}
-                </p>
-                <h2 className="font-semibold text-slate-900">{r.title}</h2>
-              </div>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold capitalize text-slate-700">
-                {r.status}
-              </span>
-            </div>
-            {r.details && <p className="mt-2 text-sm text-slate-600">{r.details}</p>}
+      {MARKETING_SERVICES.map((service) => (
+        <ServiceSection
+          key={service.key}
+          service={service}
+          requests={byService.get(service.key) ?? []}
+          areaNameById={areaNameById}
+          businessNameById={businessNameById}
+        />
+      ))}
 
-            <form action={updateMarketingRequestStatus.bind(null, r.id, "in_review")} className="mt-4 flex flex-wrap items-end gap-2">
-              <textarea
-                name="admin_notes"
-                defaultValue={r.admin_notes ?? ""}
-                placeholder="Notes for the requester"
-                rows={2}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              />
-              <div className="flex gap-2">
-                <StatusButton status="in_review" requestId={r.id} label="Mark in review" />
-                <StatusButton status="approved" requestId={r.id} label="Approve" />
-                <StatusButton status="declined" requestId={r.id} label="Decline" />
-                <StatusButton status="completed" requestId={r.id} label="Mark complete" />
-              </div>
-            </form>
-          </div>
-        ))}
-        {(requests ?? []).length === 0 && (
-          <p className="text-sm text-slate-500">No marketing requests yet.</p>
-        )}
+      {legacy.length > 0 && (
+        <ServiceSection
+          service={LEGACY_SERVICE}
+          requests={legacy}
+          areaNameById={areaNameById}
+          businessNameById={businessNameById}
+        />
+      )}
+
+      <section className="mt-10 rounded-2xl border border-dashed border-slate-300 p-6">
+        <h2 className="font-semibold text-slate-900">Marketing Products</h2>
+        <p className="mt-1 text-sm text-slate-500">Coming soon.</p>
+      </section>
+    </div>
+  );
+}
+
+function ServiceSection({
+  service,
+  requests,
+  areaNameById,
+  businessNameById,
+}: {
+  service: MarketingService;
+  requests: MarketingRequest[];
+  areaNameById: Map<string, string>;
+  businessNameById: Map<string, string>;
+}) {
+  const counts: Record<Bucket, number> = {
+    pending: 0,
+    scheduled: 0,
+    live: 0,
+    completed: 0,
+    declined: 0,
+  };
+  for (const r of requests) counts[bucketFor(r.status)] += 1;
+
+  return (
+    <section className="mt-8">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-lg font-semibold text-slate-900">{service.label}</h2>
+        {service.price && <span className="text-sm font-semibold text-slate-500">{service.price}</span>}
       </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatChip label="Pending" value={counts.pending} />
+        <StatChip label="Approved &amp; Scheduled" value={counts.scheduled} />
+        <StatChip label="Live" value={counts.live} highlight />
+        <StatChip label="Completed" value={counts.completed} />
+      </div>
+
+      <div className="mt-4 space-y-4">
+        {requests.map((r) => (
+          <RequestCard
+            key={r.id}
+            request={r}
+            areaName={areaNameById.get(r.passport_area_id) ?? "Unknown area"}
+            businessName={r.business_id ? (businessNameById.get(r.business_id) ?? "Unknown business") : null}
+          />
+        ))}
+        {requests.length === 0 && <p className="text-sm text-slate-500">No requests yet.</p>}
+      </div>
+    </section>
+  );
+}
+
+function StatChip({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
+  return (
+    <div className={`rounded-xl border p-3 ${highlight && value > 0 ? "border-green-200 bg-green-50" : "border-slate-200"}`}>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className={`mt-1 text-xl font-bold ${highlight && value > 0 ? "text-green-700" : "text-slate-900"}`}>{value}</p>
+    </div>
+  );
+}
+
+function RequestCard({
+  request: r,
+  areaName,
+  businessName,
+}: {
+  request: MarketingRequest;
+  areaName: string;
+  businessName: string | null;
+}) {
+  const bucket = bucketFor(r.status);
+  return (
+    <div className={`rounded-2xl border p-6 ${bucket === "declined" ? "border-slate-200 bg-slate-50 opacity-75" : "border-slate-200"}`}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            {businessName ?? areaName}
+            {businessName ? ` · ${areaName}` : ""}
+          </p>
+          <h3 className="font-semibold text-slate-900">{r.title}</h3>
+        </div>
+        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+          {BUCKET_LABELS[bucket]}
+        </span>
+      </div>
+      {r.details && <p className="mt-2 text-sm text-slate-600">{r.details}</p>}
+      {(r.start_date || r.end_date) && (
+        <p className="mt-2 text-xs text-slate-500">
+          Scheduled: {r.start_date ?? "?"} &ndash; {r.end_date ?? "?"}
+        </p>
+      )}
+
+      <form action={updateMarketingRequestStatus.bind(null, r.id, "in_review")} className="mt-4 space-y-2">
+        <textarea
+          name="admin_notes"
+          defaultValue={r.admin_notes ?? ""}
+          placeholder="Notes for the requester"
+          rows={2}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            name="start_date"
+            type="date"
+            defaultValue={r.start_date ?? ""}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+          <input
+            name="end_date"
+            type="date"
+            defaultValue={r.end_date ?? ""}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <StatusButton status="in_review" requestId={r.id} label="Mark in review" />
+          <StatusButton status="approved" requestId={r.id} label="Approve" />
+          <StatusButton status="live" requestId={r.id} label="Mark live" />
+          <StatusButton status="completed" requestId={r.id} label="Mark complete" />
+          <StatusButton status="declined" requestId={r.id} label="Decline" />
+        </div>
+      </form>
     </div>
   );
 }

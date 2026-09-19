@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentAdminScope, NO_MATCH_ID } from "@/lib/admin-scope";
+import { getCurrentAdminScope, getAreaIdsForState, narrowAreaIds, NO_MATCH_ID } from "@/lib/admin-scope";
 import { getDashboardMetrics, getDashboardLeaderboards, type DashboardLeaderboards } from "@/lib/admin-queries";
 import type { PassportArea } from "@/lib/types/domain";
 
@@ -13,17 +13,29 @@ export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
   if (currentUser.isNationalAdmin) {
-    const { state } = await getCurrentAdminScope();
+    const { state, area } = await getCurrentAdminScope();
+    const stateAreaIds = state ? await getAreaIdsForState(state.id) : null;
+    const narrowedToArea = stateAreaIds && narrowAreaIds(stateAreaIds, area).length === 1 ? area : null;
+    // Only switch to areaIds-based scoping once actually narrowed to one
+    // region — passing {stateId} otherwise keeps getDashboardMetrics's
+    // totalPassportHolders count working (it's only computed for a stateId
+    // or fully-nationwide scope, not an areaIds one).
+    const scopeOpts = narrowedToArea ? { areaIds: [narrowedToArea.id] } : { stateId: state?.id };
     const [metrics, leaderboards] = await Promise.all([
-      getDashboardMetrics({ stateId: state?.id }),
-      getDashboardLeaderboards({ stateId: state?.id }),
+      getDashboardMetrics(scopeOpts),
+      getDashboardLeaderboards(scopeOpts),
     ]);
 
     return (
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
           Admin Dashboard
-          {state && <span className="font-normal text-slate-500"> - {state.name}</span>}
+          {state && (
+            <span className="font-normal text-slate-500">
+              {" "}
+              - {narrowedToArea ? `${narrowedToArea.name}, ${state.name}` : state.name}
+            </span>
+          )}
         </h1>
         <p className="mt-1 text-slate-600">
           System metrics, redemption performance, and administrative health
@@ -65,29 +77,40 @@ export default async function AdminDashboardPage() {
   // back to the areas-based path, which omits passport holders — passports
   // have no area column, so that count isn't well-defined below "exactly
   // one state."
+  const { area: scopeArea } = await getCurrentAdminScope();
   const accessibleAreaIds = await getAccessibleAreaIds(currentUser);
   let heading = "Your regions";
   let metrics;
   let leaderboards: DashboardLeaderboards;
+  let dashboardLabel = "Region admin dashboard";
+  let dashboardSub = "Metrics for the regions you manage.";
 
   if (currentUser.stateAssignments.length === 1 && currentUser.areaAssignments.length === 0) {
     const stateId = currentUser.stateAssignments[0].state_id;
+    const stateAreaIds = await getAreaIdsForState(stateId);
+    const narrowedToArea =
+      narrowAreaIds(stateAreaIds, scopeArea).length === 1 ? scopeArea : null;
+    // Same totalPassportHolders consideration as the national branch above.
+    const scopeOpts = narrowedToArea ? { areaIds: [narrowedToArea.id] } : { stateId };
     [metrics, leaderboards] = await Promise.all([
-      getDashboardMetrics({ stateId }),
-      getDashboardLeaderboards({ stateId }),
+      getDashboardMetrics(scopeOpts),
+      getDashboardLeaderboards(scopeOpts),
     ]);
     const { data: stateRow } = await supabase.from("states").select("name").eq("id", stateId).maybeSingle();
-    if (stateRow) heading = stateRow.name;
+    if (stateRow) heading = narrowedToArea ? `${narrowedToArea.name}, ${stateRow.name}` : stateRow.name;
+    dashboardLabel = narrowedToArea ? "Region admin dashboard" : "State admin dashboard";
+    dashboardSub = narrowedToArea ? "Metrics for the region you manage." : "Metrics for the state you manage.";
   } else {
+    const scopedAreaIds = narrowAreaIds(accessibleAreaIds, scopeArea);
     [metrics, leaderboards] = await Promise.all([
-      getDashboardMetrics({ areaIds: accessibleAreaIds }),
-      getDashboardLeaderboards({ areaIds: accessibleAreaIds }),
+      getDashboardMetrics({ areaIds: scopedAreaIds }),
+      getDashboardLeaderboards({ areaIds: scopedAreaIds }),
     ]);
-    if (accessibleAreaIds.length === 1) {
+    if (scopedAreaIds.length === 1) {
       const { data: areaRow } = await supabase
         .from("passport_areas")
         .select("name")
-        .eq("id", accessibleAreaIds[0])
+        .eq("id", scopedAreaIds[0])
         .maybeSingle();
       if (areaRow) heading = areaRow.name;
     }
@@ -103,9 +126,9 @@ export default async function AdminDashboardPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900">
-        Region admin dashboard <span className="font-normal text-slate-500">- {heading}</span>
+        {dashboardLabel} <span className="font-normal text-slate-500">- {heading}</span>
       </h1>
-      <p className="mt-1 text-slate-600">Metrics for the regions you manage.</p>
+      <p className="mt-1 text-slate-600">{dashboardSub}</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Total businesses" value={metrics.totalBusinesses} sub="Platform partners registered" />
