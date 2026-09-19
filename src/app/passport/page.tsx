@@ -21,13 +21,13 @@ export default async function PassportChooserPage() {
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
       <h1 className="text-3xl font-bold text-slate-900">Get Your Passport</h1>
       <p className="mt-4 text-lg text-slate-600">
-        Find your region below to get started — a Passport is priced and
+        Find your region below to get started - a Passport is priced and
         sold per region, so picking yours takes you straight to its
         pricing and purchase page.
       </p>
 
       {areas.length === 0 ? (
-        <p className="mt-10 text-slate-600">No regions are live yet — check back soon.</p>
+        <p className="mt-10 text-slate-600">No regions are live yet - check back soon.</p>
       ) : (
         <div className="mt-10 space-y-8">
           {[...areasByState.entries()].map(([stateSlug, stateAreas]) => (
@@ -57,7 +57,7 @@ export default async function PassportChooserPage() {
 
       <p className="mt-8 text-sm text-slate-500">
         Visiting more than one region? You&apos;ll need a separate
-        Passport for each &mdash; each one only unlocks offers in its own
+        Passport for each - each one only unlocks offers in its own
         region.
       </p>
     </div>

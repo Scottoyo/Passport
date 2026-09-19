@@ -65,8 +65,8 @@ export function StateMap({ states, perkStateIds }: { states: State[]; perkStateI
                   <title>
                     {active
                       ? perkStateIds.has(active.id)
-                        ? `${location.name} — explore Passport Areas`
-                        : `${location.name} — coming soon`
+                        ? `${location.name} - explore Passport Areas`
+                        : `${location.name} - coming soon`
                       : location.name}
                   </title>
                 </path>
@@ -77,7 +77,7 @@ export function StateMap({ states, perkStateIds }: { states: State[]; perkStateI
         <div>
           <ul className="flex flex-wrap gap-2">
             {states.length === 0 && (
-              <li className="text-sm text-slate-500">No states are live yet — check back soon.</li>
+              <li className="text-sm text-slate-500">No states are live yet - check back soon.</li>
             )}
             {states.map((state) => (
               <li key={state.id}>
@@ -141,7 +141,7 @@ function WaitlistModal({ state, onClose }: { state: State; onClose: () => void }
 
         {submitted ? (
           <p className="mt-4 text-sm text-slate-600">
-            Thanks — we&apos;ll email you when {state.name} perks are live.
+            Thanks - we&apos;ll email you when {state.name} perks are live.
           </p>
         ) : (
           <>

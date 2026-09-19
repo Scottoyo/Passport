@@ -75,7 +75,7 @@ export function RedeemOfferButton({
 
             {success ? (
               <p className="mt-4 text-sm font-semibold text-green-700">
-                Redeemed &mdash; enjoy your perk!
+                Redeemed - enjoy your perk!
               </p>
             ) : (
               <form onSubmit={handleSubmit} className="mt-4 space-y-3">

@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { getAreaIdsForState, NO_MATCH_ID } from "@/lib/admin-scope";
+import { formatPassportNumber } from "@/lib/format";
 import type {
   Business,
   BusinessFavorite,
@@ -53,7 +54,7 @@ async function attachOwners(passports: Passport[]): Promise<PassportWithOwner[]>
 }
 
 export async function getPassportsWithHolders(
-  opts: { stateId?: string; stateIds?: string[]; expiredOnly?: boolean } = {}
+  opts: { stateId?: string; stateIds?: string[]; areaIds?: string[]; expiredOnly?: boolean } = {}
 ): Promise<PassportWithOwner[]> {
   const supabase = await createClient();
   let query = supabase.from("passports").select("*").order("purchased_at", { ascending: false });
@@ -62,6 +63,8 @@ export async function getPassportsWithHolders(
     query = query.eq("state_id", opts.stateId);
   } else if (opts.stateIds) {
     query = query.in("state_id", opts.stateIds.length ? opts.stateIds : [NO_MATCH_ID]);
+  } else if (opts.areaIds) {
+    query = query.in("passport_area_id", opts.areaIds.length ? opts.areaIds : [NO_MATCH_ID]);
   }
 
   const { data } = await query.returns<Passport[]>();
@@ -220,7 +223,7 @@ async function attachLocations(businesses: Business[]): Promise<BusinessWithLoca
 }
 
 export async function getAllBusinessesNational(
-  opts: { stateId?: string; stateIds?: string[] } = {}
+  opts: { stateId?: string; stateIds?: string[]; areaIds?: string[] } = {}
 ): Promise<BusinessWithLocation[]> {
   const supabase = await createClient();
   let query = supabase.from("businesses").select("*").order("name");
@@ -232,6 +235,8 @@ export async function getAllBusinessesNational(
     const areaIdLists = await Promise.all(opts.stateIds.map((id) => getAreaIdsForState(id)));
     const areaIds = areaIdLists.flat();
     query = query.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
+  } else if (opts.areaIds) {
+    query = query.in("passport_area_id", opts.areaIds.length ? opts.areaIds : [NO_MATCH_ID]);
   }
 
   const { data } = await query.returns<Business[]>();
@@ -245,7 +250,7 @@ export interface OfferWithBusiness extends Offer {
 }
 
 export async function getAllOffersNational(
-  opts: { stateId?: string } = {}
+  opts: { stateId?: string; areaIds?: string[] } = {}
 ): Promise<OfferWithBusiness[]> {
   const supabase = await createClient();
 
@@ -256,6 +261,12 @@ export async function getAllOffersNational(
       .from("businesses")
       .select("id")
       .in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
+    businessIds = (businesses ?? []).map((b) => b.id as string);
+  } else if (opts.areaIds) {
+    const { data: businesses } = await supabase
+      .from("businesses")
+      .select("id")
+      .in("passport_area_id", opts.areaIds.length ? opts.areaIds : [NO_MATCH_ID]);
     businessIds = (businesses ?? []).map((b) => b.id as string);
   }
 
@@ -378,5 +389,182 @@ export async function getDashboardMetrics(
     totalRedemptions: redemptions.length,
     todaysRedemptions: redemptions.filter((r) => new Date(r.redeemed_at) >= startOfToday).length,
     thisMonthsRedemptions: redemptions.filter((r) => new Date(r.redeemed_at) >= startOfMonth).length,
+  };
+}
+
+export interface DashboardLeaderboards {
+  topBusinesses: { id: string; name: string; areaName: string | null; activeOfferCount: number; redemptions: number }[];
+  businessesNoRedemptions: { id: string; name: string; areaName: string | null }[];
+  topOffers: { id: string; title: string; businessName: string; redemptions: number }[];
+  offersNoRedemptions: { id: string; title: string; businessName: string }[];
+  topPassportHolders: { profileId: string; holderName: string; passportNumber: string; redemptions: number }[];
+  topGeographicAreas: { subareaId: string; name: string; businessCount: number; redemptions: number }[];
+}
+
+const LEADERBOARD_LIMIT = 10;
+
+// Six top-10 leaderboards for the admin dashboard, scoped the same way as
+// getDashboardMetrics (stateId -> getAreaIdsForState, else areaIds ?? null
+// for nationwide). No DB-side GROUP BY/RPC exists anywhere in this codebase
+// yet, so this follows the same convention getDashboardMetrics already
+// uses: fetch minimal-column scoped rows, then count/group in JS via Maps
+// built once and reused across every section.
+export async function getDashboardLeaderboards(
+  opts: { stateId?: string; areaIds?: string[] } = {}
+): Promise<DashboardLeaderboards> {
+  const supabase = await createClient();
+
+  const scopedAreaIds: string[] | null = opts.stateId
+    ? await getAreaIdsForState(opts.stateId)
+    : (opts.areaIds ?? null);
+
+  let businessesQuery = supabase
+    .from("businesses")
+    .select("id, name, status, passport_area_id, subarea_id");
+  if (scopedAreaIds) {
+    businessesQuery = businessesQuery.in("passport_area_id", scopedAreaIds.length ? scopedAreaIds : [NO_MATCH_ID]);
+  }
+  const { data: businessRows } = await businessesQuery;
+  const businesses = businessRows ?? [];
+  const businessIds = businesses.map((b) => b.id as string);
+
+  const { data: offerRows } = businessIds.length
+    ? await supabase.from("offers").select("id, business_id, title, status").in("business_id", businessIds)
+    : { data: [] as { id: string; business_id: string; title: string; status: string }[] };
+  const offers = offerRows ?? [];
+  const offerIds = offers.map((o) => o.id as string);
+
+  const { data: redemptionRows } = offerIds.length
+    ? await supabase.from("redemptions").select("offer_id, passport_id").in("offer_id", offerIds)
+    : { data: [] as { offer_id: string; passport_id: string }[] };
+  const redemptions = redemptionRows ?? [];
+
+  const areaIdsForNames = [...new Set(businesses.map((b) => b.passport_area_id as string))];
+  const { data: areaRows } = areaIdsForNames.length
+    ? await supabase.from("passport_areas").select("id, name").in("id", areaIdsForNames)
+    : { data: [] as { id: string; name: string }[] };
+  const areaNameById = new Map((areaRows ?? []).map((a) => [a.id as string, a.name as string]));
+
+  const subareaIdsForNames = [...new Set(businesses.map((b) => b.subarea_id as string | null).filter(Boolean))] as string[];
+  const { data: subareaRows } = subareaIdsForNames.length
+    ? await supabase.from("subareas").select("id, name").in("id", subareaIdsForNames)
+    : { data: [] as { id: string; name: string }[] };
+  const subareaNameById = new Map((subareaRows ?? []).map((s) => [s.id as string, s.name as string]));
+
+  const redemptionsByOffer = new Map<string, number>();
+  const redemptionsByPassport = new Map<string, number>();
+  for (const r of redemptions) {
+    const offerId = r.offer_id as string;
+    const passportId = r.passport_id as string;
+    redemptionsByOffer.set(offerId, (redemptionsByOffer.get(offerId) ?? 0) + 1);
+    redemptionsByPassport.set(passportId, (redemptionsByPassport.get(passportId) ?? 0) + 1);
+  }
+
+  const businessById = new Map(businesses.map((b) => [b.id as string, b]));
+  const redemptionsByBusiness = new Map<string, number>();
+  const activeOfferCountByBusiness = new Map<string, number>();
+  for (const o of offers) {
+    const businessId = o.business_id as string;
+    const count = redemptionsByOffer.get(o.id as string) ?? 0;
+    redemptionsByBusiness.set(businessId, (redemptionsByBusiness.get(businessId) ?? 0) + count);
+    if (o.status === "active") {
+      activeOfferCountByBusiness.set(businessId, (activeOfferCountByBusiness.get(businessId) ?? 0) + 1);
+    }
+  }
+
+  const topBusinesses = businesses
+    .map((b) => ({
+      id: b.id as string,
+      name: b.name as string,
+      areaName: areaNameById.get(b.passport_area_id as string) ?? null,
+      activeOfferCount: activeOfferCountByBusiness.get(b.id as string) ?? 0,
+      redemptions: redemptionsByBusiness.get(b.id as string) ?? 0,
+    }))
+    .filter((b) => b.redemptions > 0)
+    .sort((a, b) => b.redemptions - a.redemptions)
+    .slice(0, LEADERBOARD_LIMIT);
+
+  const businessesNoRedemptions = businesses
+    .filter((b) => b.status === "active" && (redemptionsByBusiness.get(b.id as string) ?? 0) === 0)
+    .map((b) => ({
+      id: b.id as string,
+      name: b.name as string,
+      areaName: areaNameById.get(b.passport_area_id as string) ?? null,
+    }))
+    .slice(0, LEADERBOARD_LIMIT);
+
+  const topOffers = offers
+    .map((o) => ({
+      id: o.id as string,
+      title: o.title as string,
+      businessName: (businessById.get(o.business_id as string)?.name as string) ?? "Unknown business",
+      redemptions: redemptionsByOffer.get(o.id as string) ?? 0,
+    }))
+    .filter((o) => o.redemptions > 0)
+    .sort((a, b) => b.redemptions - a.redemptions)
+    .slice(0, LEADERBOARD_LIMIT);
+
+  const offersNoRedemptions = offers
+    .filter((o) => o.status === "active" && (redemptionsByOffer.get(o.id as string) ?? 0) === 0)
+    .map((o) => ({
+      id: o.id as string,
+      title: o.title as string,
+      businessName: (businessById.get(o.business_id as string)?.name as string) ?? "Unknown business",
+    }))
+    .slice(0, LEADERBOARD_LIMIT);
+
+  const passportIds = [...redemptionsByPassport.keys()];
+  const { data: passportRows } = passportIds.length
+    ? await supabase.from("passports").select("id, owner_user_id, passport_number").in("id", passportIds)
+    : { data: [] as { id: string; owner_user_id: string; passport_number: string }[] };
+  const passports = passportRows ?? [];
+  const ownerIds = [...new Set(passports.map((p) => p.owner_user_id as string))];
+  const { data: profileRows } = ownerIds.length
+    ? await supabase.from("profiles").select("id, full_name, email").in("id", ownerIds)
+    : { data: [] as { id: string; full_name: string | null; email: string | null }[] };
+  const profileById = new Map((profileRows ?? []).map((p) => [p.id as string, p]));
+
+  const topPassportHolders = passports
+    .map((p) => {
+      const owner = profileById.get(p.owner_user_id as string);
+      return {
+        profileId: p.owner_user_id as string,
+        holderName: owner?.full_name || owner?.email || "Unknown holder",
+        passportNumber: formatPassportNumber(p.passport_number as string),
+        redemptions: redemptionsByPassport.get(p.id as string) ?? 0,
+      };
+    })
+    .sort((a, b) => b.redemptions - a.redemptions)
+    .slice(0, LEADERBOARD_LIMIT);
+
+  const businessCountBySubarea = new Map<string, number>();
+  const redemptionsBySubarea = new Map<string, number>();
+  for (const b of businesses) {
+    const subareaId = b.subarea_id as string | null;
+    if (!subareaId) continue;
+    businessCountBySubarea.set(subareaId, (businessCountBySubarea.get(subareaId) ?? 0) + 1);
+    redemptionsBySubarea.set(
+      subareaId,
+      (redemptionsBySubarea.get(subareaId) ?? 0) + (redemptionsByBusiness.get(b.id as string) ?? 0)
+    );
+  }
+
+  const topGeographicAreas = [...businessCountBySubarea.keys()]
+    .map((subareaId) => ({
+      subareaId,
+      name: subareaNameById.get(subareaId) ?? "Unknown area",
+      businessCount: businessCountBySubarea.get(subareaId) ?? 0,
+      redemptions: redemptionsBySubarea.get(subareaId) ?? 0,
+    }))
+    .sort((a, b) => b.redemptions - a.redemptions || b.businessCount - a.businessCount)
+    .slice(0, LEADERBOARD_LIMIT);
+
+  return {
+    topBusinesses,
+    businessesNoRedemptions,
+    topOffers,
+    offersNoRedemptions,
+    topPassportHolders,
+    topGeographicAreas,
   };
 }

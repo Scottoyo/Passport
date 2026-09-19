@@ -82,7 +82,7 @@ export default async function BusinessPage({ params }: Props) {
 
   const activePassport = user ? await getActivePassportForArea(user.id, area.id) : null;
   const cta: OfferCta = activePassport
-    ? { type: "redeem", passportNumber: activePassport.id }
+    ? { type: "redeem", passportNumber: activePassport.passport_number }
     : { type: "get-passport", href: `/${state.slug}/${area.slug}/passport` };
 
   const address = [business.address_line1, business.address_line2, business.city, business.state_code, business.postal_code]
@@ -223,7 +223,7 @@ export default async function BusinessPage({ params }: Props) {
           <section className="mt-8">
             <h2 className="text-xl font-semibold text-slate-900">Passport offers</h2>
             {offers.length === 0 ? (
-              <p className="mt-2 text-slate-600">No active offers right now — check back soon.</p>
+              <p className="mt-2 text-slate-600">No active offers right now - check back soon.</p>
             ) : (
               <div className="mt-4 space-y-4">
                 {offers.map((offer) => (
@@ -311,7 +311,7 @@ export default async function BusinessPage({ params }: Props) {
                 <p className="mt-3 text-xs text-slate-500">Weather permitting.</p>
               )}
               {business.call_for_appointment && (
-                <p className="mt-1 text-xs text-slate-500">By appointment only — please call ahead.</p>
+                <p className="mt-1 text-xs text-slate-500">By appointment only - please call ahead.</p>
               )}
             </section>
           )}

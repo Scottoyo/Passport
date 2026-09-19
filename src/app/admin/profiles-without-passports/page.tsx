@@ -14,7 +14,7 @@ export default async function ProfilesWithoutPassportsPage() {
       <h1 className="text-2xl font-bold text-slate-900">Profiles without Passports</h1>
       <p className="mt-1 text-slate-600">
         Signed-in accounts that have never purchased a Passport. No state
-        filter here — profiles aren&apos;t tied to a state.
+        filter here - profiles aren&apos;t tied to a state.
       </p>
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
@@ -41,10 +41,10 @@ export default async function ProfilesWithoutPassportsPage() {
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-slate-500">
-                  <p>{p.email ?? "—"}</p>
+                  <p>{p.email ?? "-"}</p>
                   <p>{p.phone ?? ""}</p>
                 </td>
-                <td className="px-4 py-3 text-slate-500">{p.age_range ?? "—"}</td>
+                <td className="px-4 py-3 text-slate-500">{p.age_range ?? "-"}</td>
                 <td className="px-4 py-3 text-slate-500">{new Date(p.created_at).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
                   {p.deleted_at ? (

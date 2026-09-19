@@ -37,7 +37,7 @@ export default async function AreaPassportPage({ params, searchParams }: Props) 
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
       <h1 className="text-3xl font-bold text-slate-900">The {area.name} Passport</h1>
       <p className="mt-4 text-lg text-slate-600">
-        One purchase unlocks every participating business in {area.name} —
+        One purchase unlocks every participating business in {area.name} -
         this Passport is only valid in {area.name}. Exploring another
         region too? You&apos;ll need a separate Passport for it.
       </p>
@@ -63,7 +63,7 @@ export default async function AreaPassportPage({ params, searchParams }: Props) 
         </div>
       ) : (
         <p className="mt-10 text-slate-600">
-          {area.name} Passport pricing isn&apos;t published yet — check back soon.
+          {area.name} Passport pricing isn&apos;t published yet - check back soon.
         </p>
       )}
 

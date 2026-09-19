@@ -11,12 +11,12 @@ const FAQS = [
   {
     question: "Is my Passport valid in other regions?",
     answer:
-      "No — a Passport only unlocks offers in the region it was purchased for, even other regions in the same state. Visiting more than one region? You'll need a separate Passport for each.",
+      "No - a Passport only unlocks offers in the region it was purchased for, even other regions in the same state. Visiting more than one region? You'll need a separate Passport for each.",
   },
   {
     question: "How many people does a Passport cover?",
     answer:
-      "It depends on the product you choose — some cover just one person, others cover a group. The exact number is shown on the purchase page before you buy.",
+      "It depends on the product you choose - some cover just one person, others cover a group. The exact number is shown on the purchase page before you buy.",
   },
   {
     question: "How long is a Passport valid for?",
@@ -29,7 +29,7 @@ const FAQS = [
       "Show your digital Passport at checkout at any participating business. Staff will check you in and apply the offer.",
   },
   {
-    question: "I'm a business owner — how do I get listed?",
+    question: "I'm a business owner - how do I get listed?",
     answer:
       "Reach out through our business registration process to get your business reviewed and added to the Passport.",
   },

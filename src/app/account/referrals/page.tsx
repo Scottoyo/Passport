@@ -84,7 +84,7 @@ export default async function AccountReferralsPage() {
         </div>
         <div className="rounded-2xl border border-slate-200 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Your code</p>
-          <p className="mt-1 text-lg font-bold text-slate-900">{profile?.referral_code ?? "—"}</p>
+          <p className="mt-1 text-lg font-bold text-slate-900">{profile?.referral_code ?? "-"}</p>
         </div>
       </div>
     </div>

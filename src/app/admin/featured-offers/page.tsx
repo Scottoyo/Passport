@@ -1,15 +1,23 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/permissions";
+import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
 import { getCurrentAdminScope } from "@/lib/admin-scope";
 import { getAllOffersNational } from "@/lib/admin-queries";
 import { setOfferFeatured } from "./actions";
 
 export default async function FeaturedOffersPage() {
   const currentUser = await getCurrentUser();
-  if (!currentUser?.isNationalAdmin) redirect("/admin");
+  if (!currentUser) redirect("/sign-in?next=/admin/featured-offers");
+  if (
+    !currentUser.isNationalAdmin &&
+    currentUser.stateAssignments.length === 0 &&
+    currentUser.areaAssignments.length === 0
+  ) {
+    redirect("/admin");
+  }
 
-  const { state } = await getCurrentAdminScope();
-  const offers = await getAllOffersNational({ stateId: state?.id });
+  const offers = currentUser.isNationalAdmin
+    ? await getAllOffersNational({ stateId: (await getCurrentAdminScope()).state?.id })
+    : await getAllOffersNational({ areaIds: await getAccessibleAreaIds(currentUser) });
 
   return (
     <div>
@@ -38,7 +46,7 @@ export default async function FeaturedOffersPage() {
                     : "rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500"
                 }
               >
-                {o.featured ? "Featured — unfeature" : "Feature"}
+                {o.featured ? "Featured - unfeature" : "Feature"}
               </button>
             </form>
           </li>

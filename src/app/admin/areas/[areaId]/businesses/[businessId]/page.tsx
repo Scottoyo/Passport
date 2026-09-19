@@ -245,7 +245,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
               <div>
                 <dt className="text-slate-500">Category</dt>
                 <dd className="text-slate-900">
-                  {categoryList.find((c) => c.id === business.category_id)?.name ?? "—"}
+                  {categoryList.find((c) => c.id === business.category_id)?.name ?? "-"}
                 </dd>
               </div>
               <div>
@@ -254,11 +254,11 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-slate-500">Short description</dt>
-                <dd className="text-slate-900">{business.short_description || "—"}</dd>
+                <dd className="text-slate-900">{business.short_description || "-"}</dd>
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-slate-500">Description</dt>
-                <dd className="whitespace-pre-wrap text-slate-900">{business.description || "—"}</dd>
+                <dd className="whitespace-pre-wrap text-slate-900">{business.description || "-"}</dd>
               </div>
             </dl>
           </section>
@@ -271,20 +271,20 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                 <dd className="text-slate-900">
                   {[business.address_line1, business.address_line2, business.city, business.state_code, business.postal_code]
                     .filter(Boolean)
-                    .join(", ") || "—"}
+                    .join(", ") || "-"}
                 </dd>
               </div>
               <div>
                 <dt className="text-slate-500">Phone</dt>
-                <dd className="text-slate-900">{business.phone || "—"}</dd>
+                <dd className="text-slate-900">{business.phone || "-"}</dd>
               </div>
               <div>
                 <dt className="text-slate-500">Email</dt>
-                <dd className="text-slate-900">{business.email || "—"}</dd>
+                <dd className="text-slate-900">{business.email || "-"}</dd>
               </div>
               <div>
                 <dt className="text-slate-500">Website</dt>
-                <dd className="text-slate-900">{business.website_url || "—"}</dd>
+                <dd className="text-slate-900">{business.website_url || "-"}</dd>
               </div>
             </dl>
           </section>
@@ -295,7 +295,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
               {SOCIAL_FIELDS.map((f) => (
                 <li key={f.key} className="flex gap-2">
                   <span className="w-24 text-slate-500">{f.label}</span>
-                  <span className="text-slate-900">{(business[f.key] as string | null) || "—"}</span>
+                  <span className="text-slate-900">{(business[f.key] as string | null) || "-"}</span>
                 </li>
               ))}
             </ul>
@@ -421,7 +421,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                     >
                       {reassignAreas.map((a) => (
                         <option key={a.id} value={a.id}>
-                          {a.name} — {a.stateName}
+                          {a.name} - {a.stateName}
                         </option>
                       ))}
                     </select>
@@ -647,7 +647,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
               <h2 className="font-semibold text-slate-900">Redemption code</h2>
               <p className="mt-1 text-sm text-slate-500">
                 Staff use this code to authorize a redemption in person. There&apos;s no scan/verify
-                screen yet — this just generates and displays the code.
+                screen yet - this just generates and displays the code.
               </p>
               <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                 <div>
@@ -659,7 +659,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                   <dd className="text-slate-900">
                     {business.redemption_code_updated_at
                       ? new Date(business.redemption_code_updated_at).toLocaleString()
-                      : "—"}
+                      : "-"}
                   </dd>
                 </div>
                 <div>

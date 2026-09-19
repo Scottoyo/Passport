@@ -106,7 +106,7 @@ export async function portalAddStaff(businessId: string, formData: FormData) {
     lookup_email: email,
   });
   if (!profileId) {
-    throw new Error(`No account found for ${email} yet — ask them to sign in once first, then add them.`);
+    throw new Error(`No account found for ${email} yet - ask them to sign in once first, then add them.`);
   }
 
   const { error } = await supabase.from("local_staff").insert({

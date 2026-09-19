@@ -143,6 +143,7 @@ export type PassportStatus = "active" | "expired" | "revoked";
 
 export interface Passport {
   id: string;
+  passport_number: string;
   owner_user_id: string;
   passport_product_id: string;
   state_id: string;

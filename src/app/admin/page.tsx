@@ -1,8 +1,9 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAdminScope, NO_MATCH_ID } from "@/lib/admin-scope";
-import { getDashboardMetrics } from "@/lib/admin-queries";
+import { getDashboardMetrics, getDashboardLeaderboards, type DashboardLeaderboards } from "@/lib/admin-queries";
 import type { PassportArea } from "@/lib/types/domain";
 
 export default async function AdminDashboardPage() {
@@ -13,13 +14,16 @@ export default async function AdminDashboardPage() {
 
   if (currentUser.isNationalAdmin) {
     const { state } = await getCurrentAdminScope();
-    const metrics = await getDashboardMetrics({ stateId: state?.id });
+    const [metrics, leaderboards] = await Promise.all([
+      getDashboardMetrics({ stateId: state?.id }),
+      getDashboardLeaderboards({ stateId: state?.id }),
+    ]);
 
     return (
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
           Admin Dashboard
-          {state && <span className="font-normal text-slate-500"> &mdash; {state.name}</span>}
+          {state && <span className="font-normal text-slate-500"> - {state.name}</span>}
         </h1>
         <p className="mt-1 text-slate-600">
           System metrics, redemption performance, and administrative health
@@ -47,6 +51,8 @@ export default async function AdminDashboardPage() {
             highlight="amber"
           />
         </div>
+
+        <Leaderboards leaderboards={leaderboards} />
       </div>
     );
   }
@@ -62,14 +68,21 @@ export default async function AdminDashboardPage() {
   const accessibleAreaIds = await getAccessibleAreaIds(currentUser);
   let heading = "Your regions";
   let metrics;
+  let leaderboards: DashboardLeaderboards;
 
   if (currentUser.stateAssignments.length === 1 && currentUser.areaAssignments.length === 0) {
     const stateId = currentUser.stateAssignments[0].state_id;
-    metrics = await getDashboardMetrics({ stateId });
+    [metrics, leaderboards] = await Promise.all([
+      getDashboardMetrics({ stateId }),
+      getDashboardLeaderboards({ stateId }),
+    ]);
     const { data: stateRow } = await supabase.from("states").select("name").eq("id", stateId).maybeSingle();
     if (stateRow) heading = stateRow.name;
   } else {
-    metrics = await getDashboardMetrics({ areaIds: accessibleAreaIds });
+    [metrics, leaderboards] = await Promise.all([
+      getDashboardMetrics({ areaIds: accessibleAreaIds }),
+      getDashboardLeaderboards({ areaIds: accessibleAreaIds }),
+    ]);
     if (accessibleAreaIds.length === 1) {
       const { data: areaRow } = await supabase
         .from("passport_areas")
@@ -90,7 +103,7 @@ export default async function AdminDashboardPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900">
-        Region admin dashboard <span className="font-normal text-slate-500">&mdash; {heading}</span>
+        Region admin dashboard <span className="font-normal text-slate-500">- {heading}</span>
       </h1>
       <p className="mt-1 text-slate-600">Metrics for the regions you manage.</p>
 
@@ -121,6 +134,8 @@ export default async function AdminDashboardPage() {
           highlight="amber"
         />
       </div>
+
+      <Leaderboards leaderboards={leaderboards} />
 
       <h2 className="mt-10 text-lg font-semibold text-slate-900">Your regions</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -166,6 +181,116 @@ function Stat({
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
       <p className={`mt-2 text-2xl font-bold ${valueStyle}`}>{value}</p>
       <p className="mt-1 text-sm text-slate-500">{sub}</p>
+    </div>
+  );
+}
+
+function Leaderboards({ leaderboards }: { leaderboards: DashboardLeaderboards }) {
+  return (
+    <div className="mt-10 grid gap-8 lg:grid-cols-2">
+      <LeaderboardCard title="Top businesses" description="Ranked by total redemptions completed.">
+        {leaderboards.topBusinesses.map((b, i) => (
+          <li key={b.id} className="flex items-center justify-between gap-4 px-6 py-3">
+            <div>
+              <p className="text-sm font-medium text-slate-900">
+                #{i + 1} {b.name}
+              </p>
+              <p className="text-xs text-slate-500">
+                {b.areaName ?? "Unknown area"} &middot; {b.activeOfferCount} active offer
+                {b.activeOfferCount === 1 ? "" : "s"}
+              </p>
+            </div>
+            <p className="text-sm font-semibold text-slate-900">{b.redemptions}</p>
+          </li>
+        ))}
+      </LeaderboardCard>
+
+      <LeaderboardCard title="Businesses with no redemptions" description="Active businesses that haven't had a redemption yet.">
+        {leaderboards.businessesNoRedemptions.map((b) => (
+          <li key={b.id} className="flex items-center justify-between gap-4 px-6 py-3">
+            <p className="text-sm font-medium text-slate-900">{b.name}</p>
+            <p className="text-xs text-slate-500">{b.areaName ?? "Unknown area"}</p>
+          </li>
+        ))}
+      </LeaderboardCard>
+
+      <LeaderboardCard title="Top offers" description="Individual perks with the highest redemption counts.">
+        {leaderboards.topOffers.map((o, i) => (
+          <li key={o.id} className="flex items-center justify-between gap-4 px-6 py-3">
+            <div>
+              <p className="text-sm font-medium text-slate-900">
+                #{i + 1} {o.title}
+              </p>
+              <p className="text-xs text-slate-500">{o.businessName}</p>
+            </div>
+            <p className="text-sm font-semibold text-slate-900">{o.redemptions}</p>
+          </li>
+        ))}
+      </LeaderboardCard>
+
+      <LeaderboardCard title="Active offers with no redemptions" description="Perks that may need more marketing attention.">
+        {leaderboards.offersNoRedemptions.map((o) => (
+          <li key={o.id} className="flex items-center justify-between gap-4 px-6 py-3">
+            <p className="text-sm font-medium text-slate-900">{o.title}</p>
+            <p className="text-xs text-slate-500">{o.businessName}</p>
+          </li>
+        ))}
+      </LeaderboardCard>
+
+      <LeaderboardCard title="Top passport holders" description="Consumer accounts ranked by redemption activity.">
+        {leaderboards.topPassportHolders.map((h, i) => (
+          <li key={`${h.profileId}-${i}`} className="flex items-center justify-between gap-4 px-6 py-3">
+            <div>
+              <p className="text-sm font-medium text-slate-900">
+                #{i + 1} {h.holderName}
+              </p>
+              <p className="text-xs text-slate-500">{h.passportNumber}</p>
+            </div>
+            <p className="text-sm font-semibold text-slate-900">{h.redemptions}</p>
+          </li>
+        ))}
+      </LeaderboardCard>
+
+      <LeaderboardCard title="Popular geographic areas" description="Neighborhoods ranked by redemption activity.">
+        {leaderboards.topGeographicAreas.map((a, i) => (
+          <li key={a.subareaId} className="flex items-center justify-between gap-4 px-6 py-3">
+            <div>
+              <p className="text-sm font-medium text-slate-900">
+                #{i + 1} {a.name}
+              </p>
+              <p className="text-xs text-slate-500">
+                {a.businessCount} business{a.businessCount === 1 ? "" : "es"}
+              </p>
+            </div>
+            <p className="text-sm font-semibold text-slate-900">{a.redemptions}</p>
+          </li>
+        ))}
+      </LeaderboardCard>
+    </div>
+  );
+}
+
+function LeaderboardCard({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  const isEmpty = Array.isArray(children) ? children.length === 0 : !children;
+  return (
+    <div>
+      <h3 className="font-semibold text-slate-900">{title}</h3>
+      <p className="mt-1 text-sm text-slate-500">{description}</p>
+      <ul className="mt-3 divide-y divide-slate-100 rounded-2xl border border-slate-200">
+        {isEmpty ? (
+          <li className="px-6 py-4 text-sm text-slate-500">No data yet.</li>
+        ) : (
+          children
+        )}
+      </ul>
     </div>
   );
 }

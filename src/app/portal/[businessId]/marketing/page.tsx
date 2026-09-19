@@ -68,7 +68,7 @@ export default async function PortalMarketingPage({ params }: Props) {
       <h2 className="text-2xl font-bold text-slate-900">Marketing</h2>
       <p className="mt-1 text-slate-600">
         Reach more Passport holders and put your business in front of visitors. Requests go to a
-        regional manager for review, approval, and payment — nothing here is applied automatically.
+        regional manager for review, approval, and payment - nothing here is applied automatically.
       </p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

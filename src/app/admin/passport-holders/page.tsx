@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/permissions";
+import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
 import { getCurrentAdminScope } from "@/lib/admin-scope";
 import { getPassportsWithHolders } from "@/lib/admin-queries";
 import { formatPassportNumber } from "@/lib/format";
@@ -16,12 +16,17 @@ export default async function PassportHoldersPage() {
   const currentUser = await getCurrentUser();
   if (!currentUser) redirect("/sign-in?next=/admin/passport-holders");
 
-  const managedStateIds = [...new Set(currentUser.stateAssignments.map((s) => s.state_id))];
-  if (!currentUser.isNationalAdmin && managedStateIds.length === 0) redirect("/admin");
+  if (
+    !currentUser.isNationalAdmin &&
+    currentUser.stateAssignments.length === 0 &&
+    currentUser.areaAssignments.length === 0
+  ) {
+    redirect("/admin");
+  }
 
   const passports = currentUser.isNationalAdmin
     ? await getPassportsWithHolders({ stateId: (await getCurrentAdminScope()).state?.id })
-    : await getPassportsWithHolders({ stateIds: managedStateIds });
+    : await getPassportsWithHolders({ areaIds: await getAccessibleAreaIds(currentUser) });
 
   return (
     <div>
@@ -37,7 +42,8 @@ export default async function PassportHoldersPage() {
               <th className="px-4 py-3">Contact</th>
               <th className="px-4 py-3">Start date</th>
               <th className="px-4 py-3">End date</th>
-              <th className="px-4 py-3">Age / Travel</th>
+              <th className="px-4 py-3">Age</th>
+              <th className="px-4 py-3">Travel dates</th>
               <th className="px-4 py-3">Joined</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3" />
@@ -47,7 +53,7 @@ export default async function PassportHoldersPage() {
             {passports.map((p) => (
               <tr key={p.id}>
                 <td className="px-4 py-3">
-                  <p className="font-medium text-slate-900">{formatPassportNumber(p.id)}</p>
+                  <p className="font-medium text-slate-900">{formatPassportNumber(p.passport_number)}</p>
                   <p className="text-xs text-slate-500">
                     {p.areaName ?? "Unknown region"}, {p.stateName ?? "Unknown state"}
                   </p>
@@ -66,22 +72,24 @@ export default async function PassportHoldersPage() {
                   )}
                 </td>
                 <td className="px-4 py-3 text-slate-500">
-                  <p>{p.owner?.email ?? "—"}</p>
+                  <p>{p.owner?.email ?? "-"}</p>
                   <p>{p.owner?.phone ?? ""}</p>
                 </td>
                 <td className="px-4 py-3 text-slate-500">{new Date(p.purchased_at).toLocaleDateString()}</td>
                 <td className="px-4 py-3 text-slate-500">{new Date(p.expires_at).toLocaleDateString()}</td>
+                <td className="px-4 py-3 text-slate-500">{p.owner?.age_range ?? "-"}</td>
                 <td className="px-4 py-3 text-slate-500">
-                  <p>{p.owner?.age_range ?? "—"}</p>
-                  {p.travel_start_date && p.travel_end_date && (
-                    <p className="text-xs">
+                  {p.travel_start_date && p.travel_end_date ? (
+                    <>
                       {new Date(p.travel_start_date).toLocaleDateString()} –{" "}
                       {new Date(p.travel_end_date).toLocaleDateString()}
-                    </p>
+                    </>
+                  ) : (
+                    "-"
                   )}
                 </td>
                 <td className="px-4 py-3 text-slate-500">
-                  {p.owner ? new Date(p.owner.created_at).toLocaleDateString() : "—"}
+                  {p.owner ? new Date(p.owner.created_at).toLocaleDateString() : "-"}
                 </td>
                 <td className="px-4 py-3">
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${STATUS_STYLES[p.status]}`}>
@@ -102,7 +110,7 @@ export default async function PassportHoldersPage() {
             ))}
             {passports.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-4 text-sm text-slate-500">
+                <td colSpan={10} className="px-4 py-4 text-sm text-slate-500">
                   No Passports match this view.
                 </td>
               </tr>

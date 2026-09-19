@@ -1,15 +1,23 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/permissions";
+import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
 import { getCurrentAdminScope } from "@/lib/admin-scope";
 import { getPassportsWithHolders } from "@/lib/admin-queries";
 
 export default async function ExpiredPassportsPage() {
   const currentUser = await getCurrentUser();
-  if (!currentUser?.isNationalAdmin) redirect("/admin");
+  if (!currentUser) redirect("/sign-in?next=/admin/expired-passports");
+  if (
+    !currentUser.isNationalAdmin &&
+    currentUser.stateAssignments.length === 0 &&
+    currentUser.areaAssignments.length === 0
+  ) {
+    redirect("/admin");
+  }
 
-  const { state } = await getCurrentAdminScope();
-  const passports = await getPassportsWithHolders({ stateId: state?.id, expiredOnly: true });
+  const passports = currentUser.isNationalAdmin
+    ? await getPassportsWithHolders({ stateId: (await getCurrentAdminScope()).state?.id, expiredOnly: true })
+    : await getPassportsWithHolders({ areaIds: await getAccessibleAreaIds(currentUser), expiredOnly: true });
 
   return (
     <div>

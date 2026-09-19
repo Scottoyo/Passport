@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const area = await getAreaBySlug(state.id, areaSlug);
   if (!area) return {};
   const subarea = await getSubareaBySlug(area.id, subareaSlug);
-  return { title: subarea ? `${subarea.name} — ${area.name}` : "Neighborhood" };
+  return { title: subarea ? `${subarea.name} - ${area.name}` : "Neighborhood" };
 }
 
 export default async function SubareaPage({ params }: Props) {

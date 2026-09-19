@@ -12,7 +12,7 @@ export default async function HomePage() {
             A Passport for every region you explore.
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-            Each region has its own Passport — one purchase unlocks
+            Each region has its own Passport - one purchase unlocks
             exclusive offers at participating restaurants, attractions,
             shops, and experiences across that region.
           </p>
@@ -36,15 +36,15 @@ export default async function HomePage() {
           />
           <Benefit
             title="Real savings, not gimmicks"
-            body="Every offer is a real discount, freebie, or deal from a business that opted in — no fine print designed to make it unusable."
+            body="Every offer is a real discount, freebie, or deal from a business that opted in - no fine print designed to make it unusable."
           />
           <Benefit
             title="Bring the family"
-            body="Many Passports cover more than one person, so everyone in your group saves — not just the Passport holder."
+            body="Many Passports cover more than one person, so everyone in your group saves - not just the Passport holder."
           />
           <Benefit
             title="Collect every state"
-            body="Traveling to a new state? Its Passport is a separate purchase — and its own set of savings waiting for you."
+            body="Traveling to a new state? Its Passport is a separate purchase - and its own set of savings waiting for you."
           />
         </div>
       </section>

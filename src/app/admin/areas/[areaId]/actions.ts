@@ -134,7 +134,7 @@ export async function addStaff(areaId: string, formData: FormData) {
 
   if (!profileId) {
     throw new Error(
-      `No account found for ${email} yet — ask them to sign in once first, then add them.`
+      `No account found for ${email} yet - ask them to sign in once first, then add them.`
     );
   }
 
@@ -180,7 +180,7 @@ export async function addAreaManager(areaId: string, formData: FormData) {
 
   if (!profileId) {
     throw new Error(
-      `No account found for ${email} yet — ask them to sign in once first, then assign them.`
+      `No account found for ${email} yet - ask them to sign in once first, then assign them.`
     );
   }
 

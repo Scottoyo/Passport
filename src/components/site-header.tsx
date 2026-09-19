@@ -6,8 +6,10 @@ import { hasAnyPassport } from "@/lib/queries";
 
 export async function SiteHeader() {
   const currentUser = await getCurrentUser();
-  const ownsPassport =
-    currentUser && !currentUser.isNationalAdmin ? await hasAnyPassport(currentUser.id) : false;
+  const isAdmin =
+    !!currentUser &&
+    (currentUser.isNationalAdmin || currentUser.stateAssignments.length > 0 || currentUser.areaAssignments.length > 0);
+  const ownsPassport = currentUser && !isAdmin ? await hasAnyPassport(currentUser.id) : false;
 
   return (
     <header className="border-b border-slate-200">
@@ -16,7 +18,7 @@ export async function SiteHeader() {
           The Passport
         </Link>
 
-        {currentUser?.isNationalAdmin ? (
+        {isAdmin ? (
           <>
             <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 sm:flex">
               <Link href="/" className="hover:text-slate-900">
@@ -26,7 +28,7 @@ export async function SiteHeader() {
                 href="/admin"
                 className="rounded-full bg-slate-900 px-4 py-1.5 text-white hover:bg-slate-700"
               >
-                Portal
+                Admin
               </Link>
             </nav>
             <form action={signOut}>

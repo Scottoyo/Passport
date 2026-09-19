@@ -32,7 +32,7 @@ export default async function NewBusinessPage() {
     <div className="mx-auto max-w-lg">
       <h1 className="text-2xl font-bold text-slate-900">Add a business</h1>
       <p className="mt-1 text-slate-600">
-        Pick the region it belongs to and give it a name — everything else
+        Pick the region it belongs to and give it a name - everything else
         (contact info, hours, media, offers) gets filled in on its profile
         page next.
       </p>

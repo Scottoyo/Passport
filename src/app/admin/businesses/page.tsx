@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser, canManageArea } from "@/lib/permissions";
-import { getCurrentAdminScope } from "@/lib/admin-scope";
+import { getCurrentUser, canManageArea, getAccessibleAreaIds } from "@/lib/permissions";
+import { getCurrentAdminScope, NO_MATCH_ID } from "@/lib/admin-scope";
 import { getAllBusinessesNational } from "@/lib/admin-queries";
 import { getCategories } from "@/lib/queries";
+import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/status-badge";
 import { BusinessesFilterBar } from "@/components/admin/businesses-filter-bar";
 import { BusinessActionsMenu } from "@/components/admin/business-actions-menu";
@@ -39,7 +40,9 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
   if (!currentUser) redirect("/sign-in?next=/admin/businesses");
 
   const isNationalAdmin = currentUser.isNationalAdmin;
-  if (!isNationalAdmin && currentUser.stateAssignments.length === 0) redirect("/admin");
+  if (!isNationalAdmin && currentUser.stateAssignments.length === 0 && currentUser.areaAssignments.length === 0) {
+    redirect("/admin");
+  }
 
   const params = await searchParams;
   const q = (params.q ?? "").trim();
@@ -50,16 +53,28 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
   const areaId = params.area ?? "";
 
   const adminScope = isNationalAdmin ? (await getCurrentAdminScope()).state : null;
-  const scopeStateIds = isNationalAdmin
-    ? adminScope
-      ? [adminScope.id]
-      : undefined
-    : [...new Set(currentUser.stateAssignments.map((s) => s.state_id))];
+  let scopeStateIds: string[] | undefined;
+  let scopeAreaIds: string[] | undefined;
+  if (isNationalAdmin) {
+    scopeStateIds = adminScope ? [adminScope.id] : undefined;
+  } else if (currentUser.stateAssignments.length > 0) {
+    scopeStateIds = [...new Set(currentUser.stateAssignments.map((s) => s.state_id))];
+  } else {
+    scopeAreaIds = await getAccessibleAreaIds(currentUser);
+    const supabase = await createClient();
+    const { data: areaRows } = await supabase
+      .from("passport_areas")
+      .select("state_id")
+      .in("id", scopeAreaIds.length ? scopeAreaIds : [NO_MATCH_ID]);
+    scopeStateIds = [...new Set((areaRows ?? []).map((a) => a.state_id as string))];
+  }
 
   const [allBusinesses, categories] = await Promise.all([
     isNationalAdmin
       ? getAllBusinessesNational({ stateId: adminScope?.id })
-      : getAllBusinessesNational({ stateIds: scopeStateIds }),
+      : scopeAreaIds
+        ? getAllBusinessesNational({ areaIds: scopeAreaIds })
+        : getAllBusinessesNational({ stateIds: scopeStateIds }),
     getCategories(scopeStateIds),
   ]);
 
@@ -155,7 +170,7 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-slate-600">
-                    {(b.category_id && categoryNameById.get(b.category_id)) || "—"}
+                    {(b.category_id && categoryNameById.get(b.category_id)) || "-"}
                   </td>
                   <td className="px-4 py-3 text-slate-500">
                     {b.areaName ?? "Unknown area"}

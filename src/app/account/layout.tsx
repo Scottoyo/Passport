@@ -14,7 +14,7 @@ export default async function AccountLayout({ children }: LayoutProps<"/account"
   const [{ data: profile }, events] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, notifications_last_read_at")
+      .select("notifications_last_read_at")
       .eq("id", user.id)
       .maybeSingle<Profile>(),
     getRegionEventsForUser(user.id),
@@ -39,8 +39,7 @@ export default async function AccountLayout({ children }: LayoutProps<"/account"
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <div className="flex gap-8">
         <aside className="w-56 shrink-0">
-          <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">My Account</p>
-          {profile?.full_name && <p className="mb-4 px-3 text-sm text-slate-500">{profile.full_name}</p>}
+          <p className="mb-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">My Account</p>
           <nav className="space-y-1 text-sm">
             {nav.map((item) => (
               <Link

@@ -42,7 +42,7 @@ export default async function PassportProductsAdminPage() {
     <div>
       <h1 className="text-2xl font-bold text-slate-900">Passport products</h1>
       <p className="mt-1 text-slate-600">
-        Each region has its own pricing — a Passport bought for one region
+        Each region has its own pricing - a Passport bought for one region
         only works in that region.
       </p>
 

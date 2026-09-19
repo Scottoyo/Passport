@@ -86,7 +86,7 @@ export default async function AccountDashboardPage() {
             </div>
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-400">Passport number</p>
-              <p className="text-sm font-medium text-slate-900">{primary.id}</p>
+              <p className="text-sm font-medium text-slate-900">{primary.passport_number}</p>
             </div>
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-400">Expires</p>

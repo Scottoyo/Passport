@@ -434,7 +434,7 @@ function StateEditPanel({
           <h3 className="text-sm font-semibold text-slate-700">State managers</h3>
           <p className="mt-1 text-xs text-slate-500">
             Same capabilities as a region manager, but across every region in{" "}
-            {state.name} — current and future.
+            {state.name} - current and future.
           </p>
           <ul className="mt-2 space-y-2">
             {stateManagers.map((m) => (

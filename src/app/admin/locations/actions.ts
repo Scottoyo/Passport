@@ -122,7 +122,7 @@ export async function addStateManager(stateId: string, formData: FormData) {
   const { data: profile } = await supabase.from("profiles").select("id").eq("email", email).maybeSingle();
   if (!profile) {
     throw new Error(
-      `No account found for ${email} yet — ask them to sign in once first, then assign them.`
+      `No account found for ${email} yet - ask them to sign in once first, then assign them.`
     );
   }
 

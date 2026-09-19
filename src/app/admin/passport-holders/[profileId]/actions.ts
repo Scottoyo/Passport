@@ -3,12 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getCurrentUser, hasStateCapability } from "@/lib/permissions";
+import { getCurrentUser, canManageArea } from "@/lib/permissions";
 import type { PassportStatus } from "@/lib/types/domain";
 
-// Mirrors requireStateAccess in admin/locations/actions.ts: national admin,
-// or a state manager with view_metrics for a state this holder has a
-// passport in (the same reach the RLS policies from migration 0018/0019
+// Mirrors requireBusinessCapability in admin/businesses/actions.ts: national
+// admin, or a region/state manager with view_metrics for a passport this
+// holder owns (the same reach the RLS policies from migration 0018/0019/0039
 // grant — this is UX, RLS is the real gate).
 async function requireHolderAccess(profileId: string) {
   const currentUser = await getCurrentUser();
@@ -18,10 +18,10 @@ async function requireHolderAccess(profileId: string) {
   const supabase = await createClient();
   const { data: passports } = await supabase
     .from("passports")
-    .select("state_id")
+    .select("state_id, passport_area_id")
     .eq("owner_user_id", profileId);
   const hasAccess = (passports ?? []).some((p) =>
-    hasStateCapability(currentUser, p.state_id as string, "view_metrics")
+    canManageArea(currentUser, p.passport_area_id as string, "view_metrics", p.state_id as string)
   );
   if (!hasAccess) throw new Error("You don't have permission to manage this passport holder.");
   return currentUser;

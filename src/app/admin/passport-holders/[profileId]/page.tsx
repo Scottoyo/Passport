@@ -45,7 +45,13 @@ export default async function PassportHolderDetailPage({
 }) {
   const currentUser = await getCurrentUser();
   if (!currentUser) redirect("/sign-in?next=/admin/passport-holders");
-  if (!currentUser.isNationalAdmin && currentUser.stateAssignments.length === 0) redirect("/admin");
+  if (
+    !currentUser.isNationalAdmin &&
+    currentUser.stateAssignments.length === 0 &&
+    currentUser.areaAssignments.length === 0
+  ) {
+    redirect("/admin");
+  }
 
   const { profileId } = await params;
   const { mode, confirm } = await searchParams;
@@ -161,19 +167,19 @@ export default async function PassportHolderDetailPage({
           <dl className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
               <dt className="text-xs text-slate-500">Name</dt>
-              <dd className="text-sm text-slate-900">{holder.full_name || "—"}</dd>
+              <dd className="text-sm text-slate-900">{holder.full_name || "-"}</dd>
             </div>
             <div>
               <dt className="text-xs text-slate-500">Email</dt>
-              <dd className="text-sm text-slate-900">{holder.email ?? "—"}</dd>
+              <dd className="text-sm text-slate-900">{holder.email ?? "-"}</dd>
             </div>
             <div>
               <dt className="text-xs text-slate-500">Phone</dt>
-              <dd className="text-sm text-slate-900">{holder.phone ?? "—"}</dd>
+              <dd className="text-sm text-slate-900">{holder.phone ?? "-"}</dd>
             </div>
             <div>
               <dt className="text-xs text-slate-500">Age range</dt>
-              <dd className="text-sm text-slate-900">{holder.age_range ?? "—"}</dd>
+              <dd className="text-sm text-slate-900">{holder.age_range ?? "-"}</dd>
             </div>
             <div>
               <dt className="text-xs text-slate-500">Joined</dt>
@@ -208,7 +214,7 @@ export default async function PassportHolderDetailPage({
                       <optgroup key={state.id} label={state.name}>
                         {products.map((product) => (
                           <option key={product.id} value={product.id}>
-                            {areaNameById.get(product.passport_area_id) ?? "Unknown region"} — {product.name}
+                            {areaNameById.get(product.passport_area_id) ?? "Unknown region"} - {product.name}
                           </option>
                         ))}
                       </optgroup>
@@ -232,7 +238,7 @@ export default async function PassportHolderDetailPage({
         <section key={p.id} className={cardClass}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 className="font-semibold text-slate-900">{formatPassportNumber(p.id)}</h2>
+              <h2 className="font-semibold text-slate-900">{formatPassportNumber(p.passport_number)}</h2>
               <p className="text-xs text-slate-500">{p.productName ?? "Unknown product"}</p>
             </div>
             <form action={updatePassportStatus.bind(null, p.id, profileId)} className="flex items-center gap-2">
@@ -341,7 +347,7 @@ export default async function PassportHolderDetailPage({
       {/* -------------------------------------------------------------- */}
       <section className={cardClass}>
         <h2 className="font-semibold text-slate-900">Account security</h2>
-        <p className="mt-1 text-sm text-slate-600">Holder email: {holder.email ?? "—"}</p>
+        <p className="mt-1 text-sm text-slate-600">Holder email: {holder.email ?? "-"}</p>
         {holder.email && (
           <form action={sendHolderPasswordReset.bind(null, profileId, holder.email)} className="mt-3">
             <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">

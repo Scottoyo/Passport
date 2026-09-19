@@ -96,7 +96,7 @@ export default async function MyPassportPage() {
           <dl className="mt-3 space-y-2 text-sm">
             <div className="flex justify-between">
               <dt className="text-slate-500">Product</dt>
-              <dd className="text-slate-900">{productById.get(primary.passport_product_id)?.name ?? "—"}</dd>
+              <dd className="text-slate-900">{productById.get(primary.passport_product_id)?.name ?? "-"}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Status</dt>
@@ -108,7 +108,7 @@ export default async function MyPassportPage() {
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Passport number</dt>
-              <dd className="text-slate-900">{primary.id}</dd>
+              <dd className="text-slate-900">{primary.passport_number}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Purchased</dt>
@@ -158,7 +158,7 @@ export default async function MyPassportPage() {
             <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-slate-500">
               <li>Browse businesses and view their active Passport offer.</li>
               <li>Open a business and click Redeem when you&apos;re there in person.</li>
-              <li>Hand your device to staff — they enter their business&apos;s private code.</li>
+              <li>Hand your device to staff - they enter their business&apos;s private code.</li>
               <li>
                 Only participating business staff should enter that code. Passport holders should never be given
                 or enter a business&apos;s private redemption code.
@@ -203,7 +203,7 @@ export default async function MyPassportPage() {
                   </p>
                 </div>
                 <span className="text-sm text-slate-500">
-                  {product ? `$${(product.price_cents / 100).toFixed(2)}` : "—"}
+                  {product ? `$${(product.price_cents / 100).toFixed(2)}` : "-"}
                 </span>
               </li>
             );
