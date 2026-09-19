@@ -1,74 +1,65 @@
+import Link from "next/link";
 import type { Metadata } from "next";
-import { getActivePassportProduct } from "@/lib/queries";
-import { createClient } from "@/lib/supabase/server";
-import { PurchaseForm } from "@/components/purchase-form";
+import { getActiveAreasWithStates } from "@/lib/queries";
 
-export const metadata: Metadata = { title: "Get the Passport" };
+export const metadata: Metadata = { title: "Get Your Passport" };
 
-export default async function PassportPage() {
-  const [product, supabase] = await Promise.all([
-    getActivePassportProduct(),
-    createClient(),
-  ]);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+// Region-first picker: a Passport is priced and purchased per region (see
+// docs/ARCHITECTURE.md) — every region here routes into
+// /[state]/[area]/passport, the actual purchase page for that region.
+export default async function PassportChooserPage() {
+  const areas = await getActiveAreasWithStates();
+
+  const areasByState = new Map<string, typeof areas>();
+  for (const area of areas) {
+    const list = areasByState.get(area.stateSlug) ?? [];
+    list.push(area);
+    areasByState.set(area.stateSlug, list);
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-bold text-slate-900">The National Passport</h1>
+      <h1 className="text-3xl font-bold text-slate-900">Get Your Passport</h1>
       <p className="mt-4 text-lg text-slate-600">
-        One Passport. One purchase. Use it at every participating business,
-        in every state and Passport Area we&apos;re live in — there&apos;s no
-        such thing as a &ldquo;local&rdquo; Passport here.
+        Find your region below to get started — a Passport is priced and
+        sold per region, so picking yours takes you straight to its
+        pricing and purchase page.
       </p>
 
-      {product ? (
-        <div className="mt-10 rounded-2xl border border-slate-200 p-8">
-          <h2 className="text-xl font-semibold text-slate-900">{product.name}</h2>
-          {product.description && (
-            <p className="mt-2 text-slate-600">{product.description}</p>
-          )}
-          <p className="mt-4 text-3xl font-bold text-slate-900">
-            ${(product.price_cents / 100).toFixed(2)}
-          </p>
-          <p className="mt-1 text-sm text-slate-500">
-            Valid for {product.duration_days} days · covers up to{" "}
-            {product.max_members} {product.max_members === 1 ? "person" : "people"}
-          </p>
-          <div className="mt-6">
-            <PurchaseForm passportProductId={product.id} isSignedIn={Boolean(user)} />
-          </div>
-        </div>
+      {areas.length === 0 ? (
+        <p className="mt-10 text-slate-600">No regions are live yet — check back soon.</p>
       ) : (
-        <p className="mt-10 text-slate-600">
-          Passport pricing isn&apos;t published yet — check back soon.
-        </p>
+        <div className="mt-10 space-y-8">
+          {[...areasByState.entries()].map(([stateSlug, stateAreas]) => (
+            <div key={stateSlug}>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                {stateAreas[0].stateName}
+              </h2>
+              <ul className="mt-2 divide-y divide-slate-100 rounded-2xl border border-slate-200">
+                {stateAreas.map((area) => (
+                  <li key={area.id}>
+                    <Link
+                      href={`/${stateSlug}/${area.slug}/passport`}
+                      className="flex items-center justify-between px-6 py-4 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                    >
+                      {area.name}
+                      <span aria-hidden className="text-slate-400">
+                        &rarr;
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       )}
 
-      <div className="mt-16 grid gap-8 sm:grid-cols-3">
-        <div>
-          <h3 className="font-semibold text-slate-900">How it works</h3>
-          <p className="mt-1 text-sm text-slate-600">
-            Buy once, then browse states and Passport Areas to find
-            participating businesses and their offers.
-          </p>
-        </div>
-        <div>
-          <h3 className="font-semibold text-slate-900">Redeeming offers</h3>
-          <p className="mt-1 text-sm text-slate-600">
-            Show your digital Passport at checkout. Each offer can be
-            redeemed the number of times its business sets, per Passport.
-          </p>
-        </div>
-        <div>
-          <h3 className="font-semibold text-slate-900">Nationwide, always</h3>
-          <p className="mt-1 text-sm text-slate-600">
-            Your Passport isn&apos;t tied to the state or area you bought it
-            in — it works everywhere we&apos;re live.
-          </p>
-        </div>
-      </div>
+      <p className="mt-8 text-sm text-slate-500">
+        Visiting more than one region? You&apos;ll need a separate
+        Passport for each &mdash; each one only unlocks offers in its own
+        region.
+      </p>
     </div>
   );
 }

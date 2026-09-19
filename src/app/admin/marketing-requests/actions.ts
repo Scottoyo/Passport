@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/permissions";
+import { getCurrentUser, canManageArea } from "@/lib/permissions";
 import type { MarketingRequest } from "@/lib/types/domain";
 
 export async function updateMarketingRequestStatus(
@@ -11,8 +11,25 @@ export async function updateMarketingRequestStatus(
   formData: FormData
 ) {
   const currentUser = await getCurrentUser();
-  if (!currentUser?.isNationalAdmin) {
-    throw new Error("Only national admins can triage marketing requests.");
+  if (!currentUser) throw new Error("You don't have permission to triage marketing requests.");
+
+  if (!currentUser.isNationalAdmin) {
+    const supabase = await createClient();
+    const { data: request } = await supabase
+      .from("marketing_requests")
+      .select("passport_area_id")
+      .eq("id", requestId)
+      .maybeSingle();
+    const { data: area } = request
+      ? await supabase.from("passport_areas").select("state_id").eq("id", request.passport_area_id).maybeSingle()
+      : { data: null };
+
+    if (
+      !request ||
+      !canManageArea(currentUser, request.passport_area_id, "manage_businesses", area?.state_id ?? null)
+    ) {
+      throw new Error("You don't have permission to triage marketing requests for this region.");
+    }
   }
 
   const supabase = await createClient();

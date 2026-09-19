@@ -1,12 +1,14 @@
 import Link from "next/link";
-import type { Business } from "@/lib/types/domain";
+import type { Business, Offer } from "@/lib/types/domain";
 
 export function BusinessCard({
   business,
   href,
+  offer,
 }: {
   business: Business;
   href: string;
+  offer?: Offer | null;
 }) {
   return (
     <Link
@@ -24,6 +26,14 @@ export function BusinessCard({
         <p className="mt-2 line-clamp-2 text-sm text-slate-600">
           {business.description}
         </p>
+      )}
+      {offer && (
+        <div className="mt-3 rounded-lg bg-slate-50 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Passport promotion
+          </p>
+          <p className="mt-0.5 text-sm font-medium text-slate-800">{offer.title}</p>
+        </div>
       )}
     </Link>
   );

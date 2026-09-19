@@ -1,20 +1,38 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/permissions";
+import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentAdminScope, getAreaIdsForState, NO_MATCH_ID } from "@/lib/admin-scope";
 import type { MarketingRequest, PassportArea } from "@/lib/types/domain";
 import { updateMarketingRequestStatus } from "./actions";
 
 export default async function MarketingRequestsAdminPage() {
   const currentUser = await getCurrentUser();
-  if (!currentUser?.isNationalAdmin) redirect("/admin");
+  if (!currentUser) redirect("/sign-in?next=/admin/marketing-requests");
+
+  const isNationalAdmin = currentUser.isNationalAdmin;
+  if (!isNationalAdmin && currentUser.stateAssignments.length === 0 && currentUser.areaAssignments.length === 0) {
+    redirect("/admin");
+  }
 
   const supabase = await createClient();
+  let requestsQuery = supabase
+    .from("marketing_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (isNationalAdmin) {
+    const { state } = await getCurrentAdminScope();
+    if (state) {
+      const areaIds = await getAreaIdsForState(state.id);
+      requestsQuery = requestsQuery.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
+    }
+  } else {
+    const areaIds = await getAccessibleAreaIds(currentUser);
+    requestsQuery = requestsQuery.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
+  }
+
   const [{ data: requests }, { data: areas }] = await Promise.all([
-    supabase
-      .from("marketing_requests")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .returns<MarketingRequest[]>(),
+    requestsQuery.returns<MarketingRequest[]>(),
     supabase.from("passport_areas").select("*").returns<PassportArea[]>(),
   ]);
 

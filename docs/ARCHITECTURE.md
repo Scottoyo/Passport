@@ -8,13 +8,28 @@ any existing Orlando/AMI setup could be treated as this platform.
 
 ## Core rule, restated
 
-There is one Passport. It is purchased once and works at every active,
-participating business nationwide. States, Passport Areas, and Subareas
-exist to organize **discovery** (what shows up when you browse) and
-**administration** (who can edit what) — never to gate **redemption**. A
-Passport bought while browsing Florida works identically in Texas. This
-shows up in the schema as a hard rule: `passports` has no `state_id` or
-`area_id` column, and nothing in the redemption path checks one.
+A Passport is scoped to exactly one **Passport Area (region)**, not a
+whole state. It is purchased for that region and works at every active,
+participating business in it — but nowhere else, not even another region
+in the same state. A customer covering multiple regions buys multiple
+Passports. States and Subareas still organize **discovery** (what shows up
+when you browse) and **administration** (who can edit what), but the
+region boundary is the **redemption** boundary: `passports.passport_area_id`
+(and `passport_products.passport_area_id`, since each region prices and
+sizes its own product line) are hard columns, and `redemptions: staff
+insert` in `0003_rls.sql`/`0023_area_scoped_passports.sql` checks that a
+passport's `passport_area_id` matches the offer's business's area before
+allowing a redemption. `state_id` still exists on both tables (a region
+always belongs to exactly one state, trigger-enforced) and keeps
+state-manager RLS, admin-scope filtering, and dashboard metrics working —
+it's a valid rollup, just no longer the redemption boundary itself.
+
+This is the second pivot of this rule. The first (`0008_state_scoped_passports.sql`)
+moved it from one nationwide Passport to one per state, for the same
+reason this one moves it from state to region: a more granular purchase
+boundary drives more Passport sales (a multi-region trip means multiple
+purchases). Each pivot was a deliberate product decision made explicitly,
+not something this scaffold defaulted to.
 
 ## Data model
 
@@ -25,10 +40,10 @@ states
        └─ businesses (passport_area_id, subarea_id?)
             └─ offers (business_id)
 
-passport_products                     -- what "buying a Passport" means today
-  └─ passports (owner_user_id, passport_product_id)   -- nationwide, no location FK
+passport_products (passport_area_id, state_id)  -- each region prices/sizes its own product(s); state_id must match the area's
+  └─ passports (owner_user_id, passport_product_id, passport_area_id, state_id)  -- both must match the product's
        └─ passport_members (passport_id)
-       └─ redemptions (passport_id, offer_id, redeemed_member_id?)
+       └─ redemptions (passport_id, offer_id, redeemed_member_id?)  -- RLS checks passport.passport_area_id = business's area
 
 profiles (id = auth.users.id)
 national_admins (user_id)             -- global access, granted not self-served
@@ -81,13 +96,14 @@ edited by admins, never hard-coded. Public routes (App Router, `src/app/`):
 
 | Route | Purpose |
 |---|---|
-| `/` | National homepage: what the Passport is, how it works, pricing, map + link into `/states` |
-| `/states` | Searchable list **and** interactive highlighted map of every active state |
+| `/` | Marketing homepage: what the Passport is, benefits, how it works, plus a list **and** interactive highlighted map of every active state (`#states`) — a state/region with no live perks yet prompts a "notify me" signup instead of linking through |
+| `/states` | Redirects to `/#states` |
 | `/[state]` | A state's active Passport Areas |
 | `/[state]/[area]` | An area's Subareas, businesses, offers |
 | `/[state]/[area]/[subarea]` | A Subarea's businesses |
 | `/[state]/[area]/businesses/[business]` | Business profile + its offers |
-| `/passport` | Passport product explainer + purchase |
+| `/passport` | Region-first picker (links into `/[state]/[area]/passport`) |
+| `/[state]/[area]/passport` | That region's Passport product explainer + purchase |
 | `/account` | Signed-in customer's Passport(s) |
 | `/admin/...` | Admin portal (below) |
 
@@ -164,26 +180,28 @@ be used, and it's a local script, never app runtime code.
 
 ## Customer experience
 
-Homepage explains the Passport and links into `/states`, which pairs a
-searchable list with an SVG US map (`@svg-maps/usa`) that highlights only
-states with an active row in the database — adding a state in the admin
-portal is what lights it up here. State → area → subarea → business mirrors
+Homepage explains the Passport and its per-state pricing, and includes a
+`#states` section pairing a searchable list with an SVG US map
+(`@svg-maps/usa`) that highlights only states with an active row in the
+database — adding a state in the admin portal is what lights it up here.
+State → area → subarea → business mirrors
 amipassport.com's browse pattern (state-of-the-art for this category: browse
 a metro's participating businesses, open a business profile, see its
 offer(s), redeem in person), generalized to work across many
 states/areas instead of one island, and without reusing any of its
-branding, imagery, copy, or AMI-specific rules (e.g. "valid for up to 4
-people, one calendar year" was AMI's own product design choice, not
-something this schema hard-codes — `passport_products.max_members` and
-`duration_days` are configurable per product instead).
+branding, imagery, copy, or AMI-specific rules (e.g. "one calendar
+year" was AMI's own product design choice, not something this schema
+hard-codes — `passport_products.duration_days` is configurable per
+product instead).
 
 ## Open decisions before this goes further
 
 These are called out explicitly rather than silently decided by what got
 built first:
 
-1. **Payment processor.** `/passport`'s "Get my Passport" button currently
-   creates a `passports` row with `payment_reference =
+1. **Payment processor.** `/[state]/[area]/passport`'s "Get my Passport"
+   button (reached by picking a region from `/passport`) currently creates
+   a `passports` row with `payment_reference =
    'PLACEHOLDER-NO-PAYMENT-PROCESSOR'` and no charge (`src/app/passport/actions.ts`).
    This exists so the rest of the product — RLS on `passports`, the account
    dashboard, redemption flow — could be built and exercised end-to-end.
@@ -191,11 +209,12 @@ built first:
    (Stripe is the default assumption but isn't chosen here), webhook-driven
    `passports` creation instead of a client-triggered insert, and a real
    `payment_reference`/receipt trail.
-2. **Multiple Passport products/pricing tiers.** The schema supports more
-   than one row in `passport_products` (e.g. individual vs. family), but the
-   UI only ever shows the single cheapest active one. Whether the national
-   product line needs tiers, renewals/subscriptions vs. a fixed
-   `duration_days`, or family-plan pricing beyond `max_members` is unresolved.
+2. **Multiple Passport products/pricing tiers — resolved as per-region.**
+   `passport_products.passport_area_id` means each region prices and sizes
+   its own product line independently; a region can still have more than
+   one product (e.g. individual vs. family) and the UI shows the cheapest
+   active one for that region. Renewals/subscriptions vs. a fixed
+   `duration_days` remains open.
 3. **Redemption UX for local staff.** `redemptions` and the `is_area_staff`
    RLS check exist, but there's no scanning/lookup UI yet (e.g. a QR code on
    the customer's Passport, a staff-facing "look up this Passport" screen).

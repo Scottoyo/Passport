@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser, assignedAreaIds } from "@/lib/permissions";
+import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentAdminScope, getAllStatesForAdmin } from "@/lib/admin-scope";
+import { GlobalScopeSelector } from "@/components/admin/global-scope-selector";
 import type { PassportArea } from "@/lib/types/domain";
 
 // This layout is the app-level gatekeeper for the whole /admin section, but
@@ -13,7 +15,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const currentUser = await getCurrentUser();
   if (!currentUser) redirect("/sign-in?next=/admin");
 
-  const areaIds = assignedAreaIds(currentUser);
+  const areaIds = await getAccessibleAreaIds(currentUser);
   let areas: PassportArea[] = [];
   if (areaIds.length > 0) {
     const supabase = await createClient();
@@ -39,8 +41,27 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     );
   }
 
+  const [{ state: scopeState }, allStates] = currentUser.isNationalAdmin
+    ? await Promise.all([getCurrentAdminScope(), getAllStatesForAdmin()])
+    : [{ state: null }, []];
+
   return (
-    <div className="mx-auto flex max-w-6xl gap-8 px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      {currentUser.isNationalAdmin && (
+        <div className="mb-6 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <p className="text-sm text-slate-600">
+            This selector applies across every admin section — Businesses,
+            Categories, Featured Offers, Passport Holders, and the rest —
+            until you change it.
+          </p>
+          <GlobalScopeSelector
+            key={scopeState?.slug ?? "national"}
+            states={allStates}
+            current={scopeState}
+          />
+        </div>
+      )}
+      <div className="flex gap-8">
       <aside className="w-56 shrink-0">
         <nav className="space-y-1 text-sm">
           <Link href="/admin" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
@@ -49,17 +70,89 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           {currentUser.isNationalAdmin && (
             <>
               <Link href="/admin/locations" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                States &amp; Areas
+                States &amp; Regions
               </Link>
+
+              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Customers
+              </p>
+              <Link href="/admin/passport-holders" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Passport holders
+              </Link>
+              <Link href="/admin/profiles-without-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Profiles without passports
+              </Link>
+              <Link href="/admin/expired-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Expired passports
+              </Link>
+
+              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Catalog
+              </p>
+              <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Businesses
+              </Link>
+              <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Featured offers
+              </Link>
+              <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Categories
+              </Link>
+              <Link href="/admin/passport-products" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Passport products
+              </Link>
+
+              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Operations
+              </p>
               <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                 Marketing requests
               </Link>
+
+              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Coming soon
+              </p>
+              {["Admin notifications", "Promo codes", "Referral program", "Business passport sales", "Marketing products"].map(
+                (label) => (
+                  <span
+                    key={label}
+                    className="block cursor-not-allowed rounded-lg px-3 py-2 font-medium text-slate-400"
+                  >
+                    {label}
+                  </span>
+                )
+              )}
             </>
+          )}
+          {!currentUser.isNationalAdmin && currentUser.stateAssignments.length > 0 && (
+            <div className="pt-4">
+              <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Customers
+              </p>
+              <Link href="/admin/passport-holders" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Passport holders
+              </Link>
+              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Catalog
+              </p>
+              <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Businesses
+              </Link>
+              <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Categories
+              </Link>
+              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Operations
+              </p>
+              <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Marketing requests
+              </Link>
+            </div>
           )}
           {areas.length > 0 && (
             <div className="pt-4">
               <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                My areas
+                Regions
               </p>
               {areas.map((area) => (
                 <Link
@@ -75,6 +168,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         </nav>
       </aside>
       <div className="flex-1 min-w-0">{children}</div>
+      </div>
     </div>
   );
 }

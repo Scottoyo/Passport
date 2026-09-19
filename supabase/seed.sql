@@ -13,14 +13,13 @@ insert into categories (name, slug, sort_order) values
   ('Experiences', 'experiences', 4)
 on conflict (slug) do nothing;
 
-insert into passport_products (name, description, price_cents, currency, duration_days, max_members, status)
+insert into passport_products (name, description, price_cents, currency, duration_days, status)
 values (
   'National Passport',
   'One Passport, valid nationwide at every participating business for a full year.',
   4900,
   'USD',
   365,
-  4,
   'active'
 );
 
