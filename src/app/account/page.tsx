@@ -109,7 +109,7 @@ export default async function AccountDashboardPage() {
             href="/passport"
             className="mt-4 inline-block rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
           >
-            Get the Passport
+            Get Your Passport
           </Link>
         </section>
       )}

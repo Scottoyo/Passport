@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getActiveAreasWithStates } from "@/lib/queries";
 
-export const metadata: Metadata = { title: "Get the Passport" };
+export const metadata: Metadata = { title: "Get Your Passport" };
 
 // Region-first picker: a Passport is priced and purchased per region (see
 // docs/ARCHITECTURE.md) — every region here routes into
@@ -19,7 +19,7 @@ export default async function PassportChooserPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-bold text-slate-900">Get the Passport</h1>
+      <h1 className="text-3xl font-bold text-slate-900">Get Your Passport</h1>
       <p className="mt-4 text-lg text-slate-600">
         Find your region below to get started — a Passport is priced and
         sold per region, so picking yours takes you straight to its

@@ -57,7 +57,7 @@ export default function CreateProfilePage() {
               href="/passport"
               className="mt-3 inline-block rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
             >
-              Get the Passport
+              Get Your Passport
             </Link>
           </div>
         </div>

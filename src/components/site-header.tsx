@@ -79,7 +79,7 @@ export async function SiteHeader() {
                 href="/passport"
                 className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
               >
-                Get the Passport
+                Get Your Passport
               </Link>
               <RegisterBusinessLink className="rounded-full border border-slate-300 px-4 py-2 text-slate-700 hover:border-slate-500" />
             </div>
