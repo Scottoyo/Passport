@@ -91,8 +91,8 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           <RegionScopeSelector key={scopeArea?.id ?? "all"} areas={areas} current={scopeArea} />
         </div>
       )}
-      <div className="flex gap-8">
-      <aside className="w-56 shrink-0">
+      <div className="flex flex-col gap-6 md:flex-row md:gap-8">
+      <aside className="md:w-56 md:shrink-0">
         <nav className="space-y-1 text-sm">
           <Link href="/admin" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
             Dashboard

@@ -37,15 +37,17 @@ export default async function AccountLayout({ children }: LayoutProps<"/account"
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <div className="flex gap-8">
-        <aside className="w-56 shrink-0">
-          <p className="mb-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">My Account</p>
-          <nav className="space-y-1 text-sm">
+      <div className="flex flex-col gap-6 md:flex-row md:gap-8">
+        <aside className="md:w-56 md:shrink-0">
+          <p className="mb-2 hidden px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 md:mb-4 md:block">
+            My Account
+          </p>
+          <nav className="flex gap-2 overflow-x-auto pb-2 text-sm md:block md:space-y-1 md:overflow-visible md:pb-0">
             {nav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center justify-between rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100"
+                className="flex shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-full border border-slate-200 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 md:rounded-lg md:border-0 md:px-3 md:py-2"
               >
                 {item.label}
                 {"badge" in item && item.badge! > 0 && (

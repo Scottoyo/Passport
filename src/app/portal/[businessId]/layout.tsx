@@ -32,7 +32,7 @@ export default async function PortalBusinessLayout({ children, params }: Props) 
 
   return (
     <div>
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Business Portal</p>
           <h1 className="text-lg font-semibold text-slate-900">{business.name}</h1>
@@ -42,14 +42,14 @@ export default async function PortalBusinessLayout({ children, params }: Props) 
           <button className="text-sm font-semibold text-red-600 hover:text-red-700">Log Out</button>
         </form>
       </div>
-      <div className="mt-6 flex gap-8">
-        <aside className="w-48 shrink-0">
-          <nav className="space-y-1 text-sm">
+      <div className="mt-6 flex flex-col gap-6 md:flex-row md:gap-8">
+        <aside className="md:w-48 md:shrink-0">
+          <nav className="flex gap-2 overflow-x-auto pb-2 text-sm md:block md:space-y-1 md:overflow-visible md:pb-0">
             {nav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100"
+                className="shrink-0 whitespace-nowrap rounded-full border border-slate-200 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 md:block md:rounded-lg md:border-0 md:px-3 md:py-2"
               >
                 {item.label}
               </Link>
