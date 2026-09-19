@@ -19,9 +19,6 @@ export async function SiteHeader() {
               <Link href="/" className="hover:text-slate-900">
                 Home
               </Link>
-              <Link href="/#states" className="hover:text-slate-900">
-                Discover
-              </Link>
               <Link
                 href="/admin"
                 className="rounded-full bg-slate-900 px-4 py-1.5 text-white hover:bg-slate-700"

@@ -143,7 +143,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           {areas.length > 0 && (
             <div className="pt-4">
               <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                My areas
+                Regions
               </p>
               {areas.map((area) => (
                 <Link

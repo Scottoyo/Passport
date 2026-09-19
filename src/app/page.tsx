@@ -40,7 +40,7 @@ export default async function HomePage() {
           />
           <Benefit
             title="Bring the family"
-            body="Many Passports cover more than one person, so everyone in your group saves, not just the cardholder."
+            body="Many Passports cover more than one person, so everyone in your group saves — not just the Passport holder."
           />
           <Benefit
             title="Collect every state"
