@@ -19,6 +19,7 @@ export function PurchaseForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [code, setCode] = useState(referralCode ?? "");
+  const [promoCode, setPromoCode] = useState("");
 
   if (!isSignedIn) {
     return (
@@ -42,11 +43,20 @@ export function PurchaseForm({
           className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
       </label>
+      <label className="mb-3 block max-w-xs text-sm">
+        <span className="mb-1 block text-slate-600">Promo code (optional)</span>
+        <input
+          value={promoCode}
+          onChange={(e) => setPromoCode(e.target.value)}
+          placeholder="Discount code"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
+      </label>
       <button
         disabled={isPending}
         onClick={() =>
           startTransition(async () => {
-            const result = await startPlaceholderPassport(passportProductId, code || undefined);
+            const result = await startPlaceholderPassport(passportProductId, code || undefined, promoCode || undefined);
             if (result.error) {
               setError(result.error);
             } else {

@@ -130,16 +130,15 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
               <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                 Notifications
               </Link>
-              {["Promo codes", "Referral program", "Business passport sales"].map(
-                (label) => (
-                  <span
-                    key={label}
-                    className="block cursor-not-allowed rounded-lg px-3 py-2 font-medium text-slate-400"
-                  >
-                    {label}
-                  </span>
-                )
-              )}
+              <Link href="/admin/promo-codes" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Promo codes
+              </Link>
+              <Link href="/admin/referrals" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Referral program
+              </Link>
+              <Link href="/admin/business-sales" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Business passport sales
+              </Link>
             </>
           )}
           {!currentUser.isNationalAdmin &&
@@ -167,6 +166,15 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
                 </Link>
                 <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                   Notifications
+                </Link>
+                <Link href="/admin/promo-codes" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                  Promo codes
+                </Link>
+                <Link href="/admin/referrals" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                  Referral program
+                </Link>
+                <Link href="/admin/business-sales" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                  Business passport sales
                 </Link>
               </>
             )}

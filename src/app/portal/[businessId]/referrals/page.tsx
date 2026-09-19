@@ -29,9 +29,11 @@ export default async function PortalReferralsPage({ params }: Props) {
       ? `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/${stateSlug}/${area.slug}/passport?ref=${business.referral_code}`
       : null;
 
-  const { data: totalReferrals } = await supabase.rpc("count_business_referrals", {
-    target_business_id: businessId,
-  });
+  const [{ data: totalReferrals }, { data: statsRaw }] = await Promise.all([
+    supabase.rpc("count_business_referrals", { target_business_id: businessId }),
+    supabase.rpc("get_business_referral_stats", { target_business_id: businessId }),
+  ]);
+  const stats = statsRaw as { revenue_cents: number; payout_owed_cents: number; payout_paid_cents: number } | null;
 
   return (
     <div>
@@ -82,13 +84,15 @@ export default async function PortalReferralsPage({ params }: Props) {
         </div>
         <div className="rounded-2xl border border-slate-200 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Revenue generated</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">$0.00</p>
-          <p className="mt-1 text-xs text-slate-400">Payments aren&apos;t connected yet</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">${((stats?.revenue_cents ?? 0) / 100).toFixed(2)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Commission balance</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">$0.00</p>
-          <p className="mt-1 text-xs text-slate-400">Payments aren&apos;t connected yet</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Commission owed</p>
+          <p className="mt-1 text-2xl font-bold text-amber-700">${((stats?.payout_owed_cents ?? 0) / 100).toFixed(2)}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Commission paid</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">${((stats?.payout_paid_cents ?? 0) / 100).toFixed(2)}</p>
         </div>
       </div>
     </div>

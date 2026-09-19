@@ -29,9 +29,11 @@ export default async function AccountReferralsPage() {
     }
   }
 
-  const { data: passportsPurchased } = await supabase.rpc("count_profile_referrals", {
-    target_profile_id: user.id,
-  });
+  const [{ data: passportsPurchased }, { data: statsRaw }] = await Promise.all([
+    supabase.rpc("count_profile_referrals", { target_profile_id: user.id }),
+    supabase.rpc("get_my_referral_stats"),
+  ]);
+  const stats = statsRaw as { revenue_cents: number; payout_owed_cents: number; payout_paid_cents: number } | null;
 
   return (
     <div>
@@ -79,12 +81,22 @@ export default async function AccountReferralsPage() {
         </div>
         <div className="rounded-2xl border border-slate-200 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Revenue generated</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">$0.00</p>
-          <p className="mt-1 text-xs text-slate-400">Payments aren&apos;t connected yet</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">${((stats?.revenue_cents ?? 0) / 100).toFixed(2)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Your code</p>
           <p className="mt-1 text-lg font-bold text-slate-900">{profile?.referral_code ?? "-"}</p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Commission owed</p>
+          <p className="mt-1 text-2xl font-bold text-amber-700">${((stats?.payout_owed_cents ?? 0) / 100).toFixed(2)}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Commission paid</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">${((stats?.payout_paid_cents ?? 0) / 100).toFixed(2)}</p>
         </div>
       </div>
     </div>

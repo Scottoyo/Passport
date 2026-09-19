@@ -654,3 +654,84 @@ export async function getAdminNotificationsLastReadAt(userId: string): Promise<s
     .maybeSingle();
   return (data?.admin_notifications_last_read_at as string | null) ?? null;
 }
+
+export interface ReferralReportRow {
+  referrerId: string;
+  code: string;
+  name: string;
+  uses: number;
+  revenueCents: number;
+  payoutOwedCents: number;
+  payoutPaidCents: number;
+  payoutRateCents: number;
+  suspended: boolean;
+}
+
+// Passport holder referrals ("Referral program") and business referrals
+// ("Business passport sales") are mechanically identical - one column on
+// passports differs (referred_by_profile_id vs referred_by_business_id),
+// one lookup table differs (profiles vs businesses) - so both admin pages
+// share this one query rather than duplicating the aggregation logic.
+export async function getReferralReport(
+  kind: "profile" | "business",
+  areaIds: string[] | null
+): Promise<ReferralReportRow[]> {
+  const supabase = await createClient();
+  const referrerColumn: string = kind === "profile" ? "referred_by_profile_id" : "referred_by_business_id";
+  const passportSelectColumns: string = `id, passport_area_id, amount_paid_cents, referral_payout_cents, referral_payout_paid_at, ${referrerColumn}`;
+
+  let query = supabase
+    .from("passports")
+    .select(passportSelectColumns)
+    .not(referrerColumn, "is", null);
+  if (areaIds) {
+    query = query.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
+  }
+  const { data: passportRows } = await query;
+  const rows = (passportRows ?? []) as unknown as Record<string, unknown>[];
+  if (rows.length === 0) return [];
+
+  const referrerIds = [...new Set(rows.map((r) => r[referrerColumn] as string))];
+  const table: string = kind === "profile" ? "profiles" : "businesses";
+  const nameColumns: string = kind === "profile" ? "full_name, email" : "name";
+  const selectColumns: string = `id, referral_code, referral_payout_rate_cents, referral_suspended_at, ${nameColumns}`;
+  const { data: referrerRows } = await supabase
+    .from(table)
+    .select(selectColumns)
+    .in("id", referrerIds);
+  const referrerById = new Map(
+    ((referrerRows ?? []) as unknown as Record<string, unknown>[]).map((r) => [r.id as string, r])
+  );
+
+  const grouped = new Map<string, { uses: number; revenue: number; owed: number; paid: number }>();
+  for (const p of rows) {
+    const id = p[referrerColumn] as string;
+    const g = grouped.get(id) ?? { uses: 0, revenue: 0, owed: 0, paid: 0 };
+    g.uses += 1;
+    g.revenue += (p.amount_paid_cents as number) ?? 0;
+    if (p.referral_payout_paid_at) g.paid += (p.referral_payout_cents as number) ?? 0;
+    else g.owed += (p.referral_payout_cents as number) ?? 0;
+    grouped.set(id, g);
+  }
+
+  return [...grouped.entries()]
+    .map(([id, g]) => {
+      const referrer = referrerById.get(id);
+      const name =
+        kind === "profile"
+          ? ((referrer?.full_name as string) || (referrer?.email as string) || "Unknown holder")
+          : ((referrer?.name as string) ?? "Unknown business");
+      return {
+        referrerId: id,
+        code: (referrer?.referral_code as string) ?? "-",
+        name,
+        uses: g.uses,
+        revenueCents: g.revenue,
+        payoutOwedCents: g.owed,
+        payoutPaidCents: g.paid,
+        payoutRateCents: (referrer?.referral_payout_rate_cents as number) ?? 0,
+        suspended: Boolean(referrer?.referral_suspended_at),
+      };
+    })
+    .sort((a, b) => b.revenueCents - a.revenueCents);
+}

@@ -95,6 +95,8 @@ export interface Business {
   redemption_failed_attempts: number;
   redemption_locked_at: string | null;
   referral_code: string | null;
+  referral_payout_rate_cents: number;
+  referral_suspended_at: string | null;
   featured: boolean;
   approval_status: BusinessApprovalStatus;
   reviewed_by: string | null;
@@ -157,6 +159,30 @@ export interface Passport {
   referred_by_business_id: string | null;
   referred_by_profile_id: string | null;
   photo_url: string | null;
+  amount_paid_cents: number;
+  promo_code_id: string | null;
+  discount_cents: number;
+  referral_payout_cents: number;
+  referral_payout_paid_at: string | null;
+}
+
+export type PromoDiscountType = "percent_off" | "amount_off";
+export type PromoCodeStatus = "active" | "inactive";
+
+export interface PromoCode {
+  id: string;
+  code: string;
+  discount_type: PromoDiscountType;
+  discount_value: number;
+  scope_state_id: string | null;
+  scope_area_id: string | null;
+  status: PromoCodeStatus;
+  max_uses: number | null;
+  times_used: number;
+  expires_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Redemption {
@@ -238,6 +264,8 @@ export interface Profile {
   notification_preferences: NotificationPreferences;
   notifications_last_read_at: string | null;
   referral_code: string | null;
+  referral_payout_rate_cents: number;
+  referral_suspended_at: string | null;
   suspended_at: string | null;
   deleted_at: string | null;
   created_at: string;
