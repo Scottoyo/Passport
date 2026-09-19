@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/permissions";
+import { getCurrentUser, canManageArea } from "@/lib/permissions";
 import { getCurrentAdminScope } from "@/lib/admin-scope";
 import { getAllBusinessesNational } from "@/lib/admin-queries";
 import { getCategories } from "@/lib/queries";
@@ -99,11 +99,9 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Businesses</h1>
           <p className="mt-1 text-slate-600">
-            Every business across every Passport Area. New submissions from
-            managers/franchisees need approval here before they can be edited
-            or launched.
-            {!isNationalAdmin &&
-              " Approving, rejecting, and featuring a business stays a national-admin action."}
+            Every business across every Passport Area. Region managers, state
+            managers, and national admins can each approve, reject, and
+            feature businesses within their own hierarchy.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -145,6 +143,7 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
           <tbody className="divide-y divide-slate-100">
             {businesses.map((b) => {
               const detailBase = `/admin/areas/${b.passport_area_id}/businesses/${b.id}`;
+              const canManage = canManageArea(currentUser, b.passport_area_id, "manage_businesses", b.stateId);
               return (
                 <tr key={b.id}>
                   <td className="px-4 py-3">
@@ -169,7 +168,7 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
                   <td className="px-4 py-3 text-slate-500">{new Date(b.updated_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-right">
                     <BusinessActionsMenu viewHref={`${detailBase}?mode=view`} editHref={`${detailBase}?mode=edit`}>
-                      {isNationalAdmin && b.approval_status === "pending_review" && (
+                      {canManage && b.approval_status === "pending_review" && (
                         <>
                           <form action={setBusinessApproval.bind(null, b.id, "approved")}>
                             <button className="block w-full px-3 py-1.5 text-left text-sm text-green-700 hover:bg-slate-50">
@@ -183,14 +182,14 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
                           </form>
                         </>
                       )}
-                      {isNationalAdmin && b.approval_status === "rejected" && (
+                      {canManage && b.approval_status === "rejected" && (
                         <form action={setBusinessApproval.bind(null, b.id, "approved")}>
                           <button className="block w-full px-3 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-50">
                             Approve anyway
                           </button>
                         </form>
                       )}
-                      {isNationalAdmin && b.approval_status === "approved" && (
+                      {canManage && b.approval_status === "approved" && (
                         <form action={setBusinessFeatured.bind(null, b.id, !b.featured)}>
                           <button className="block w-full px-3 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-50">
                             {b.featured ? "Unfeature" : "Feature"}

@@ -189,10 +189,10 @@ amipassport.com's browse pattern (state-of-the-art for this category: browse
 a metro's participating businesses, open a business profile, see its
 offer(s), redeem in person), generalized to work across many
 states/areas instead of one island, and without reusing any of its
-branding, imagery, copy, or AMI-specific rules (e.g. "valid for up to 4
-people, one calendar year" was AMI's own product design choice, not
-something this schema hard-codes — `passport_products.max_members` and
-`duration_days` are configurable per product instead).
+branding, imagery, copy, or AMI-specific rules (e.g. "one calendar
+year" was AMI's own product design choice, not something this schema
+hard-codes — `passport_products.duration_days` is configurable per
+product instead).
 
 ## Open decisions before this goes further
 

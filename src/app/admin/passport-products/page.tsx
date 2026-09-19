@@ -72,8 +72,7 @@ export default async function PassportProductsAdminPage() {
                           />
                         </div>
                         <p className="mt-2 text-sm text-slate-600">
-                          ${(p.price_cents / 100).toFixed(2)} &middot; {p.duration_days} days &middot; up to{" "}
-                          {p.max_members} member{p.max_members === 1 ? "" : "s"}
+                          ${(p.price_cents / 100).toFixed(2)} &middot; {p.duration_days} days
                         </p>
                         {p.description && <p className="mt-1 text-sm text-slate-500">{p.description}</p>}
                       </div>
@@ -117,16 +116,6 @@ export default async function PassportProductsAdminPage() {
                         min="1"
                         defaultValue={365}
                         className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                      />
-                    </label>
-                    <label className="text-sm">
-                      <span className="mb-1 block text-slate-600">Max members</span>
-                      <input
-                        name="max_members"
-                        type="number"
-                        min="1"
-                        defaultValue={1}
-                        className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm"
                       />
                     </label>
                     <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">

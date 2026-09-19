@@ -3,10 +3,12 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentUser, canManageArea } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { getCategories } from "@/lib/queries";
-import type { Business, BusinessHoursDay, Offer, PassportArea, State } from "@/lib/types/domain";
+import type { Business, BusinessApprovalStatus, BusinessHoursDay, Offer, PassportArea, State } from "@/lib/types/domain";
 import { StatusBadge } from "@/components/status-badge";
 import { addStaff, removeStaff } from "../../actions";
+import { setBusinessApproval, setBusinessFeatured } from "../../../../businesses/actions";
 import {
+  setBusinessActiveStatus,
   updateBusinessBasicInfo,
   updateBusinessLocationContact,
   updateBusinessSocialLinks,
@@ -19,6 +21,18 @@ import {
   createOffer,
   setOfferStatus,
 } from "./actions";
+
+const APPROVAL_STYLES: Record<BusinessApprovalStatus, string> = {
+  pending_review: "bg-amber-100 text-amber-800",
+  approved: "bg-green-100 text-green-800",
+  rejected: "bg-red-100 text-red-700",
+};
+
+const APPROVAL_LABELS: Record<BusinessApprovalStatus, string> = {
+  pending_review: "Pending review",
+  approved: "Approved",
+  rejected: "Rejected",
+};
 
 interface Props {
   params: Promise<{ areaId: string; businessId: string }>;
@@ -146,6 +160,80 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
           )}
         </div>
       </div>
+
+      {canBusinesses && (
+        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
+          <h2 className="font-semibold text-slate-900">Status</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Visible only to region managers, state managers, and national admins.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-6">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Active status</p>
+              <div className="mt-1 flex items-center gap-2">
+                <StatusBadge status={business.status} />
+                {business.status === "active" ? (
+                  <form action={setBusinessActiveStatus.bind(null, areaId, businessId, false)}>
+                    <button className="rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-400">
+                      Pause
+                    </button>
+                  </form>
+                ) : (
+                  <form action={setBusinessActiveStatus.bind(null, areaId, businessId, true)}>
+                    <button className="rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-500">
+                      Launch
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Approval status</p>
+              <div className="mt-1 flex items-center gap-2">
+                <span
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${APPROVAL_STYLES[business.approval_status]}`}
+                >
+                  {APPROVAL_LABELS[business.approval_status]}
+                </span>
+                {business.approval_status === "pending_review" && (
+                  <>
+                    <form action={setBusinessApproval.bind(null, businessId, "approved")}>
+                      <button className="rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-500">
+                        Approve
+                      </button>
+                    </form>
+                    <form action={setBusinessApproval.bind(null, businessId, "rejected")}>
+                      <button className="rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-500">
+                        Reject
+                      </button>
+                    </form>
+                  </>
+                )}
+                {business.approval_status === "rejected" && (
+                  <form action={setBusinessApproval.bind(null, businessId, "approved")}>
+                    <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                      Approve anyway
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Featured listing</p>
+              <div className="mt-1 flex items-center gap-2">
+                <span className="text-sm text-slate-700">{business.featured ? "Featured" : "Not featured"}</span>
+                {business.approval_status === "approved" && (
+                  <form action={setBusinessFeatured.bind(null, businessId, !business.featured)}>
+                    <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                      {business.featured ? "Unfeature" : "Feature"}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {mode === "view" ? (
         <div className="mt-8 space-y-6">

@@ -21,7 +21,6 @@ export async function createPassportProduct(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
   const priceDollars = Number(formData.get("price") ?? 0);
   const durationDays = Number(formData.get("duration_days") ?? 365);
-  const maxMembers = Number(formData.get("max_members") ?? 1);
 
   if (!areaId || !name || !Number.isFinite(priceDollars) || priceDollars < 0) {
     throw new Error("A Passport product needs a region, a name, and a valid price.");
@@ -41,7 +40,6 @@ export async function createPassportProduct(formData: FormData) {
     description: description || null,
     price_cents: Math.round(priceDollars * 100),
     duration_days: durationDays > 0 ? durationDays : 365,
-    max_members: maxMembers > 0 ? maxMembers : 1,
   });
   if (error) throw new Error(error.message);
 

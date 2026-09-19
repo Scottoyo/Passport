@@ -49,10 +49,7 @@ export default async function AreaPassportPage({ params }: Props) {
           <p className="mt-4 text-3xl font-bold text-slate-900">
             ${(product.price_cents / 100).toFixed(2)}
           </p>
-          <p className="mt-1 text-sm text-slate-500">
-            Valid for {product.duration_days} days · covers up to{" "}
-            {product.max_members} {product.max_members === 1 ? "person" : "people"}
-          </p>
+          <p className="mt-1 text-sm text-slate-500">Valid for {product.duration_days} days</p>
           <div className="mt-6">
             <PurchaseForm
               passportProductId={product.id}

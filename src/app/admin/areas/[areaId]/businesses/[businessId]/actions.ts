@@ -32,6 +32,20 @@ function path(areaId: string, businessId: string) {
   return `/admin/areas/${areaId}/businesses/${businessId}`;
 }
 
+export async function setBusinessActiveStatus(areaId: string, businessId: string, active: boolean) {
+  await requireCapability(areaId, "manage_businesses");
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("businesses")
+    .update({
+      status: active ? "active" : "paused",
+      launched_at: active ? new Date().toISOString() : undefined,
+    })
+    .eq("id", businessId);
+  if (error) throw new Error(error.message);
+  revalidatePath(path(areaId, businessId));
+}
+
 export async function updateBusinessBasicInfo(areaId: string, businessId: string, formData: FormData) {
   await requireCapability(areaId, "manage_businesses");
   const supabase = await createClient();

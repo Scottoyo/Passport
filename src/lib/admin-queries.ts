@@ -195,6 +195,7 @@ export async function getFavoriteBusinessesForHolder(userId: string): Promise<Bu
 export interface BusinessWithLocation extends Business {
   areaName: string | null;
   stateName: string | null;
+  stateId: string | null;
 }
 
 async function attachLocations(businesses: Business[]): Promise<BusinessWithLocation[]> {
@@ -214,7 +215,7 @@ async function attachLocations(businesses: Business[]): Promise<BusinessWithLoca
   return businesses.map((b) => {
     const area = areaById.get(b.passport_area_id);
     const state = area ? stateById.get(area.state_id) : undefined;
-    return { ...b, areaName: area?.name ?? null, stateName: state?.name ?? null };
+    return { ...b, areaName: area?.name ?? null, stateName: state?.name ?? null, stateId: state?.id ?? null };
   });
 }
 

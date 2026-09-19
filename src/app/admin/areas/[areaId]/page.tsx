@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser, canManageArea, isStateManager } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
-import type { Business, MarketingRequest, PassportArea, Subarea } from "@/lib/types/domain";
+import type { Business, BusinessApprovalStatus, MarketingRequest, PassportArea, Subarea } from "@/lib/types/domain";
 import { StatusBadge } from "@/components/status-badge";
 import {
   createSubarea,
@@ -15,6 +15,19 @@ import {
   removeAreaManager,
   createMarketingRequest,
 } from "./actions";
+import { setBusinessApproval, setBusinessFeatured } from "../../businesses/actions";
+
+const APPROVAL_STYLES: Record<BusinessApprovalStatus, string> = {
+  pending_review: "bg-amber-100 text-amber-800",
+  approved: "bg-green-100 text-green-800",
+  rejected: "bg-red-100 text-red-700",
+};
+
+const APPROVAL_LABELS: Record<BusinessApprovalStatus, string> = {
+  pending_review: "Pending review",
+  approved: "Approved",
+  rejected: "Rejected",
+};
 
 const CAPABILITY_FIELDS: { key: string; label: string }[] = [
   { key: "can_view_metrics", label: "View metrics" },
@@ -155,15 +168,50 @@ export default async function AreaWorkspacePage({ params }: Props) {
           <h2 className="font-semibold text-slate-900">Businesses</h2>
           <ul className="mt-3 divide-y divide-slate-100">
             {(businesses ?? []).map((business) => (
-              <li key={business.id} className="flex items-center justify-between py-2">
-                <Link
-                  href={`/admin/areas/${areaId}/businesses/${business.id}`}
-                  className="text-sm font-medium text-slate-800 hover:underline"
-                >
-                  {business.name}
-                </Link>
-                <div className="flex items-center gap-3">
+              <li key={business.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <div>
+                  <Link
+                    href={`/admin/areas/${areaId}/businesses/${business.id}`}
+                    className="text-sm font-medium text-slate-800 hover:underline"
+                  >
+                    {business.name}
+                  </Link>
+                  <span
+                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${APPROVAL_STYLES[business.approval_status]}`}
+                  >
+                    {APPROVAL_LABELS[business.approval_status]}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
                   <StatusBadge status={business.status} />
+                  {canBusinesses && business.approval_status === "pending_review" && (
+                    <>
+                      <form action={setBusinessApproval.bind(null, business.id, "approved")}>
+                        <button className="rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-500">
+                          Approve
+                        </button>
+                      </form>
+                      <form action={setBusinessApproval.bind(null, business.id, "rejected")}>
+                        <button className="rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-500">
+                          Reject
+                        </button>
+                      </form>
+                    </>
+                  )}
+                  {canBusinesses && business.approval_status === "rejected" && (
+                    <form action={setBusinessApproval.bind(null, business.id, "approved")}>
+                      <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                        Approve anyway
+                      </button>
+                    </form>
+                  )}
+                  {canBusinesses && business.approval_status === "approved" && (
+                    <form action={setBusinessFeatured.bind(null, business.id, !business.featured)}>
+                      <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                        {business.featured ? "Unfeature" : "Feature"}
+                      </button>
+                    </form>
+                  )}
                   {canBusinesses &&
                     (business.status !== "active" ? (
                       <form action={setBusinessStatus.bind(null, areaId, business.id, "active")}>

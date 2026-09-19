@@ -135,7 +135,6 @@ export interface PassportProduct {
   price_cents: number;
   currency: string;
   duration_days: number;
-  max_members: number;
   status: ContentStatus;
 }
 
