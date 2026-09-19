@@ -219,13 +219,17 @@ async function attachLocations(businesses: Business[]): Promise<BusinessWithLoca
 }
 
 export async function getAllBusinessesNational(
-  opts: { stateId?: string } = {}
+  opts: { stateId?: string; stateIds?: string[] } = {}
 ): Promise<BusinessWithLocation[]> {
   const supabase = await createClient();
   let query = supabase.from("businesses").select("*").order("name");
 
   if (opts.stateId) {
     const areaIds = await getAreaIdsForState(opts.stateId);
+    query = query.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
+  } else if (opts.stateIds) {
+    const areaIdLists = await Promise.all(opts.stateIds.map((id) => getAreaIdsForState(id)));
+    const areaIds = areaIdLists.flat();
     query = query.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
   }
 

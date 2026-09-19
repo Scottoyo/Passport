@@ -21,10 +21,16 @@ const APPROVAL_LABELS: Record<BusinessApprovalStatus, string> = {
 
 export default async function BusinessesAdminPage() {
   const currentUser = await getCurrentUser();
-  if (!currentUser?.isNationalAdmin) redirect("/admin");
+  if (!currentUser) redirect("/sign-in?next=/admin/businesses");
 
-  const { state } = await getCurrentAdminScope();
-  const businesses = await getAllBusinessesNational({ stateId: state?.id });
+  const isNationalAdmin = currentUser.isNationalAdmin;
+  if (!isNationalAdmin && currentUser.stateAssignments.length === 0) redirect("/admin");
+
+  const businesses = isNationalAdmin
+    ? await getAllBusinessesNational({ stateId: (await getCurrentAdminScope()).state?.id })
+    : await getAllBusinessesNational({
+        stateIds: [...new Set(currentUser.stateAssignments.map((s) => s.state_id))],
+      });
 
   return (
     <div>
@@ -33,6 +39,7 @@ export default async function BusinessesAdminPage() {
         Every business across every Passport Area. New submissions from
         managers/franchisees need approval here before they can be edited or
         launched.
+        {!isNationalAdmin && " Approving, rejecting, and featuring a business stays a national-admin action — use Manage to edit one you have access to."}
       </p>
 
       <ul className="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-200">
@@ -53,7 +60,7 @@ export default async function BusinessesAdminPage() {
                 {APPROVAL_LABELS[b.approval_status]}
               </span>
 
-              {b.approval_status === "pending_review" && (
+              {isNationalAdmin && b.approval_status === "pending_review" && (
                 <>
                   <form action={setBusinessApproval.bind(null, b.id, "approved")}>
                     <button className="rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-500">
@@ -67,7 +74,7 @@ export default async function BusinessesAdminPage() {
                   </form>
                 </>
               )}
-              {b.approval_status === "rejected" && (
+              {isNationalAdmin && b.approval_status === "rejected" && (
                 <form action={setBusinessApproval.bind(null, b.id, "approved")}>
                   <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
                     Approve anyway
@@ -75,7 +82,7 @@ export default async function BusinessesAdminPage() {
                 </form>
               )}
 
-              {b.approval_status === "approved" && (
+              {isNationalAdmin && b.approval_status === "approved" && (
                 <form action={setBusinessFeatured.bind(null, b.id, !b.featured)}>
                   <button
                     className={
