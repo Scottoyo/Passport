@@ -154,6 +154,8 @@ export interface Passport {
   travel_start_date: string | null;
   travel_end_date: string | null;
   referred_by_business_id: string | null;
+  referred_by_profile_id: string | null;
+  photo_url: string | null;
 }
 
 export interface Redemption {
@@ -207,6 +209,14 @@ export interface MarketingRequest {
   admin_notes: string | null;
 }
 
+export interface NotificationPreferences {
+  achievement_unlocked: boolean;
+  admin_announcement: boolean;
+  new_achievement_available: boolean;
+  new_business_added: boolean;
+  new_promotion_added: boolean;
+}
+
 export interface Profile {
   id: string;
   first_name: string | null;
@@ -215,8 +225,26 @@ export interface Profile {
   email: string | null;
   phone: string | null;
   age_range: string | null;
+  address_line1: string | null;
+  city: string | null;
+  state_code: string | null;
+  postal_code: string | null;
+  notification_preferences: NotificationPreferences;
+  notifications_last_read_at: string | null;
+  referral_code: string | null;
   suspended_at: string | null;
   deleted_at: string | null;
+  created_at: string;
+}
+
+export type RegionEventType = "new_business" | "new_offer";
+
+export interface RegionEvent {
+  id: string;
+  passport_area_id: string;
+  event_type: RegionEventType;
+  business_id: string | null;
+  offer_id: string | null;
   created_at: string;
 }
 

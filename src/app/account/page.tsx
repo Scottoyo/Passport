@@ -2,126 +2,108 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { getMyPassports } from "@/lib/queries";
+import { getMyPassports, getAreaVisitProgress, getAchievementProgress } from "@/lib/queries";
+import { getFavoriteBusinessesForHolder, getRedemptionsForPassports } from "@/lib/admin-queries";
 import type { PassportArea, Profile } from "@/lib/types/domain";
-import { updateMyProfile, updateMyPassportDates } from "./actions";
 
-export const metadata: Metadata = { title: "My Passport" };
+export const metadata: Metadata = { title: "My Account" };
 
-const AGE_RANGES = ["Under 18", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
-const inputClass = "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm";
-
-function toDateInputValue(iso: string | null) {
-  if (!iso) return "";
-  return iso.slice(0, 10);
-}
-
-export default async function AccountPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ mode?: string }>;
-}) {
+export default async function AccountDashboardPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   if (!user) redirect("/sign-in?next=/account");
-
-  const { mode } = await searchParams;
-  const editing = mode === "edit";
 
   const [passports, { data: profile }] = await Promise.all([
     getMyPassports(user.id),
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>(),
   ]);
 
+  const primary = passports[0] ?? null;
   const areaIds = [...new Set(passports.map((p) => p.passport_area_id))];
   const { data: areas } = areaIds.length
     ? await supabase.from("passport_areas").select("*").in("id", areaIds).returns<PassportArea[]>()
     : { data: [] as PassportArea[] };
   const areaById = new Map((areas ?? []).map((a) => [a.id, a]));
+  const primaryArea = primary ? areaById.get(primary.passport_area_id) : null;
+  const { data: primaryState } = primaryArea
+    ? await supabase.from("states").select("slug").eq("id", primaryArea.state_id).maybeSingle()
+    : { data: null };
+
+  const [favorites, redemptions, subareaProgress, businessesInAreas, achievements] = await Promise.all([
+    getFavoriteBusinessesForHolder(user.id),
+    getRedemptionsForPassports(passports.map((p) => p.id)),
+    primary ? getAreaVisitProgress(primary.passport_area_id, user.id) : Promise.resolve([]),
+    areaIds.length
+      ? supabase.from("businesses").select("id").in("passport_area_id", areaIds)
+      : Promise.resolve({ data: [] as { id: string }[] }),
+    getAchievementProgress(user.id),
+  ]);
+
+  const businessIdsInAreas = (businessesInAreas.data ?? []).map((b) => b.id as string);
+  const { count: activeOfferCount } = businessIdsInAreas.length
+    ? await supabase
+        .from("offers")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "active")
+        .in("business_id", businessIdsInAreas)
+    : { count: 0 };
+
+  const nextAchievement = achievements.find((a) => !a.unlocked) ?? null;
+  const recentRedemptions = redemptions.slice(0, 5);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-3xl font-bold text-slate-900">My Profile</h1>
-        {!editing && (
+    <div>
+      <h1 className="text-2xl font-bold text-slate-900">
+        Welcome back{profile?.first_name ? `, ${profile.first_name}` : ""}!
+      </h1>
+      <p className="mt-1 text-slate-600">
+        Manage your Passport, view your redemptions, and explore local perks.
+      </p>
+
+      {primary ? (
+        <section className="mt-6 rounded-2xl border border-slate-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold text-slate-900">{primaryArea?.name ?? "Unknown region"} Passport</h2>
+              <p className="text-sm text-slate-500">
+                {passports.length > 1 ? `${passports.length} Passports` : "Passport holder"}
+              </p>
+            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                primary.status === "active" ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              {primary.status}
+            </span>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-slate-400">Passport holder</p>
+              <p className="text-sm font-medium text-slate-900">{profile?.full_name || user.email}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-slate-400">Passport number</p>
+              <p className="text-sm font-medium text-slate-900">{primary.id}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-slate-400">Expires</p>
+              <p className="text-sm font-medium text-slate-900">
+                {new Date(primary.expires_at).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
           <Link
-            href="/account?mode=edit"
-            className="ml-auto rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
+            href="/account/passport"
+            className="mt-4 block rounded-full bg-slate-900 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-slate-700"
           >
-            Edit profile
+            View Passport Details
           </Link>
-        )}
-      </div>
-
-      <section className="mt-6 rounded-2xl border border-slate-200 p-6">
-        {editing ? (
-          <form action={updateMyProfile} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="text-sm">
-                <span className="mb-1 block text-slate-600">First name</span>
-                <input name="first_name" defaultValue={profile?.first_name ?? ""} className={inputClass} />
-              </label>
-              <label className="text-sm">
-                <span className="mb-1 block text-slate-600">Last name</span>
-                <input name="last_name" defaultValue={profile?.last_name ?? ""} className={inputClass} />
-              </label>
-              <label className="text-sm">
-                <span className="mb-1 block text-slate-600">Phone</span>
-                <input name="phone" type="tel" defaultValue={profile?.phone ?? ""} className={inputClass} />
-              </label>
-              <label className="text-sm">
-                <span className="mb-1 block text-slate-600">Age range</span>
-                <select name="age_range" defaultValue={profile?.age_range ?? ""} className={inputClass}>
-                  <option value="">Not set</option>
-                  {AGE_RANGES.map((range) => (
-                    <option key={range} value={range}>
-                      {range}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <div className="flex gap-3">
-              <button className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-700">
-                Save changes
-              </button>
-              <Link
-                href="/account"
-                className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500"
-              >
-                Cancel
-              </Link>
-            </div>
-          </form>
-        ) : (
-          <dl className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-xs text-slate-500">Name</dt>
-              <dd className="text-sm text-slate-900">{profile?.full_name || "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-slate-500">Email</dt>
-              <dd className="text-sm text-slate-900">{user.email}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-slate-500">Phone</dt>
-              <dd className="text-sm text-slate-900">{profile?.phone ?? "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-slate-500">Age range</dt>
-              <dd className="text-sm text-slate-900">{profile?.age_range ?? "—"}</dd>
-            </div>
-          </dl>
-        )}
-      </section>
-
-      <h2 className="mt-10 text-xl font-semibold text-slate-900">My Passports</h2>
-
-      {passports.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-slate-200 p-8 text-center">
+        </section>
+      ) : (
+        <section className="mt-6 rounded-2xl border border-slate-200 p-8 text-center">
           <p className="text-slate-600">You don&apos;t have a Passport yet.</p>
           <Link
             href="/passport"
@@ -129,77 +111,105 @@ export default async function AccountPage({
           >
             Get the Passport
           </Link>
-        </div>
-      ) : (
-        <div className="mt-4 space-y-4">
-          {passports.map((passport) => {
-            const area = areaById.get(passport.passport_area_id);
-            return (
-              <div key={passport.id} className="rounded-2xl border border-slate-200 p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-slate-900">
-                      {area?.name ?? "Unknown region"} Passport
-                    </span>
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        passport.status === "active"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-slate-100 text-slate-600"
-                      }`}
-                    >
-                      {passport.status}
-                    </span>
-                  </div>
-                  <span className="text-sm text-slate-500">
-                    Expires {new Date(passport.expires_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <p className="mt-3 text-sm text-slate-500">
-                  Purchased {new Date(passport.purchased_at).toLocaleDateString()}
-                </p>
-                <p className="mt-4 text-sm text-slate-600">
-                  Valid at any participating business in {area?.name ?? "its region"}{" "}
-                  — show this Passport at checkout to redeem an offer.
-                </p>
-
-                <form
-                  action={updateMyPassportDates.bind(null, passport.id)}
-                  className="mt-4 flex flex-wrap items-end gap-3 border-t border-slate-100 pt-4"
-                >
-                  <label className="text-sm">
-                    <span className="mb-1 block text-slate-600">Travel start date</span>
-                    <input
-                      type="date"
-                      name="travel_start_date"
-                      defaultValue={toDateInputValue(passport.travel_start_date)}
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    />
-                  </label>
-                  <label className="text-sm">
-                    <span className="mb-1 block text-slate-600">Travel end date</span>
-                    <input
-                      type="date"
-                      name="travel_end_date"
-                      defaultValue={toDateInputValue(passport.travel_end_date)}
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    />
-                  </label>
-                  <button className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500">
-                    Save travel dates
-                  </button>
-                </form>
-              </div>
-            );
-          })}
-          <Link
-            href="/passport"
-            className="inline-block text-sm font-semibold text-slate-700 hover:text-slate-900"
-          >
-            Get A Passport For Another Region &rarr;
-          </Link>
-        </div>
+        </section>
       )}
+
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl border border-slate-200 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Redemptions</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">{redemptions.length}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Favorites</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">{favorites.length}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Available offers</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900">{activeOfferCount ?? 0}</p>
+        </div>
+      </div>
+
+      {primary && subareaProgress.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-xl font-semibold text-slate-900">Continue Exploring</h2>
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {subareaProgress.map(({ subarea, totalBusinesses, visitedBusinesses }) => {
+              const pct = totalBusinesses > 0 ? Math.round((visitedBusinesses / totalBusinesses) * 100) : 0;
+              return (
+                <div key={subarea.id} className="rounded-2xl border border-slate-200 p-4">
+                  <p className="font-semibold text-slate-900">{subarea.name}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {visitedBusinesses} of {totalBusinesses} businesses visited
+                  </p>
+                  <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100">
+                    <div className="h-1.5 rounded-full bg-slate-900" style={{ width: `${pct}%` }} />
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">{pct}% complete</p>
+                  {primaryArea && primaryState && (
+                    <Link
+                      href={`/${primaryState.slug}/${primaryArea.slug}/${subarea.slug}`}
+                      className="mt-3 inline-block rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500"
+                    >
+                      View Area
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {nextAchievement && (
+        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
+          <h2 className="font-semibold text-slate-900">Next Achievement</h2>
+          <p className="mt-1 text-sm text-slate-900">{nextAchievement.name}</p>
+          <p className="text-sm text-slate-500">{nextAchievement.description}</p>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="h-1.5 flex-1 rounded-full bg-slate-100">
+              <div
+                className="h-1.5 rounded-full bg-slate-900"
+                style={{ width: `${(nextAchievement.current / nextAchievement.target) * 100}%` }}
+              />
+            </div>
+            <span className="text-xs text-slate-500">
+              {nextAchievement.current} of {nextAchievement.target}
+            </span>
+          </div>
+          <Link
+            href="/account/achievements"
+            className="mt-3 inline-block rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500"
+          >
+            View Achievements
+          </Link>
+        </section>
+      )}
+
+      <section className="mt-8 rounded-2xl border border-slate-200 p-6">
+        <h2 className="font-semibold text-slate-900">Recent Activity</h2>
+        {recentRedemptions.length === 0 ? (
+          <div className="mt-3 text-center">
+            <p className="text-sm text-slate-500">You haven&apos;t redeemed any Passport promotions yet.</p>
+            <Link
+              href="/account/discover"
+              className="mt-3 inline-block rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+            >
+              Discover Businesses
+            </Link>
+          </div>
+        ) : (
+          <ul className="mt-3 divide-y divide-slate-100">
+            {recentRedemptions.map((r) => (
+              <li key={r.id} className="py-2">
+                <p className="text-sm font-medium text-slate-900">{r.businessName}</p>
+                <p className="text-xs text-slate-500">
+                  {r.offerTitle} &middot; {new Date(r.redeemed_at).toLocaleDateString()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

@@ -18,6 +18,7 @@ export function PurchaseForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [code, setCode] = useState(referralCode ?? "");
 
   if (!isSignedIn) {
     return (
@@ -32,11 +33,20 @@ export function PurchaseForm({
 
   return (
     <div>
+      <label className="mb-3 block max-w-xs text-sm">
+        <span className="mb-1 block text-slate-600">Referral code (optional)</span>
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="Business or friend's code"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
+      </label>
       <button
         disabled={isPending}
         onClick={() =>
           startTransition(async () => {
-            const result = await startPlaceholderPassport(passportProductId, referralCode);
+            const result = await startPlaceholderPassport(passportProductId, code || undefined);
             if (result.error) {
               setError(result.error);
             } else {

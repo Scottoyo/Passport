@@ -30,14 +30,25 @@ export async function startPlaceholderPassport(passportProductId: string, referr
     return { error: "That Passport product is no longer available." };
   }
 
+  // A code can refer to a business or a passport holder, never both —
+  // businesses checked first, then profiles via the resolve_profile_referral_code
+  // RPC (a plain query can't see another user's profile row — RLS only
+  // allows reading your own).
   let referredByBusinessId: string | null = null;
+  let referredByProfileId: string | null = null;
   if (referralCode) {
+    const normalized = referralCode.trim().toLowerCase();
     const { data: referrer } = await supabase
       .from("businesses")
       .select("id")
-      .eq("referral_code", referralCode.trim().toLowerCase())
+      .eq("referral_code", normalized)
       .maybeSingle();
-    referredByBusinessId = referrer?.id ?? null;
+    if (referrer) {
+      referredByBusinessId = referrer.id;
+    } else {
+      const { data: profileId } = await supabase.rpc("resolve_profile_referral_code", { code: normalized });
+      referredByProfileId = profileId ?? null;
+    }
   }
 
   const expiresAt = new Date();
@@ -52,6 +63,7 @@ export async function startPlaceholderPassport(passportProductId: string, referr
     expires_at: expiresAt.toISOString(),
     payment_reference: "PLACEHOLDER-NO-PAYMENT-PROCESSOR",
     referred_by_business_id: referredByBusinessId,
+    referred_by_profile_id: referredByProfileId,
   });
 
   if (error) {
