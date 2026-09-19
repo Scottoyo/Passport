@@ -132,7 +132,7 @@ export async function getSubareaBySlug(areaId: string, subareaSlug: string) {
 
 export async function getBusinessesForArea(
   areaId: string,
-  opts: { subareaId?: string } = {}
+  opts: { subareaId?: string; categoryId?: string; q?: string } = {}
 ) {
   const supabase = await createClient();
   let query = supabase
@@ -141,6 +141,8 @@ export async function getBusinessesForArea(
     .eq("passport_area_id", areaId)
     .order("name");
   if (opts.subareaId) query = query.eq("subarea_id", opts.subareaId);
+  if (opts.categoryId) query = query.eq("category_id", opts.categoryId);
+  if (opts.q) query = query.ilike("name", `%${opts.q}%`);
   const { data } = await query.returns<Business[]>();
   return data ?? [];
 }
@@ -188,6 +190,23 @@ export async function getMyPassports(userId: string) {
     .order("purchased_at", { ascending: false })
     .returns<Passport[]>();
   return data ?? [];
+}
+
+// "Does this user have a redeemable Passport for this region" — checks both
+// status and expires_at since nothing in this app sweeps status on expiry.
+export async function getActivePassportForArea(userId: string, areaId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("passports")
+    .select("*")
+    .eq("owner_user_id", userId)
+    .eq("passport_area_id", areaId)
+    .eq("status", "active")
+    .gt("expires_at", new Date().toISOString())
+    .order("purchased_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<Passport>();
+  return data;
 }
 
 export async function getActivePassportProductForArea(areaId: string) {

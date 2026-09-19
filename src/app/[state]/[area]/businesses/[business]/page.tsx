@@ -6,9 +6,10 @@ import {
   getAreaBySlug,
   getBusinessBySlug,
   getOffersForBusiness,
+  getActivePassportForArea,
 } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
-import { OfferCard } from "@/components/offer-card";
+import { OfferCard, type OfferCta } from "@/components/offer-card";
 import { toggleFavorite } from "./actions";
 
 interface Props {
@@ -51,6 +52,11 @@ export default async function BusinessPage({ params }: Props) {
     isFavorited = Boolean(favorite);
   }
   const currentPath = `/${state.slug}/${area.slug}/businesses/${business.slug}`;
+
+  const activePassport = user ? await getActivePassportForArea(user.id, area.id) : null;
+  const cta: OfferCta = activePassport
+    ? { type: "redeem", passportNumber: activePassport.id }
+    : { type: "get-passport", href: `/${state.slug}/${area.slug}/passport` };
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
@@ -135,7 +141,7 @@ export default async function BusinessPage({ params }: Props) {
         ) : (
           <div className="mt-4 space-y-4">
             {offers.map((offer) => (
-              <OfferCard key={offer.id} offer={offer} />
+              <OfferCard key={offer.id} offer={offer} cta={cta} />
             ))}
           </div>
         )}

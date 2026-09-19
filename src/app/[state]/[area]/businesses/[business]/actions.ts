@@ -30,3 +30,15 @@ export async function toggleFavorite(businessId: string, currentPath: string) {
 
   revalidatePath(currentPath);
 }
+
+export async function redeemOffer(offerId: string, code: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("redeem_offer", {
+    target_offer_id: offerId,
+    submitted_code: code.trim(),
+  });
+  if (error) return { error: error.message };
+  const result = data as { success: boolean; error?: string };
+  if (!result.success) return { error: result.error ?? "Redemption failed." };
+  return { error: null };
+}
