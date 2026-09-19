@@ -4,6 +4,7 @@ import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAdminScope, getAreaIdsForState, narrowAreaIds, NO_MATCH_ID } from "@/lib/admin-scope";
 import { getDashboardMetrics, getDashboardLeaderboards, type DashboardLeaderboards } from "@/lib/admin-queries";
+import { BusinessInfoModalButton } from "@/components/admin/business-info-modal-button";
 import type { PassportArea } from "@/lib/types/domain";
 
 export default async function AdminDashboardPage() {
@@ -53,14 +54,15 @@ export default async function AdminDashboardPage() {
             value={metrics.totalPassportHolders ?? 0}
             sub="Registered consumer accounts"
           />
-          <Stat label="Total redemptions" value={metrics.totalRedemptions} sub="Lifetime perks redeemed" highlight />
+          <Stat label="Total redemptions" value={metrics.totalRedemptions} sub="Lifetime perks redeemed" />
           <Stat label="Today's redemptions" value={metrics.todaysRedemptions} sub="Completed since midnight UTC" />
           <Stat label="This month's redemptions" value={metrics.thisMonthsRedemptions} sub="Completed this calendar month" />
           <Stat
             label="Businesses pending approval"
             value={metrics.businessesPendingApproval}
             sub="Awaiting admin review"
-            highlight="amber"
+            highlight={metrics.businessesPendingApproval > 0 ? "amber" : undefined}
+            href={metrics.businessesPendingApproval > 0 ? "/admin/businesses?approval=pending_review" : undefined}
           />
         </div>
 
@@ -143,7 +145,7 @@ export default async function AdminDashboardPage() {
             sub="Registered consumer accounts"
           />
         )}
-        <Stat label="Total redemptions" value={metrics.totalRedemptions} sub="Lifetime perks redeemed" highlight />
+        <Stat label="Total redemptions" value={metrics.totalRedemptions} sub="Lifetime perks redeemed" />
         <Stat label="Today's redemptions" value={metrics.todaysRedemptions} sub="Completed since midnight UTC" />
         <Stat
           label="This month's redemptions"
@@ -154,7 +156,8 @@ export default async function AdminDashboardPage() {
           label="Businesses pending approval"
           value={metrics.businessesPendingApproval}
           sub="Awaiting admin review"
-          highlight="amber"
+          highlight={metrics.businessesPendingApproval > 0 ? "amber" : undefined}
+          href={metrics.businessesPendingApproval > 0 ? "/admin/businesses?approval=pending_review" : undefined}
         />
       </div>
 
@@ -185,23 +188,30 @@ function Stat({
   value,
   sub,
   highlight,
+  href,
 }: {
   label: string;
   value: number;
   sub: string;
-  highlight?: "amber" | true;
+  highlight?: "amber";
+  href?: string;
 }) {
-  const style =
-    highlight === "amber"
-      ? "border-amber-200 bg-amber-50"
-      : highlight
-        ? "border-slate-200 bg-slate-100"
-        : "border-slate-200";
+  const style = highlight === "amber" ? "border-amber-200 bg-amber-50" : "border-slate-200";
   const valueStyle = highlight === "amber" ? "text-amber-700" : "text-slate-900";
 
   return (
     <div className={`rounded-2xl border p-6 ${style}`}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+        {href && (
+          <Link
+            href={href}
+            className="shrink-0 rounded-full border border-amber-300 px-2 py-0.5 text-xs font-semibold text-amber-700 hover:border-amber-500"
+          >
+            View
+          </Link>
+        )}
+      </div>
       <p className={`mt-2 text-2xl font-bold ${valueStyle}`}>{value}</p>
       <p className="mt-1 text-sm text-slate-500">{sub}</p>
     </div>
@@ -231,8 +241,11 @@ function Leaderboards({ leaderboards }: { leaderboards: DashboardLeaderboards })
       <LeaderboardCard title="Businesses with no redemptions" description="Active businesses that haven't had a redemption yet.">
         {leaderboards.businessesNoRedemptions.map((b) => (
           <li key={b.id} className="flex items-center justify-between gap-4 px-6 py-3">
-            <p className="text-sm font-medium text-slate-900">{b.name}</p>
-            <p className="text-xs text-slate-500">{b.areaName ?? "Unknown area"}</p>
+            <div>
+              <p className="text-sm font-medium text-slate-900">{b.name}</p>
+              <p className="text-xs text-slate-500">{b.areaName ?? "Unknown area"}</p>
+            </div>
+            <BusinessInfoModalButton business={b} />
           </li>
         ))}
       </LeaderboardCard>

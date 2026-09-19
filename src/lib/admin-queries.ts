@@ -393,9 +393,24 @@ export async function getDashboardMetrics(
   };
 }
 
+export interface DashboardBusinessInfo {
+  id: string;
+  name: string;
+  areaName: string | null;
+  slug: string | null;
+  areaSlug: string | null;
+  stateSlug: string | null;
+  categoryName: string | null;
+  shortDescription: string | null;
+  addressLine1: string | null;
+  city: string | null;
+  stateCode: string | null;
+  phone: string | null;
+}
+
 export interface DashboardLeaderboards {
   topBusinesses: { id: string; name: string; areaName: string | null; activeOfferCount: number; redemptions: number }[];
-  businessesNoRedemptions: { id: string; name: string; areaName: string | null }[];
+  businessesNoRedemptions: DashboardBusinessInfo[];
   topOffers: { id: string; title: string; businessName: string; redemptions: number }[];
   offersNoRedemptions: { id: string; title: string; businessName: string }[];
   topPassportHolders: { profileId: string; holderName: string; passportNumber: string; redemptions: number }[];
@@ -421,7 +436,9 @@ export async function getDashboardLeaderboards(
 
   let businessesQuery = supabase
     .from("businesses")
-    .select("id, name, status, passport_area_id, subarea_id");
+    .select(
+      "id, name, status, passport_area_id, subarea_id, slug, category_id, short_description, address_line1, city, state_code, phone"
+    );
   if (scopedAreaIds) {
     businessesQuery = businessesQuery.in("passport_area_id", scopedAreaIds.length ? scopedAreaIds : [NO_MATCH_ID]);
   }
@@ -442,9 +459,22 @@ export async function getDashboardLeaderboards(
 
   const areaIdsForNames = [...new Set(businesses.map((b) => b.passport_area_id as string))];
   const { data: areaRows } = areaIdsForNames.length
-    ? await supabase.from("passport_areas").select("id, name").in("id", areaIdsForNames)
-    : { data: [] as { id: string; name: string }[] };
+    ? await supabase.from("passport_areas").select("id, name, slug, state_id").in("id", areaIdsForNames)
+    : { data: [] as { id: string; name: string; slug: string; state_id: string }[] };
   const areaNameById = new Map((areaRows ?? []).map((a) => [a.id as string, a.name as string]));
+  const areaById = new Map((areaRows ?? []).map((a) => [a.id as string, a]));
+
+  const stateIdsForSlugs = [...new Set((areaRows ?? []).map((a) => a.state_id as string))];
+  const { data: stateSlugRows } = stateIdsForSlugs.length
+    ? await supabase.from("states").select("id, slug").in("id", stateIdsForSlugs)
+    : { data: [] as { id: string; slug: string }[] };
+  const stateSlugById = new Map((stateSlugRows ?? []).map((s) => [s.id as string, s.slug as string]));
+
+  const categoryIds = [...new Set(businesses.map((b) => b.category_id as string | null).filter(Boolean))] as string[];
+  const { data: categoryRows } = categoryIds.length
+    ? await supabase.from("categories").select("id, name").in("id", categoryIds)
+    : { data: [] as { id: string; name: string }[] };
+  const categoryNameById = new Map((categoryRows ?? []).map((c) => [c.id as string, c.name as string]));
 
   const subareaIdsForNames = [...new Set(businesses.map((b) => b.subarea_id as string | null).filter(Boolean))] as string[];
   const { data: subareaRows } = subareaIdsForNames.length
@@ -487,11 +517,23 @@ export async function getDashboardLeaderboards(
 
   const businessesNoRedemptions = businesses
     .filter((b) => b.status === "active" && (redemptionsByBusiness.get(b.id as string) ?? 0) === 0)
-    .map((b) => ({
-      id: b.id as string,
-      name: b.name as string,
-      areaName: areaNameById.get(b.passport_area_id as string) ?? null,
-    }))
+    .map((b) => {
+      const area = areaById.get(b.passport_area_id as string);
+      return {
+        id: b.id as string,
+        name: b.name as string,
+        areaName: area?.name ?? null,
+        slug: (b.slug as string) ?? null,
+        areaSlug: area?.slug ?? null,
+        stateSlug: area ? (stateSlugById.get(area.state_id as string) ?? null) : null,
+        categoryName: b.category_id ? (categoryNameById.get(b.category_id as string) ?? null) : null,
+        shortDescription: (b.short_description as string) ?? null,
+        addressLine1: (b.address_line1 as string) ?? null,
+        city: (b.city as string) ?? null,
+        stateCode: (b.state_code as string) ?? null,
+        phone: (b.phone as string) ?? null,
+      };
+    })
     .slice(0, LEADERBOARD_LIMIT);
 
   const topOffers = offers
