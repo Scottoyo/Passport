@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { getPostSignInRedirect } from "@/app/auth/actions";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -56,7 +57,7 @@ export default function ResetPasswordPage() {
       setErrorMessage(error.message);
       return;
     }
-    router.push("/account");
+    router.push(await getPostSignInRedirect());
     router.refresh();
   }
 
