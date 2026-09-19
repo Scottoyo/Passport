@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAreaIdsForState, NO_MATCH_ID } from "@/lib/admin-scope";
 import { formatPassportNumber } from "@/lib/format";
 import type {
+  AdminNotification,
   Business,
   BusinessFavorite,
   Offer,
@@ -567,4 +568,89 @@ export async function getDashboardLeaderboards(
     topPassportHolders,
     topGeographicAreas,
   };
+}
+
+export interface AdminNotificationWithDetails extends AdminNotification {
+  areaName: string;
+  businessName: string | null;
+  businessSlug: string | null;
+  marketingRequestTitle: string | null;
+}
+
+// The manager equivalent of getRegionEventsForUser (src/lib/queries.ts) —
+// scoped by the caller's current admin scope (getAdminScopedAreaIds in
+// admin-scope.ts) instead of a passport holder's own regions. `areaIds ===
+// null` means "no scope narrowing" (a national admin viewing everything).
+export async function getAdminNotifications(areaIds: string[] | null): Promise<AdminNotificationWithDetails[]> {
+  const supabase = await createClient();
+
+  let query = supabase.from("admin_notifications").select("*").order("created_at", { ascending: false });
+  if (areaIds) {
+    query = query.in("passport_area_id", areaIds.length ? areaIds : [NO_MATCH_ID]);
+  }
+  const { data: notifications } = await query.returns<AdminNotification[]>();
+  const list = notifications ?? [];
+  if (list.length === 0) return [];
+
+  const businessIds = [...new Set(list.map((n) => n.business_id).filter((id): id is string => Boolean(id)))];
+  const marketingRequestIds = [
+    ...new Set(list.map((n) => n.marketing_request_id).filter((id): id is string => Boolean(id))),
+  ];
+  const areaIdsToLoad = [...new Set(list.map((n) => n.passport_area_id))];
+
+  const [{ data: businesses }, { data: marketingRequests }, { data: areas }] = await Promise.all([
+    businessIds.length
+      ? supabase.from("businesses").select("id, name, slug").in("id", businessIds)
+      : Promise.resolve({ data: [] as { id: string; name: string; slug: string }[] }),
+    marketingRequestIds.length
+      ? supabase.from("marketing_requests").select("id, title, business_id").in("id", marketingRequestIds)
+      : Promise.resolve({ data: [] as { id: string; title: string; business_id: string | null }[] }),
+    supabase.from("passport_areas").select("id, name").in("id", areaIdsToLoad),
+  ]);
+
+  // Marketing-request notifications don't store business_id directly (only
+  // marketing_request_id) - resolve the request's own business separately so
+  // its notification can still show a business name rather than falling
+  // back to the area.
+  const marketingRequestById = new Map((marketingRequests ?? []).map((m) => [m.id as string, m]));
+  const marketingBusinessIds = [
+    ...new Set((marketingRequests ?? []).map((m) => m.business_id).filter((id): id is string => Boolean(id))),
+  ];
+  const { data: marketingBusinesses } = marketingBusinessIds.length
+    ? await supabase.from("businesses").select("id, name").in("id", marketingBusinessIds)
+    : { data: [] as { id: string; name: string }[] };
+  const marketingBusinessNameById = new Map((marketingBusinesses ?? []).map((b) => [b.id as string, b.name as string]));
+
+  const businessById = new Map((businesses ?? []).map((b) => [b.id as string, b]));
+  const marketingTitleById = new Map((marketingRequests ?? []).map((m) => [m.id as string, m.title as string]));
+  const areaNameById = new Map((areas ?? []).map((a) => [a.id as string, a.name as string]));
+
+  return list.map((n) => {
+    const business = n.business_id
+      ? businessById.get(n.business_id)
+      : n.marketing_request_id
+        ? (() => {
+            const request = marketingRequestById.get(n.marketing_request_id!);
+            const name = request?.business_id ? marketingBusinessNameById.get(request.business_id) : undefined;
+            return name ? { name, slug: null } : undefined;
+          })()
+        : undefined;
+    return {
+      ...n,
+      areaName: areaNameById.get(n.passport_area_id) ?? "Unknown area",
+      businessName: (business?.name as string) ?? null,
+      businessSlug: (business?.slug as string) ?? null,
+      marketingRequestTitle: n.marketing_request_id ? (marketingTitleById.get(n.marketing_request_id) ?? null) : null,
+    };
+  });
+}
+
+export async function getAdminNotificationsLastReadAt(userId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("admin_notifications_last_read_at")
+    .eq("id", userId)
+    .maybeSingle();
+  return (data?.admin_notifications_last_read_at as string | null) ?? null;
 }

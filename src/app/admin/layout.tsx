@@ -138,11 +138,14 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
               <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                 Marketing
               </Link>
+              <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Notifications
+              </Link>
 
               <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Coming soon
               </p>
-              {["Admin notifications", "Promo codes", "Referral program", "Business passport sales"].map(
+              {["Promo codes", "Referral program", "Business passport sales"].map(
                 (label) => (
                   <span
                     key={label}
@@ -185,6 +188,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
                 </p>
                 <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                   Marketing
+                </Link>
+                <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                  Notifications
                 </Link>
               </div>
             )}

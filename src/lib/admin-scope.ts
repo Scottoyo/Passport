@@ -2,6 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { getAccessibleAreaIds, type CurrentUser } from "@/lib/permissions";
 import type { State, PassportArea } from "@/lib/types/domain";
 
 // Shared "National vs. one state" scope for the whole admin portal. It's a
@@ -56,6 +57,21 @@ export async function getAllStatesForAdmin(): Promise<State[]> {
     .order("name")
     .returns<State[]>();
   return data ?? [];
+}
+
+// Resolves "what area ids can this user currently see" once, factoring out
+// the isNationalAdmin-with-optional-state-or-region-selection vs.
+// manager-with-optional-region-selection branch that every scoped admin page
+// otherwise repeats inline - used by call sites that don't already have
+// their own copy of that block (the header bell, the notifications page).
+export async function getAdminScopedAreaIds(currentUser: CurrentUser): Promise<string[] | null> {
+  const { state, area } = await getCurrentAdminScope();
+  const baseAreaIds = currentUser.isNationalAdmin
+    ? state
+      ? await getAreaIdsForState(state.id)
+      : null
+    : await getAccessibleAreaIds(currentUser);
+  return baseAreaIds ? narrowAreaIds(baseAreaIds, area) : null;
 }
 
 export async function getAreaIdsForState(stateId: string): Promise<string[]> {

@@ -3,7 +3,10 @@ import { getCurrentUser } from "@/lib/permissions";
 import { signOut } from "@/app/auth/actions";
 import { RegisterBusinessLink } from "@/components/register-business-link";
 import { hasAnyPassport, getRegionEventsForUser, getNotificationsLastReadAt } from "@/lib/queries";
+import { getAdminNotifications, getAdminNotificationsLastReadAt } from "@/lib/admin-queries";
+import { getAdminScopedAreaIds } from "@/lib/admin-scope";
 import { NotificationBell } from "@/components/notification-bell";
+import { AdminNotificationBell } from "@/components/admin/admin-notification-bell";
 import type { State, PassportArea } from "@/lib/types/domain";
 
 export async function SiteHeader({ region }: { region: { state: State; area: PassportArea } | null }) {
@@ -19,6 +22,12 @@ export async function SiteHeader({ region }: { region: { state: State; area: Pas
         getNotificationsLastReadAt(currentUser.id),
       ])
     : [false, [], null];
+  const [adminNotifications, adminLastReadAt] = isAdmin
+    ? await (async () => {
+        const areaIds = await getAdminScopedAreaIds(currentUser!);
+        return Promise.all([getAdminNotifications(areaIds), getAdminNotificationsLastReadAt(currentUser!.id)]);
+      })()
+    : [[], null];
 
   const homeHref = region ? `/${region.state.slug}/${region.area.slug}` : "/";
   const discoverHref = region ? `/${region.state.slug}/${region.area.slug}/discover` : "/#states";
@@ -43,12 +52,15 @@ export async function SiteHeader({ region }: { region: { state: State; area: Pas
                 Admin
               </Link>
             </nav>
-            <form action={signOut}>
-              <button className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900">
-                <SignOutIcon />
-                Sign Out
-              </button>
-            </form>
+            <div className="flex items-center gap-3">
+              <AdminNotificationBell events={adminNotifications} lastReadAt={adminLastReadAt} />
+              <form action={signOut}>
+                <button className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900">
+                  <SignOutIcon />
+                  Sign Out
+                </button>
+              </form>
+            </div>
           </>
         ) : currentUser ? (
           <>

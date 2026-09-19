@@ -260,3 +260,14 @@ export interface BusinessFavorite {
   business_id: string;
   created_at: string;
 }
+
+export type AdminNotificationType = "business_pending_review" | "marketing_request_submitted";
+
+export interface AdminNotification {
+  id: string;
+  passport_area_id: string;
+  notification_type: AdminNotificationType;
+  business_id: string | null;
+  marketing_request_id: string | null;
+  created_at: string;
+}
