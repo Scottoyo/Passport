@@ -24,6 +24,32 @@ export async function getActiveStates() {
   return data ?? [];
 }
 
+// States with at least one live perk — an active offer at an active
+// business in an active region. Used to decide whether clicking a state
+// (on the map or in the list) can go straight to it, or should instead
+// collect a "notify me" signup, so nobody lands on an empty state page.
+export async function getStateIdsWithLivePerks(): Promise<Set<string>> {
+  const supabase = await createClient();
+  const { data: offers } = await supabase.from("offers").select("business_id").eq("status", "active");
+  const businessIds = [...new Set((offers ?? []).map((o) => o.business_id as string))];
+  if (businessIds.length === 0) return new Set();
+
+  const { data: businesses } = await supabase
+    .from("businesses")
+    .select("passport_area_id")
+    .in("id", businessIds)
+    .eq("status", "active");
+  const areaIds = [...new Set((businesses ?? []).map((b) => b.passport_area_id as string))];
+  if (areaIds.length === 0) return new Set();
+
+  const { data: areas } = await supabase
+    .from("passport_areas")
+    .select("state_id")
+    .in("id", areaIds)
+    .eq("status", "active");
+  return new Set((areas ?? []).map((a) => a.state_id as string));
+}
+
 export async function getStateBySlug(slug: string) {
   const supabase = await createClient();
   const { data } = await supabase

@@ -1,8 +1,8 @@
-import { getActiveStates } from "@/lib/queries";
-import { StatesBrowser } from "@/components/states-browser";
+import { getActiveStates, getStateIdsWithLivePerks } from "@/lib/queries";
+import { StateMap } from "@/components/state-map";
 
 export default async function HomePage() {
-  const states = await getActiveStates();
+  const [states, perkStateIds] = await Promise.all([getActiveStates(), getStateIdsWithLivePerks()]);
 
   return (
     <div>
@@ -55,13 +55,13 @@ export default async function HomePage() {
           <div className="grid gap-10 sm:grid-cols-3">
             <HowItWorksStep
               step="1"
-              title="Buy your state's Passport"
-              body="One purchase covers every participating business in that state for its full duration."
+              title="Get Your Passport"
+              body="One purchase covers every business in that region."
             />
             <HowItWorksStep
               step="2"
               title="Find participating spots"
-              body="Browse by Passport Area within your state to discover local businesses and offers near you."
+              body="Browse by Passport Area to discover local businesses and offers near you."
             />
             <HowItWorksStep
               step="3"
@@ -73,14 +73,7 @@ export default async function HomePage() {
       </section>
 
       <section id="states" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-slate-900">Find your state</h2>
-          <p className="mt-1 text-slate-600">
-            Search or hover the map, then click a state to see its
-            participating Passport Areas and get that state&apos;s Passport.
-          </p>
-        </div>
-        <StatesBrowser states={states} />
+        <StateMap states={states} perkStateIds={perkStateIds} />
       </section>
     </div>
   );
