@@ -66,7 +66,24 @@ export default async function BusinessPage({ params }: Props) {
         <span className="text-slate-700">{business.name}</span>
       </nav>
 
-      <div className="mt-2 flex flex-wrap items-center gap-3">
+      {business.hero_image_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={business.hero_image_url}
+          alt=""
+          className="mt-4 h-48 w-full rounded-2xl object-cover sm:h-64"
+        />
+      )}
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        {business.logo_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={business.logo_url}
+            alt={`${business.name} logo`}
+            className="h-12 w-12 rounded-full object-cover"
+          />
+        )}
         <h1 className="text-3xl font-bold text-slate-900">{business.name}</h1>
         {user ? (
           <form action={toggleFavorite.bind(null, business.id, currentPath)}>
@@ -94,19 +111,20 @@ export default async function BusinessPage({ params }: Props) {
           .filter(Boolean)
           .join(", ")}
       </p>
+      {business.short_description && (
+        <p className="mt-2 max-w-2xl font-medium text-slate-700">{business.short_description}</p>
+      )}
       {business.description && (
         <p className="mt-4 max-w-2xl text-slate-600">{business.description}</p>
       )}
-      {business.website_url && (
-        <a
-          href={business.website_url}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-2 inline-block text-sm font-semibold text-slate-700 hover:text-slate-900"
-        >
-          Visit website &rarr;
-        </a>
-      )}
+      <div className="mt-2 flex flex-wrap gap-4 text-sm font-semibold text-slate-700">
+        {business.website_url && (
+          <a href={business.website_url} target="_blank" rel="noreferrer" className="hover:text-slate-900">
+            Visit website &rarr;
+          </a>
+        )}
+        {business.phone && <span className="text-slate-500">{business.phone}</span>}
+      </div>
 
       <section className="mt-10">
         <h2 className="text-xl font-semibold text-slate-900">Passport offers</h2>

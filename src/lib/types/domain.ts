@@ -51,6 +51,13 @@ export interface Category {
 
 export type BusinessApprovalStatus = "pending_review" | "approved" | "rejected";
 
+export interface BusinessHoursDay {
+  day: "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
+  is_open: boolean;
+  opens_at: string | null;
+  closes_at: string | null;
+}
+
 export interface Business {
   id: string;
   passport_area_id: string;
@@ -60,6 +67,7 @@ export interface Business {
   slug: string;
   status: ContentStatus;
   description: string | null;
+  short_description: string | null;
   address_line1: string | null;
   address_line2: string | null;
   city: string | null;
@@ -68,12 +76,31 @@ export interface Business {
   latitude: number | null;
   longitude: number | null;
   phone: string | null;
+  email: string | null;
   website_url: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  tiktok_url: string | null;
+  youtube_url: string | null;
+  twitter_url: string | null;
+  linkedin_url: string | null;
   hero_image_url: string | null;
+  logo_url: string | null;
+  gallery_image_urls: string[];
+  business_hours: BusinessHoursDay[] | null;
+  weather_permitting: boolean;
+  call_for_appointment: boolean;
+  redemption_code: string | null;
+  redemption_code_updated_at: string | null;
+  redemption_failed_attempts: number;
+  redemption_locked_at: string | null;
   featured: boolean;
   approval_status: BusinessApprovalStatus;
   reviewed_by: string | null;
   reviewed_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export type DiscountType =
@@ -91,7 +118,8 @@ export interface Offer {
   terms: string | null;
   discount_type: DiscountType;
   discount_value: number | null;
-  redemptions_per_passport: number;
+  redemptions_per_passport: number | null;
+  redemption_instructions: string | null;
   status: ContentStatus;
   featured: boolean;
   starts_at: string | null;
