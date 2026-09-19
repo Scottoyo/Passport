@@ -103,45 +103,33 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
                 States &amp; Regions
               </Link>
 
-              <div className="mt-4">
-                <Link href="/admin/passport-holders" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                  Passport holders
-                </Link>
-                <Link href="/admin/profiles-without-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                  Profiles without passports
-                </Link>
-                <Link href="/admin/expired-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                  Expired passports
-                </Link>
-              </div>
-
-              <div className="mt-4">
-                <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                  Businesses
-                </Link>
-                <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                  Featured offers
-                </Link>
-                <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                  Categories
-                </Link>
-                <Link href="/admin/passport-products" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                  Passport products
-                </Link>
-              </div>
-
-              <div className="mt-4">
-                <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                  Marketing
-                </Link>
-                <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                  Notifications
-                </Link>
-              </div>
-
-              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Coming soon
-              </p>
+              <Link href="/admin/passport-holders" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Passport holders
+              </Link>
+              <Link href="/admin/profiles-without-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Profiles without passports
+              </Link>
+              <Link href="/admin/expired-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Expired passports
+              </Link>
+              <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Businesses
+              </Link>
+              <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Featured offers
+              </Link>
+              <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Categories
+              </Link>
+              <Link href="/admin/passport-products" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Passport products
+              </Link>
+              <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Marketing
+              </Link>
+              <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Notifications
+              </Link>
               {["Promo codes", "Referral program", "Business passport sales"].map(
                 (label) => (
                   <span
@@ -156,38 +144,34 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           )}
           {!currentUser.isNationalAdmin &&
             (currentUser.stateAssignments.length > 0 || currentUser.areaAssignments.length > 0) && (
-              <div className="pt-4">
+              <>
                 <Link href="/admin/passport-holders" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                   Passport holders
                 </Link>
                 <Link href="/admin/expired-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                   Expired passports
                 </Link>
-                <div className="mt-4">
-                  <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                    Businesses
+                <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                  Businesses
+                </Link>
+                <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                  Featured offers
+                </Link>
+                {currentUser.stateAssignments.length > 0 && (
+                  <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                    Categories
                   </Link>
-                  <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                    Featured offers
-                  </Link>
-                  {currentUser.stateAssignments.length > 0 && (
-                    <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                      Categories
-                    </Link>
-                  )}
-                </div>
-                <div className="mt-4">
-                  <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                    Marketing
-                  </Link>
-                  <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
-                    Notifications
-                  </Link>
-                </div>
-              </div>
+                )}
+                <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                  Marketing
+                </Link>
+                <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                  Notifications
+                </Link>
+              </>
             )}
           {areas.length > 0 && (
-            <div className="pt-4">
+            <>
               <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Regions
               </p>
@@ -200,7 +184,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
                   {area.name}
                 </Link>
               ))}
-            </div>
+            </>
           )}
         </nav>
       </aside>
