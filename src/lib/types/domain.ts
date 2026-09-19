@@ -94,6 +94,7 @@ export interface Business {
   redemption_code_updated_at: string | null;
   redemption_failed_attempts: number;
   redemption_locked_at: string | null;
+  referral_code: string | null;
   featured: boolean;
   approval_status: BusinessApprovalStatus;
   reviewed_by: string | null;
@@ -152,6 +153,7 @@ export interface Passport {
   payment_reference: string | null;
   travel_start_date: string | null;
   travel_end_date: string | null;
+  referred_by_business_id: string | null;
 }
 
 export interface Redemption {

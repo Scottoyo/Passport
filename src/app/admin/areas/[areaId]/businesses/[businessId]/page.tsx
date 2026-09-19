@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCategories } from "@/lib/queries";
 import type { Business, BusinessApprovalStatus, BusinessHoursDay, Offer, PassportArea, State } from "@/lib/types/domain";
 import { StatusBadge } from "@/components/status-badge";
+import { OfferForm } from "@/components/business/offer-form";
 import { addStaff, removeStaff } from "../../actions";
 import { setBusinessApproval, setBusinessFeatured } from "../../../../businesses/actions";
 import {
@@ -19,6 +20,7 @@ import {
   removeBusinessGalleryImage,
   regenerateRedemptionCode,
   createOffer,
+  updateOffer,
   setOfferStatus,
 } from "./actions";
 
@@ -750,70 +752,29 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                   {offer.redemption_instructions && (
                     <p className="mt-1 text-xs text-slate-500">Instructions: {offer.redemption_instructions}</p>
                   )}
+                  {canOffers && (
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-slate-700">
+                        Edit
+                      </summary>
+                      <div className="mt-3 border-t border-slate-200 pt-3">
+                        <OfferForm
+                          offer={offer}
+                          action={updateOffer.bind(null, areaId, businessId, offer.id)}
+                          submitLabel="Save changes"
+                        />
+                      </div>
+                    </details>
+                  )}
                 </li>
               ))}
               {(offers ?? []).length === 0 && <li className="text-sm text-slate-500">No offers yet.</li>}
             </ul>
 
             {canOffers && (
-              <form
-                action={createOffer.bind(null, areaId, businessId)}
-                className="mt-6 space-y-3 border-t border-slate-100 pt-4"
-              >
-                <input
-                  name="title"
-                  required
-                  placeholder="Offer title, e.g. 20% off your bill"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                />
-                <textarea
-                  name="description"
-                  placeholder="Description"
-                  rows={2}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                />
-                <div className="flex flex-wrap gap-3">
-                  <select
-                    name="discount_type"
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    defaultValue="other"
-                  >
-                    <option value="percent_off">% off</option>
-                    <option value="amount_off">$ off</option>
-                    <option value="bogo">Buy one, get one</option>
-                    <option value="freebie">Freebie</option>
-                    <option value="other">Other</option>
-                  </select>
-                  <input
-                    name="discount_value"
-                    type="number"
-                    step="0.01"
-                    placeholder="Value"
-                    className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  />
-                  <input
-                    name="redemptions_per_passport"
-                    type="number"
-                    min="1"
-                    placeholder="Redemptions per Passport"
-                    defaultValue="1"
-                    className="w-48 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  />
-                  <label className="flex items-center gap-2 text-sm text-slate-600">
-                    <input type="checkbox" name="unlimited_redemptions" />
-                    Unlimited redemptions
-                  </label>
-                </div>
-                <textarea
-                  name="redemption_instructions"
-                  placeholder="Redemption instructions for staff (optional)"
-                  rows={2}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                />
-                <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
-                  Add offer
-                </button>
-              </form>
+              <div className="mt-6 border-t border-slate-100 pt-4">
+                <OfferForm action={createOffer.bind(null, areaId, businessId)} submitLabel="Add offer" />
+              </div>
             )}
           </section>
         </div>

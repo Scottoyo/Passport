@@ -6,6 +6,7 @@ import { PurchaseForm } from "@/components/purchase-form";
 
 interface Props {
   params: Promise<{ state: string; area: string }>;
+  searchParams: Promise<{ ref?: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -16,8 +17,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: area ? `${area.name} Passport` : "Passport" };
 }
 
-export default async function AreaPassportPage({ params }: Props) {
+export default async function AreaPassportPage({ params, searchParams }: Props) {
   const { state: stateSlug, area: areaSlug } = await params;
+  const { ref } = await searchParams;
   const state = await getStateBySlug(stateSlug);
   if (!state) notFound();
   const area = await getAreaBySlug(state.id, areaSlug);
@@ -54,7 +56,8 @@ export default async function AreaPassportPage({ params }: Props) {
             <PurchaseForm
               passportProductId={product.id}
               isSignedIn={Boolean(user)}
-              next={`/${state.slug}/${area.slug}/passport`}
+              next={`/${state.slug}/${area.slug}/passport${ref ? `?ref=${ref}` : ""}`}
+              referralCode={ref}
             />
           </div>
         </div>

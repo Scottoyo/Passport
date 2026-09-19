@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 // real charge happened. `payment_reference` is stamped PLACEHOLDER so it's
 // unmistakable in the data, and this must be replaced before taking real
 // payments.
-export async function startPlaceholderPassport(passportProductId: string) {
+export async function startPlaceholderPassport(passportProductId: string, referralCode?: string) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -30,6 +30,16 @@ export async function startPlaceholderPassport(passportProductId: string) {
     return { error: "That Passport product is no longer available." };
   }
 
+  let referredByBusinessId: string | null = null;
+  if (referralCode) {
+    const { data: referrer } = await supabase
+      .from("businesses")
+      .select("id")
+      .eq("referral_code", referralCode.trim().toLowerCase())
+      .maybeSingle();
+    referredByBusinessId = referrer?.id ?? null;
+  }
+
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + product.duration_days);
 
@@ -41,6 +51,7 @@ export async function startPlaceholderPassport(passportProductId: string) {
     status: "active",
     expires_at: expiresAt.toISOString(),
     payment_reference: "PLACEHOLDER-NO-PAYMENT-PROCESSOR",
+    referred_by_business_id: referredByBusinessId,
   });
 
   if (error) {

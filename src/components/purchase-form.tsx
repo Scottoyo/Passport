@@ -8,10 +8,12 @@ export function PurchaseForm({
   passportProductId,
   isSignedIn,
   next,
+  referralCode,
 }: {
   passportProductId: string;
   isSignedIn: boolean;
   next: string;
+  referralCode?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -34,7 +36,7 @@ export function PurchaseForm({
         disabled={isPending}
         onClick={() =>
           startTransition(async () => {
-            const result = await startPlaceholderPassport(passportProductId);
+            const result = await startPlaceholderPassport(passportProductId, referralCode);
             if (result.error) {
               setError(result.error);
             } else {

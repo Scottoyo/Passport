@@ -7,7 +7,14 @@ import { getCurrentUser, canManageArea } from "@/lib/permissions";
 import { uploadBusinessMedia } from "@/lib/storage";
 import type { AreaCapability, BusinessHoursDay, ContentStatus, DiscountType } from "@/lib/types/domain";
 
-async function requireCapability(areaId: string, capability: AreaCapability) {
+// Passes for an area/state manager with the given capability (unchanged
+// behavior for the admin panel), OR for this specific business's owner/staff
+// (the self-service portal) — regardless of which surface called it, RLS
+// (0032) is the real boundary: an owner/staff caller can never touch the
+// manager-only fields (status/approval/featured/region/redemption code)
+// even if they somehow reach one of these actions, since guard_business_owner_fields
+// rejects that at the database layer.
+async function requireCapability(areaId: string, businessId: string, capability: AreaCapability) {
   const currentUser = await getCurrentUser();
   if (!currentUser) throw new Error("You don't have permission to manage this business.");
 
@@ -22,10 +29,27 @@ async function requireCapability(areaId: string, capability: AreaCapability) {
     stateId = area?.state_id ?? null;
   }
 
-  if (!canManageArea(currentUser, areaId, capability, stateId)) {
-    throw new Error("You don't have permission to manage this business.");
+  if (canManageArea(currentUser, areaId, capability, stateId)) {
+    return currentUser;
   }
-  return currentUser;
+
+  const supabase = await createClient();
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("created_by")
+    .eq("id", businessId)
+    .maybeSingle();
+  if (business?.created_by === currentUser.id) return currentUser;
+
+  const { data: staffRow } = await supabase
+    .from("local_staff")
+    .select("id")
+    .eq("user_id", currentUser.id)
+    .or(`business_id.eq.${businessId},business_id.is.null`)
+    .maybeSingle();
+  if (staffRow) return currentUser;
+
+  throw new Error("You don't have permission to manage this business.");
 }
 
 function path(areaId: string, businessId: string) {
@@ -33,7 +57,7 @@ function path(areaId: string, businessId: string) {
 }
 
 export async function setBusinessActiveStatus(areaId: string, businessId: string, active: boolean) {
-  await requireCapability(areaId, "manage_businesses");
+  await requireCapability(areaId, businessId, "manage_businesses");
   const supabase = await createClient();
   const { error } = await supabase
     .from("businesses")
@@ -47,7 +71,7 @@ export async function setBusinessActiveStatus(areaId: string, businessId: string
 }
 
 export async function updateBusinessBasicInfo(areaId: string, businessId: string, formData: FormData) {
-  await requireCapability(areaId, "manage_businesses");
+  await requireCapability(areaId, businessId, "manage_businesses");
   const supabase = await createClient();
 
   const name = String(formData.get("name") ?? "").trim();
@@ -70,7 +94,7 @@ export async function updateBusinessBasicInfo(areaId: string, businessId: string
 }
 
 export async function updateBusinessLocationContact(areaId: string, businessId: string, formData: FormData) {
-  await requireCapability(areaId, "manage_businesses");
+  await requireCapability(areaId, businessId, "manage_businesses");
   const supabase = await createClient();
 
   const addressLine1 = String(formData.get("address_line1") ?? "").trim();
@@ -106,7 +130,7 @@ export async function updateBusinessLocationContact(areaId: string, businessId: 
 }
 
 export async function updateBusinessSocialLinks(areaId: string, businessId: string, formData: FormData) {
-  await requireCapability(areaId, "manage_businesses");
+  await requireCapability(areaId, businessId, "manage_businesses");
   const supabase = await createClient();
 
   const fields = [
@@ -130,7 +154,7 @@ export async function updateBusinessSocialLinks(areaId: string, businessId: stri
 const DAYS: BusinessHoursDay["day"][] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 export async function updateBusinessHours(areaId: string, businessId: string, formData: FormData) {
-  await requireCapability(areaId, "manage_businesses");
+  await requireCapability(areaId, businessId, "manage_businesses");
   const supabase = await createClient();
 
   const businessHours: BusinessHoursDay[] = DAYS.map((day) => {
@@ -158,7 +182,7 @@ export async function updateBusinessHours(areaId: string, businessId: string, fo
 }
 
 export async function uploadBusinessLogo(areaId: string, businessId: string, formData: FormData) {
-  await requireCapability(areaId, "manage_businesses");
+  await requireCapability(areaId, businessId, "manage_businesses");
   const file = formData.get("logo") as File | null;
   if (!file || file.size === 0) throw new Error("Choose an image to upload.");
 
@@ -170,7 +194,7 @@ export async function uploadBusinessLogo(areaId: string, businessId: string, for
 }
 
 export async function uploadBusinessCover(areaId: string, businessId: string, formData: FormData) {
-  await requireCapability(areaId, "manage_businesses");
+  await requireCapability(areaId, businessId, "manage_businesses");
   const file = formData.get("cover") as File | null;
   if (!file || file.size === 0) throw new Error("Choose an image to upload.");
 
@@ -182,7 +206,7 @@ export async function uploadBusinessCover(areaId: string, businessId: string, fo
 }
 
 export async function addBusinessGalleryImage(areaId: string, businessId: string, formData: FormData) {
-  await requireCapability(areaId, "manage_businesses");
+  await requireCapability(areaId, businessId, "manage_businesses");
   const file = formData.get("gallery") as File | null;
   if (!file || file.size === 0) throw new Error("Choose an image to upload.");
 
@@ -204,7 +228,7 @@ export async function addBusinessGalleryImage(areaId: string, businessId: string
 }
 
 export async function removeBusinessGalleryImage(areaId: string, businessId: string, imageUrl: string) {
-  await requireCapability(areaId, "manage_businesses");
+  await requireCapability(areaId, businessId, "manage_businesses");
   const supabase = await createClient();
   const { data: business } = await supabase
     .from("businesses")
@@ -226,7 +250,7 @@ function generateRedemptionCode() {
 }
 
 export async function regenerateRedemptionCode(areaId: string, businessId: string) {
-  await requireCapability(areaId, "manage_businesses");
+  await requireCapability(areaId, businessId, "manage_businesses");
   const supabase = await createClient();
   const { error } = await supabase
     .from("businesses")
@@ -242,16 +266,19 @@ export async function regenerateRedemptionCode(areaId: string, businessId: strin
 }
 
 export async function createOffer(areaId: string, businessId: string, formData: FormData) {
-  await requireCapability(areaId, "manage_offers");
+  await requireCapability(areaId, businessId, "manage_offers");
   const supabase = await createClient();
 
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
+  const terms = String(formData.get("terms") ?? "").trim();
   const discountType = String(formData.get("discount_type") ?? "other") as DiscountType;
   const discountValueRaw = String(formData.get("discount_value") ?? "").trim();
   const redemptionInstructions = String(formData.get("redemption_instructions") ?? "").trim();
   const unlimited = formData.get("unlimited_redemptions") === "on";
   const redemptionsPerPassportRaw = String(formData.get("redemptions_per_passport") ?? "").trim();
+  const startsAt = String(formData.get("starts_at") ?? "").trim();
+  const endsAt = String(formData.get("ends_at") ?? "").trim();
 
   if (!title) throw new Error("An offer needs a title.");
 
@@ -259,6 +286,7 @@ export async function createOffer(areaId: string, businessId: string, formData: 
     business_id: businessId,
     title,
     description: description || null,
+    terms: terms || null,
     discount_type: discountType,
     discount_value: discountValueRaw ? Number(discountValueRaw) : null,
     redemption_instructions: redemptionInstructions || null,
@@ -267,7 +295,53 @@ export async function createOffer(areaId: string, businessId: string, formData: 
       : redemptionsPerPassportRaw
         ? Number(redemptionsPerPassportRaw)
         : 1,
+    starts_at: startsAt ? new Date(startsAt).toISOString() : null,
+    ends_at: endsAt ? new Date(endsAt).toISOString() : null,
   });
+  if (error) throw new Error(error.message);
+  revalidatePath(path(areaId, businessId));
+}
+
+export async function updateOffer(
+  areaId: string,
+  businessId: string,
+  offerId: string,
+  formData: FormData
+) {
+  await requireCapability(areaId, businessId, "manage_offers");
+  const supabase = await createClient();
+
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const terms = String(formData.get("terms") ?? "").trim();
+  const discountType = String(formData.get("discount_type") ?? "other") as DiscountType;
+  const discountValueRaw = String(formData.get("discount_value") ?? "").trim();
+  const redemptionInstructions = String(formData.get("redemption_instructions") ?? "").trim();
+  const unlimited = formData.get("unlimited_redemptions") === "on";
+  const redemptionsPerPassportRaw = String(formData.get("redemptions_per_passport") ?? "").trim();
+  const startsAt = String(formData.get("starts_at") ?? "").trim();
+  const endsAt = String(formData.get("ends_at") ?? "").trim();
+
+  if (!title) throw new Error("An offer needs a title.");
+
+  const { error } = await supabase
+    .from("offers")
+    .update({
+      title,
+      description: description || null,
+      terms: terms || null,
+      discount_type: discountType,
+      discount_value: discountValueRaw ? Number(discountValueRaw) : null,
+      redemption_instructions: redemptionInstructions || null,
+      redemptions_per_passport: unlimited
+        ? null
+        : redemptionsPerPassportRaw
+          ? Number(redemptionsPerPassportRaw)
+          : 1,
+      starts_at: startsAt ? new Date(startsAt).toISOString() : null,
+      ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+    })
+    .eq("id", offerId);
   if (error) throw new Error(error.message);
   revalidatePath(path(areaId, businessId));
 }
@@ -278,7 +352,7 @@ export async function setOfferStatus(
   offerId: string,
   status: ContentStatus
 ) {
-  await requireCapability(areaId, "manage_offers");
+  await requireCapability(areaId, businessId, "manage_offers");
   const supabase = await createClient();
   const { error } = await supabase
     .from("offers")

@@ -141,6 +141,12 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
               <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                 Categories
               </Link>
+              <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Operations
+              </p>
+              <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Marketing requests
+              </Link>
             </div>
           )}
           {areas.length > 0 && (
