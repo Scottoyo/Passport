@@ -7,6 +7,7 @@ import {
   getSubareasForArea,
   getBusinessesForArea,
   getCategories,
+  getPrimaryOffersForBusinesses,
 } from "@/lib/queries";
 import { BusinessCard } from "@/components/business-card";
 import { BusinessDiscoverFilter } from "@/components/business-discover-filter";
@@ -39,6 +40,7 @@ export default async function AreaPage({ params, searchParams }: Props) {
     getBusinessesForArea(area.id, { q: q || undefined, categoryId: categoryId || undefined }),
     getCategories([state.id]),
   ]);
+  const primaryOffers = await getPrimaryOffersForBusinesses(businesses.map((b) => b.id));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
@@ -109,6 +111,7 @@ export default async function AreaPage({ params, searchParams }: Props) {
                 key={business.id}
                 business={business}
                 href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
+                offer={primaryOffers.get(business.id) ?? null}
               />
             ))}
           </div>

@@ -172,6 +172,29 @@ export async function getOffersForBusiness(businessId: string) {
   return data ?? [];
 }
 
+// The one offer each business's tile advertises — the business's own most
+// recently created active offer. RLS ("offers: public read active")
+// already limits this to active offers regardless of who's asking.
+export async function getPrimaryOffersForBusinesses(
+  businessIds: string[]
+): Promise<Map<string, Offer>> {
+  if (businessIds.length === 0) return new Map();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("offers")
+    .select("*")
+    .in("business_id", businessIds)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .returns<Offer[]>();
+
+  const byBusiness = new Map<string, Offer>();
+  for (const offer of data ?? []) {
+    if (!byBusiness.has(offer.business_id)) byBusiness.set(offer.business_id, offer);
+  }
+  return byBusiness;
+}
+
 export async function getCategories(stateIds?: string[]) {
   const supabase = await createClient();
   let query = supabase.from("categories").select("*").order("sort_order");

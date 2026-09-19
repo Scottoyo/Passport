@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getFavoriteBusinessesForHolder } from "@/lib/admin-queries";
+import { getPrimaryOffersForBusinesses } from "@/lib/queries";
 import { BusinessCard } from "@/components/business-card";
 
 export default async function FavoritesPage() {
@@ -21,6 +22,7 @@ export default async function FavoritesPage() {
     : { data: [] as { id: string; slug: string }[] };
   const areaById = new Map((areas ?? []).map((a) => [a.id as string, a]));
   const stateSlugById = new Map((states ?? []).map((s) => [s.id as string, s.slug as string]));
+  const primaryOffers = await getPrimaryOffersForBusinesses(favorites.map((b) => b.id));
 
   return (
     <div>
@@ -35,7 +37,14 @@ export default async function FavoritesPage() {
             const area = areaById.get(business.passport_area_id);
             const stateSlug = area ? stateSlugById.get(area.state_id as string) : null;
             const href = area && stateSlug ? `/${stateSlug}/${area.slug}/businesses/${business.slug}` : "#";
-            return <BusinessCard key={business.id} business={business} href={href} />;
+            return (
+              <BusinessCard
+                key={business.id}
+                business={business}
+                href={href}
+                offer={primaryOffers.get(business.id) ?? null}
+              />
+            );
           })}
         </div>
       )}
