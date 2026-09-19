@@ -167,13 +167,11 @@ export async function getOffersForBusiness(businessId: string) {
   return data ?? [];
 }
 
-export async function getCategories() {
+export async function getCategories(stateIds?: string[]) {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("categories")
-    .select("*")
-    .order("sort_order")
-    .returns<Category[]>();
+  let query = supabase.from("categories").select("*").order("sort_order");
+  if (stateIds) query = query.in("state_id", stateIds);
+  const { data } = await query.returns<Category[]>();
   return data ?? [];
 }
 

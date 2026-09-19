@@ -43,6 +43,7 @@ export interface Subarea {
 
 export interface Category {
   id: string;
+  state_id: string;
   name: string;
   slug: string;
   sort_order: number;

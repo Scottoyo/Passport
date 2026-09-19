@@ -9,20 +9,19 @@ export default async function HomePage() {
       <section className="border-b border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-            A Passport for every state you explore.
+            A Passport for every region you explore.
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
             Each region has its own Passport — one purchase unlocks
             exclusive offers at participating restaurants, attractions,
-            shops, and experiences across that region. Visiting more than
-            one? Grab a Passport for each.
+            shops, and experiences across that region.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <a
               href="#states"
               className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
             >
-              Find your state
+              Find your region
             </a>
           </div>
         </div>

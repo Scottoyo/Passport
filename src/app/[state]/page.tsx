@@ -22,10 +22,7 @@ export default async function StatePage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-      <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-        {state.abbreviation}
-      </p>
-      <h1 className="mt-1 text-3xl font-bold text-slate-900">{state.name}</h1>
+      <h1 className="text-3xl font-bold text-slate-900">{state.name}</h1>
       {state.intro_copy && (
         <p className="mt-2 max-w-2xl text-slate-600">{state.intro_copy}</p>
       )}

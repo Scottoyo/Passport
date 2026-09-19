@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/permissions";
+import { getCurrentUser, hasStateCapability } from "@/lib/permissions";
 
 function slugify(value: string) {
   return value
@@ -12,15 +12,19 @@ function slugify(value: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-async function requireNationalAdmin() {
+// National admin, or a state manager with manage_businesses for this state
+// — the same capability that lets them tag businesses with a category in
+// the first place.
+async function requireStateAccess(stateId: string) {
   const currentUser = await getCurrentUser();
-  if (!currentUser?.isNationalAdmin) {
-    throw new Error("Only national admins can manage categories.");
+  if (!currentUser || !hasStateCapability(currentUser, stateId, "manage_businesses")) {
+    throw new Error("You don't have permission to manage categories for this state.");
   }
+  return currentUser;
 }
 
-export async function createCategory(formData: FormData) {
-  await requireNationalAdmin();
+export async function createCategory(stateId: string, formData: FormData) {
+  await requireStateAccess(stateId);
   const supabase = await createClient();
 
   const name = String(formData.get("name") ?? "").trim();
@@ -29,6 +33,7 @@ export async function createCategory(formData: FormData) {
   const { data: existing } = await supabase
     .from("categories")
     .select("sort_order")
+    .eq("state_id", stateId)
     .order("sort_order", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -36,15 +41,17 @@ export async function createCategory(formData: FormData) {
 
   const { error } = await supabase
     .from("categories")
-    .insert({ name, slug: slugify(name), sort_order: nextSortOrder });
+    .insert({ state_id: stateId, name, slug: slugify(name), sort_order: nextSortOrder });
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/categories");
 }
 
 export async function renameCategory(categoryId: string, formData: FormData) {
-  await requireNationalAdmin();
   const supabase = await createClient();
+  const { data: category } = await supabase.from("categories").select("state_id").eq("id", categoryId).maybeSingle();
+  if (!category) throw new Error("Category not found.");
+  await requireStateAccess(category.state_id);
 
   const name = String(formData.get("name") ?? "").trim();
   if (!name) throw new Error("A category needs a name.");
@@ -59,8 +66,10 @@ export async function renameCategory(categoryId: string, formData: FormData) {
 }
 
 export async function deleteCategory(categoryId: string) {
-  await requireNationalAdmin();
   const supabase = await createClient();
+  const { data: category } = await supabase.from("categories").select("state_id").eq("id", categoryId).maybeSingle();
+  if (!category) throw new Error("Category not found.");
+  await requireStateAccess(category.state_id);
 
   const { error } = await supabase.from("categories").delete().eq("id", categoryId);
   if (error) throw new Error(error.message);
