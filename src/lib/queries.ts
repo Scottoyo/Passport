@@ -219,6 +219,31 @@ export async function getMyPassports(userId: string) {
   return data ?? [];
 }
 
+// The region behind /account/discover's embedded view and the header's
+// "Discover" link when a signed-in customer isn't already browsing a region
+// (no [state]/[area] in the URL) - their most recently purchased passport's
+// region, same resolution /account/discover used to redirect to before it
+// started rendering inline.
+export async function getMyPrimaryRegion(
+  userId: string
+): Promise<{ stateSlug: string; areaSlug: string; areaName: string } | null> {
+  const supabase = await createClient();
+  const passports = await getMyPassports(userId);
+  if (passports.length === 0) return null;
+
+  const { data: area } = await supabase
+    .from("passport_areas")
+    .select("slug, name, state_id")
+    .eq("id", passports[0].passport_area_id)
+    .maybeSingle();
+  if (!area) return null;
+
+  const { data: state } = await supabase.from("states").select("slug").eq("id", area.state_id).maybeSingle();
+  if (!state) return null;
+
+  return { stateSlug: state.slug as string, areaSlug: area.slug as string, areaName: area.name as string };
+}
+
 export async function hasAnyPassport(userId: string) {
   const supabase = await createClient();
   const { data } = await supabase
