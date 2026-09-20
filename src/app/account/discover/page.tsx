@@ -1,26 +1,37 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getMyPassports } from "@/lib/queries";
+import { getMyPrimaryRegion, getStateBySlug, getAreaBySlug } from "@/lib/queries";
+import { DiscoverAreaContent } from "@/components/discover-area-content";
 
-export default async function AccountDiscoverPage() {
+interface Props {
+  searchParams: Promise<{ q?: string; category?: string; subarea?: string }>;
+}
+
+export default async function AccountDiscoverPage({ searchParams }: Props) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in?next=/account/discover");
 
-  const passports = await getMyPassports(user.id);
-  if (passports.length === 0) redirect("/states");
+  const region = await getMyPrimaryRegion(user.id);
+  if (!region) redirect("/states");
 
-  const { data: area } = await supabase
-    .from("passport_areas")
-    .select("slug, state_id")
-    .eq("id", passports[0].passport_area_id)
-    .maybeSingle();
-  if (!area) redirect("/");
+  const state = await getStateBySlug(region.stateSlug);
+  if (!state) redirect("/states");
+  const area = await getAreaBySlug(state.id, region.areaSlug);
+  if (!area) redirect("/states");
 
-  const { data: state } = await supabase.from("states").select("slug").eq("id", area.state_id).maybeSingle();
-  if (!state) redirect("/");
+  const resolvedSearchParams = await searchParams;
 
-  redirect(`/${state.slug}/${area.slug}/discover`);
+  return (
+    <DiscoverAreaContent
+      state={state}
+      area={area}
+      searchParams={resolvedSearchParams}
+      basePath="/account/discover"
+      passportHref="/account/passport"
+      showPassportCta={false}
+    />
+  );
 }

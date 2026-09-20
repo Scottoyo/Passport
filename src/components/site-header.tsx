@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/permissions";
 import { signOut } from "@/app/auth/actions";
 import { RegisterBusinessLink } from "@/components/register-business-link";
-import { hasAnyPassport, getRegionEventsForUser, getNotificationsLastReadAt } from "@/lib/queries";
+import { hasAnyPassport, getMyPrimaryRegion, getRegionEventsForUser, getNotificationsLastReadAt } from "@/lib/queries";
 import { getAdminNotifications, getAdminNotificationsLastReadAt } from "@/lib/admin-queries";
 import { getAdminScopedAreaIds } from "@/lib/admin-scope";
 import { NotificationBell } from "@/components/notification-bell";
@@ -17,13 +17,14 @@ export async function SiteHeader({ region }: { region: { state: State; area: Pas
     !!currentUser &&
     (currentUser.isNationalAdmin || currentUser.stateAssignments.length > 0 || currentUser.areaAssignments.length > 0);
   const isCustomer = !!currentUser && !isAdmin;
-  const [ownsPassport, notificationEvents, lastReadAt] = isCustomer
+  const [ownsPassport, myRegion, notificationEvents, lastReadAt] = isCustomer
     ? await Promise.all([
         hasAnyPassport(currentUser.id),
+        getMyPrimaryRegion(currentUser.id),
         getRegionEventsForUser(currentUser.id),
         getNotificationsLastReadAt(currentUser.id),
       ])
-    : [false, [], null];
+    : [false, null, [], null];
   const [adminNotifications, adminLastReadAt] = isAdmin
     ? await (async () => {
         const areaIds = await getAdminScopedAreaIds(currentUser!);
@@ -34,6 +35,16 @@ export async function SiteHeader({ region }: { region: { state: State; area: Pas
   const homeHref = region ? `/${region.state.slug}/${region.area.slug}` : "/";
   const discoverHref = region ? `/${region.state.slug}/${region.area.slug}/discover` : "/#states";
   const customerDiscoverHref = region ? discoverHref : "/account/discover";
+  // The account sidebar's own "Discover" link (/account/discover) now
+  // renders inline within the account layout so the sidebar stays visible -
+  // but the header's own "Discover" link is the site's main navigation, not
+  // part of that panel, so it should always land on the full standalone
+  // page instead.
+  const headerDiscoverHref = region
+    ? discoverHref
+    : myRegion
+      ? `/${myRegion.stateSlug}/${myRegion.areaSlug}/discover`
+      : "/account/discover";
   const unreadNotifications = notificationEvents.filter(
     (e) => !lastReadAt || new Date(e.created_at) > new Date(lastReadAt)
   ).length;
@@ -98,7 +109,7 @@ export async function SiteHeader({ region }: { region: { state: State; area: Pas
                   <Link href="/#states" className="hover:text-slate-900">
                     Explore States
                   </Link>
-                  <Link href="/account/discover" className="hover:text-slate-900">
+                  <Link href={headerDiscoverHref} className="hover:text-slate-900">
                     Discover
                   </Link>
                 </>
