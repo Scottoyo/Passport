@@ -9,6 +9,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { BusinessCard } from "@/components/business-card";
 import { BusinessDiscoverFilter } from "@/components/business-discover-filter";
+import { RegionHeroBanner, getRegionHeroImage } from "@/components/region-hero-banner";
 import { toggleFavorite } from "@/app/[state]/[area]/businesses/[business]/actions";
 import type { State, PassportArea } from "@/lib/types/domain";
 
@@ -72,44 +73,61 @@ export async function DiscoverAreaContent({
 
   const resolvedPassportHref = passportHref ?? `/${state.slug}/${area.slug}/passport`;
   const themed = Boolean(area.brand_primary_color);
+  const heroImage = getRegionHeroImage(area.slug);
 
   return (
     <div>
-      <section className={themed ? "mb-10 rounded-2xl bg-brand-primary p-6 sm:p-10" : ""}>
-        <p
-          className={`text-sm font-semibold uppercase tracking-wide ${
-            themed ? "text-white/80" : "text-slate-500"
-          }`}
-        >
-          {area.name} Passport
-        </p>
-        <h1 className={`mt-1 font-display text-3xl font-bold sm:text-4xl ${themed ? "text-white" : "text-slate-900"}`}>
-          Discover {area.name} Perks
-        </h1>
-        {showPassportCta && (
-          <>
-            <p className={`mt-3 max-w-2xl text-lg ${themed ? "text-white/90" : "text-slate-600"}`}>
-              {area.tagline || `Save at the best local spots in ${area.name} with your Passport.`}
-            </p>
-            {area.description && (
-              <p className={`mt-2 max-w-2xl ${themed ? "text-white/90" : "text-slate-600"}`}>
-                {area.description}
-              </p>
+      {heroImage ? (
+        <div className="mb-10">
+          <RegionHeroBanner src={heroImage.src} alt={heroImage.alt} variant="card">
+            <h1 className="sr-only">Discover {area.name} Perks</h1>
+            {showPassportCta && (
+              <Link
+                href={resolvedPassportHref}
+                className="inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
+              >
+                Get the {area.name} Passport
+              </Link>
             )}
+          </RegionHeroBanner>
+        </div>
+      ) : (
+        <section className={themed ? "mb-10 rounded-2xl bg-brand-primary p-6 sm:p-10" : ""}>
+          <p
+            className={`text-sm font-semibold uppercase tracking-wide ${
+              themed ? "text-white/80" : "text-slate-500"
+            }`}
+          >
+            {area.name} Passport
+          </p>
+          <h1 className={`mt-1 font-display text-3xl font-bold sm:text-4xl ${themed ? "text-white" : "text-slate-900"}`}>
+            Discover {area.name} Perks
+          </h1>
+          {showPassportCta && (
+            <>
+              <p className={`mt-3 max-w-2xl text-lg ${themed ? "text-white/90" : "text-slate-600"}`}>
+                {area.tagline || `Save at the best local spots in ${area.name} with your Passport.`}
+              </p>
+              {area.description && (
+                <p className={`mt-2 max-w-2xl ${themed ? "text-white/90" : "text-slate-600"}`}>
+                  {area.description}
+                </p>
+              )}
 
-            <Link
-              href={resolvedPassportHref}
-              className={
-                themed
-                  ? "mt-6 inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
-                  : "mt-6 inline-block rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
-              }
-            >
-              Get the {area.name} Passport
-            </Link>
-          </>
-        )}
-      </section>
+              <Link
+                href={resolvedPassportHref}
+                className={
+                  themed
+                    ? "mt-6 inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
+                    : "mt-6 inline-block rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+                }
+              >
+                Get the {area.name} Passport
+              </Link>
+            </>
+          )}
+        </section>
+      )}
 
       {subareas.length > 0 && (
         <section className="mt-10">

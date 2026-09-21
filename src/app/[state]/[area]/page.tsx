@@ -10,6 +10,7 @@ import {
 } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { BusinessCard } from "@/components/business-card";
+import { RegionHeroBanner, getRegionHeroImage } from "@/components/region-hero-banner";
 import { toggleFavorite } from "@/app/[state]/[area]/businesses/[business]/actions";
 
 interface Props {
@@ -41,59 +42,78 @@ export default async function AreaHomePage({ params }: Props) {
   const favoritedIds = user ? await getFavoritedBusinessIds(user.id) : new Set<string>();
   const homePath = `/${state.slug}/${area.slug}`;
   const themed = Boolean(area.brand_primary_color);
+  const heroImage = getRegionHeroImage(area.slug);
 
   return (
     <div>
-      <section
-        className={themed ? "bg-brand-primary" : "border-b border-slate-200 bg-slate-50"}
-      >
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <p
-            className={`text-sm font-semibold uppercase tracking-wide ${
-              themed ? "text-white/80" : "text-slate-500"
-            }`}
-          >
-            {area.name} Passport
-          </p>
-          <h1
-            className={`mt-1 font-display text-3xl font-bold tracking-tight sm:text-4xl ${
-              themed ? "text-white" : "text-slate-900"
-            }`}
-          >
-            The {area.name} Passport
-          </h1>
-          <p className={`mt-3 max-w-2xl text-lg ${themed ? "text-white/90" : "text-slate-600"}`}>
-            {area.tagline || `Save at the best local spots in ${area.name} with your Passport.`}
-          </p>
-          {area.description && (
-            <p className={`mt-2 max-w-2xl ${themed ? "text-white/90" : "text-slate-600"}`}>
-              {area.description}
-            </p>
-          )}
-          <div className="mt-8 flex flex-wrap items-center gap-4">
+      {heroImage ? (
+        <RegionHeroBanner src={heroImage.src} alt={heroImage.alt}>
+          <h1 className="sr-only">The {area.name} Passport</h1>
+          <div className="flex flex-wrap items-center gap-4">
             <Link
               href={`/${state.slug}/${area.slug}/passport`}
-              className={
-                themed
-                  ? "rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
-                  : "rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
-              }
+              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
             >
               Get the {area.name} Passport
             </Link>
             <Link
               href={`/${state.slug}/${area.slug}/discover`}
-              className={
-                themed
-                  ? "rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:border-white"
-                  : "rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-slate-500"
-              }
+              className="rounded-full border border-white/60 px-6 py-3 text-sm font-semibold text-white hover:border-white"
             >
               Browse businesses
             </Link>
           </div>
-        </div>
-      </section>
+        </RegionHeroBanner>
+      ) : (
+        <section className={themed ? "bg-brand-primary" : "border-b border-slate-200 bg-slate-50"}>
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <p
+              className={`text-sm font-semibold uppercase tracking-wide ${
+                themed ? "text-white/80" : "text-slate-500"
+              }`}
+            >
+              {area.name} Passport
+            </p>
+            <h1
+              className={`mt-1 font-display text-3xl font-bold tracking-tight sm:text-4xl ${
+                themed ? "text-white" : "text-slate-900"
+              }`}
+            >
+              The {area.name} Passport
+            </h1>
+            <p className={`mt-3 max-w-2xl text-lg ${themed ? "text-white/90" : "text-slate-600"}`}>
+              {area.tagline || `Save at the best local spots in ${area.name} with your Passport.`}
+            </p>
+            {area.description && (
+              <p className={`mt-2 max-w-2xl ${themed ? "text-white/90" : "text-slate-600"}`}>
+                {area.description}
+              </p>
+            )}
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link
+                href={`/${state.slug}/${area.slug}/passport`}
+                className={
+                  themed
+                    ? "rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
+                    : "rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+                }
+              >
+                Get the {area.name} Passport
+              </Link>
+              <Link
+                href={`/${state.slug}/${area.slug}/discover`}
+                className={
+                  themed
+                    ? "rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:border-white"
+                    : "rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-slate-500"
+                }
+              >
+                Browse businesses
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <h2 className="text-center font-display text-2xl font-bold text-slate-900">
