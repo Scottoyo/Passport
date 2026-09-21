@@ -31,7 +31,11 @@ export default async function ForBusinessesPage({ params }: Props) {
           <p className="text-sm font-semibold uppercase tracking-wide text-white/80">
             For {area.name} Businesses
           </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-1.5 text-sm font-semibold text-white">
+            <CheckIconWhite />
+            100% Free to Join &mdash; No Monthly Fees
+          </span>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Reach More Locals. Welcome More Visitors. Grow Your Business.
           </h1>
           <p className="mt-4 text-xl font-semibold text-white">Join the {area.name} Passport</p>
@@ -50,6 +54,9 @@ export default async function ForBusinessesPage({ params }: Props) {
             >
               Register Your Business
             </Link>
+            <p className="mt-3 text-sm text-white/70">
+              Free to join &middot; No monthly fees &middot; No cost to list your perk
+            </p>
           </div>
         </div>
       </section>
@@ -125,7 +132,7 @@ export default async function ForBusinessesPage({ params }: Props) {
             <HowItWorksStep
               step="1"
               title="Register Your Business"
-              body="Tell us about your business, location, and what makes it unique."
+              body="Tell us about your business, location, and what makes it unique. It's free - no cost to join, no monthly fees."
             />
             <HowItWorksStep
               step="2"
@@ -187,8 +194,8 @@ export default async function ForBusinessesPage({ params }: Props) {
             </Link>
           </div>
           <p className="mt-4 text-sm text-white/70">
-            Registration is quick and simple. Submit your business information and proposed perk
-            for review.
+            Registration is quick, simple, and completely free. Submit your business information
+            and proposed perk for review.
           </p>
         </div>
       </section>
@@ -206,6 +213,21 @@ function BulletGrid({ items }: { items: string[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+function CheckIconWhite() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="h-4 w-4 shrink-0 text-white"
+      aria-hidden
+    >
+      <path d="M4 10.5 8 14.5 16 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
