@@ -119,9 +119,6 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Business Leads CRM</h1>
-          <p className="mt-1 text-slate-600">
-            Prospective businesses being courted to join the Passport - separate from live listings.
-          </p>
         </div>
         <Link
           href="/admin/business-leads/new"
