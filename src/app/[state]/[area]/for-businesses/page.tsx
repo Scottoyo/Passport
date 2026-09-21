@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getStateBySlug, getAreaBySlug } from "@/lib/queries";
-import { fraunces, dmSans, CheckIcon, StampStat, RouteStep } from "@/components/editorial-kit";
+import { CheckIcon, StampStat, RouteStep } from "@/components/editorial-kit";
 
 interface Props {
   params: Promise<{ state: string; area: string }>;
@@ -35,7 +35,7 @@ export default async function ForBusinessesPage({ params }: Props) {
   const registerHref = `/register-business?state=${state.slug}&region=${area.slug}`;
 
   return (
-    <div className={`${fraunces.variable} ${dmSans.variable} scroll-smooth`}>
+    <div className="scroll-smooth">
       {/* Hero */}
       <section className="bg-brand-primary">
         <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-20">
@@ -46,10 +46,10 @@ export default async function ForBusinessesPage({ params }: Props) {
             <CheckIcon className="h-4 w-4 shrink-0" />
             100% Free to Join &mdash; No Monthly Fees
           </span>
-          <h1 className="mt-4 font-[family-name:var(--font-fraunces)] text-4xl font-bold tracking-tight text-white sm:text-5xl">
+          <h1 className="mt-4 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">
             Turn Passport Holders Into New Regulars.
           </h1>
-          <p className="mx-auto mt-4 max-w-xl font-[family-name:var(--font-dm-sans)] text-lg text-white/90">
+          <p className="mx-auto mt-4 max-w-xl text-lg text-white/90">
             {area.name} Passport puts your business in front of locals and visitors who are
             actively deciding where to eat, shop, explore, and spend. Create an exclusive perk,
             welcome new customers, and give them a reason to come back.
@@ -77,7 +77,7 @@ export default async function ForBusinessesPage({ params }: Props) {
           <p className="text-center text-sm font-semibold uppercase tracking-wide text-brand-primary">
             More Than a Discount
           </p>
-          <h2 className="mt-2 text-center font-[family-name:var(--font-fraunces)] text-3xl font-bold text-[#102F3B]">
+          <h2 className="mt-2 text-center font-display text-3xl font-bold text-[#102F3B]">
             A better way to be discovered.
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-[#102F3B]/70">
@@ -107,7 +107,7 @@ export default async function ForBusinessesPage({ params }: Props) {
           <p className="text-center text-sm font-semibold uppercase tracking-wide text-brand-primary">
             From Listing to Foot Traffic
           </p>
-          <h2 className="mt-2 text-center font-[family-name:var(--font-fraunces)] text-3xl font-bold text-[#102F3B]">
+          <h2 className="mt-2 text-center font-display text-3xl font-bold text-[#102F3B]">
             Joining is straightforward.
           </h2>
           <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
@@ -134,7 +134,7 @@ export default async function ForBusinessesPage({ params }: Props) {
           <p className="text-center text-sm font-semibold uppercase tracking-wide text-brand-primary">
             You Control the Offer
           </p>
-          <h2 className="mt-2 text-center font-[family-name:var(--font-fraunces)] text-3xl font-bold text-[#102F3B]">
+          <h2 className="mt-2 text-center font-display text-3xl font-bold text-[#102F3B]">
             Make the first visit irresistible.
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-[#102F3B]/70">
@@ -164,7 +164,7 @@ export default async function ForBusinessesPage({ params }: Props) {
       {/* Fit / category ribbon */}
       <section className="border-t border-[#F2DFC0] bg-[#FFF7E8]">
         <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <h2 className="font-[family-name:var(--font-fraunces)] text-2xl font-bold text-[#102F3B] sm:text-3xl">
+          <h2 className="font-display text-2xl font-bold text-[#102F3B] sm:text-3xl">
             If you help people enjoy {area.name}, you belong here.
           </h2>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -192,7 +192,7 @@ export default async function ForBusinessesPage({ params }: Props) {
       {/* FAQ */}
       <section className="bg-white">
         <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
-          <h2 className="text-center font-[family-name:var(--font-fraunces)] text-3xl font-bold text-[#102F3B]">
+          <h2 className="text-center font-display text-3xl font-bold text-[#102F3B]">
             Frequently asked questions
           </h2>
           <div className="mt-10 space-y-3">
@@ -231,7 +231,7 @@ export default async function ForBusinessesPage({ params }: Props) {
           <p className="text-sm font-semibold uppercase tracking-wide text-[#F47A38]">
             Your Next Customer Is Exploring
           </p>
-          <h2 className="mt-2 font-[family-name:var(--font-fraunces)] text-3xl font-bold text-white sm:text-4xl">
+          <h2 className="mt-2 font-display text-3xl font-bold text-white sm:text-4xl">
             Give them a reason to choose you.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-white/80">

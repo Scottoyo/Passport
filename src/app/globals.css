@@ -28,8 +28,12 @@
      visible (if faint) gray tint where there should be none. */
   --color-brand-tint: color-mix(in srgb, var(--brand-primary) 6%, white);
   --color-brand-tint-strong: color-mix(in srgb, var(--brand-primary) 14%, white);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* The app's only two fonts (see src/app/layout.tsx) - Fraunces for major
+     hero/marketing headlines only (className="font-display"), DM Sans for
+     everything else (the real body default below, and className="font-sans"
+     anywhere it needs to be explicit). Never introduce a third font. */
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-dm-sans);
 }
 
 /* This app has no dark theme - every page is built with explicit light
@@ -44,5 +48,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
 }

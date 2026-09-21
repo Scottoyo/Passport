@@ -56,7 +56,7 @@ export default async function AreaHomePage({ params }: Props) {
             {area.name} Passport
           </p>
           <h1
-            className={`mt-1 text-3xl font-bold tracking-tight sm:text-4xl ${
+            className={`mt-1 font-display text-3xl font-bold tracking-tight sm:text-4xl ${
               themed ? "text-white" : "text-slate-900"
             }`}
           >
@@ -96,7 +96,7 @@ export default async function AreaHomePage({ params }: Props) {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <h2 className="text-center text-2xl font-bold text-slate-900">
+        <h2 className="text-center font-display text-2xl font-bold text-slate-900">
           Why get the {area.name} Passport
         </h2>
         <div className="mt-10 grid gap-8 sm:grid-cols-3">
@@ -119,7 +119,7 @@ export default async function AreaHomePage({ params }: Props) {
         <section className={themed ? "border-t border-slate-200 bg-brand-tint" : "border-t border-slate-200 bg-slate-50"}>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <h2 className="text-2xl font-bold text-slate-900">Featured Businesses</h2>
+              <h2 className="font-display text-2xl font-bold text-slate-900">Featured Businesses</h2>
               <Link
                 href={`/${state.slug}/${area.slug}/discover`}
                 className={

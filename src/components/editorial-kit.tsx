@@ -1,22 +1,9 @@
-import { Fraunces, DM_Sans } from "next/font/google";
-
 // Shared "editorial travel poster" building blocks - the visual language
 // introduced for the Orlando business sell page (src/app/[state]/[area]/
-// for-businesses/page.tsx) and reused here so any other page that wants the
-// same brand feel (e.g. the region passport purchase page) stays visually
-// identical rather than drifting via copy-pasted, slightly-different code.
-// Scoped to whichever pages import it - the rest of the app keeps its
-// existing Geist/Arial type.
-export const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  variable: "--font-fraunces",
-});
-export const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-dm-sans",
-});
+// for-businesses/page.tsx) and reused by the region passport purchase page
+// too, so both stay visually identical rather than drifting via copy-pasted,
+// slightly-different code. Fraunces/DM Sans load once, globally, from
+// src/app/layout.tsx - this file no longer loads its own fonts.
 
 export function CheckIcon({ className }: { className?: string }) {
   return (
@@ -28,7 +15,9 @@ export function CheckIcon({ className }: { className?: string }) {
 
 // A circular "passport stamp" icon paired with a title/body - used for
 // parallel value-prop style facts (not sequential steps; see RouteStep for
-// that).
+// that). The title is a small card-level sub-heading, so it stays DM Sans
+// (font-semibold) rather than the display font - Fraunces is reserved for
+// major hero/section headlines, not this tier.
 export function StampStat({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="text-center">
@@ -38,23 +27,22 @@ export function StampStat({ title, children }: { title: string; children: React.
           <circle cx="12" cy="12" r="9" />
         </svg>
       </div>
-      <h3 className="mt-4 font-[family-name:var(--font-fraunces)] text-lg font-semibold text-[#102F3B]">
-        {title}
-      </h3>
+      <h3 className="mt-4 text-lg font-semibold text-[#102F3B]">{title}</h3>
       <p className="mt-2 text-sm text-[#102F3B]/70">{children}</p>
     </div>
   );
 }
 
 // A numbered stop along a sequential route (used for "How it works" style
-// steps, e.g. 01, 02, 03...).
+// steps, e.g. 01, 02, 03...). Same DM Sans treatment as StampStat, for the
+// same reason - a step title is a small heading, not a display headline.
 export function RouteStep({ step, title, children }: { step: string; title: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary font-[family-name:var(--font-fraunces)] text-sm font-bold text-white">
+      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary text-sm font-bold text-white">
         {step}
       </div>
-      <h3 className="font-[family-name:var(--font-fraunces)] text-lg font-semibold text-[#102F3B]">{title}</h3>
+      <h3 className="text-lg font-semibold text-[#102F3B]">{title}</h3>
       <p className="mt-1 text-sm text-[#102F3B]/70">{children}</p>
     </div>
   );

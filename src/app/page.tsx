@@ -8,7 +8,7 @@ export default async function HomePage() {
     <div>
       <section className="border-b border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+          <h1 className="font-display text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
             A Passport for every region you explore.
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
@@ -28,7 +28,7 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <h2 className="text-center text-2xl font-bold text-slate-900">Why get a Passport</h2>
+        <h2 className="text-center font-display text-2xl font-bold text-slate-900">Why get a Passport</h2>
         <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <Benefit
             title="Deep local savings"
