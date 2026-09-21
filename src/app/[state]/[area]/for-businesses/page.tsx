@@ -1,37 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Fraunces, DM_Sans } from "next/font/google";
 import { getStateBySlug, getAreaBySlug } from "@/lib/queries";
-
-// Scoped to this page only (not the root layout) - the rest of the app
-// keeps its existing Geist/Arial type. This page's "editorial travel
-// poster" direction is a deliberate one-off treatment for the business
-// acquisition landing page, not a site-wide font change.
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  variable: "--font-fraunces",
-});
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-dm-sans",
-});
-
-// Custom hero photography, per region. A region with no art here falls back
-// to the plain bold-brand-color hero band (see the `heroImage` check below) -
-// same "safe default, richer when set" pattern as the rest of the branding
-// system, just for a hand-curated asset instead of an admin color field.
-const HERO_IMAGES: Record<string, { src: string; width: number; height: number; alt: string }> = {
-  orlando: {
-    src: "/for-businesses/orlando-hero.png",
-    width: 1536,
-    height: 1024,
-    alt: "Downtown Orlando skyline at sunset over Lake Eola's fountain, with a travel journal, sunglasses, and fresh oranges in the foreground.",
-  },
-};
+import { fraunces, dmSans, CheckIcon, StampStat, RouteStep } from "@/components/editorial-kit";
 
 interface Props {
   params: Promise<{ state: string; area: string }>;
@@ -62,87 +33,41 @@ export default async function ForBusinessesPage({ params }: Props) {
   if (!area) notFound();
 
   const registerHref = `/register-business?state=${state.slug}&region=${area.slug}`;
-  const heroImage = HERO_IMAGES[area.slug];
 
   return (
     <div className={`${fraunces.variable} ${dmSans.variable} scroll-smooth`}>
       {/* Hero */}
-      <section className={heroImage ? "bg-[#FFF7E8]" : "bg-brand-primary"}>
-        <div
-          className={`mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20 ${
-            heroImage ? "grid items-center gap-10 lg:grid-cols-[42%_58%]" : "max-w-4xl text-center"
-          }`}
-        >
-          <div>
-            <p
-              className={`text-sm font-semibold uppercase tracking-wide ${
-                heroImage ? "text-brand-primary" : "text-white/80"
-              }`}
+      <section className="bg-brand-primary">
+        <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-20">
+          <p className="text-sm font-semibold uppercase tracking-wide text-white/80">
+            For {area.name} Businesses
+          </p>
+          <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-1.5 text-sm font-semibold text-white">
+            <CheckIcon className="h-4 w-4 shrink-0" />
+            100% Free to Join &mdash; No Monthly Fees
+          </span>
+          <h1 className="mt-4 font-[family-name:var(--font-fraunces)] text-4xl font-bold tracking-tight text-white sm:text-5xl">
+            Turn Passport Holders Into New Regulars.
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl font-[family-name:var(--font-dm-sans)] text-lg text-white/90">
+            {area.name} Passport puts your business in front of locals and visitors who are
+            actively deciding where to eat, shop, explore, and spend. Create an exclusive perk,
+            welcome new customers, and give them a reason to come back.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href={registerHref}
+              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
             >
-              For {area.name} Businesses
-            </p>
-            <span
-              className={`mt-4 inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold ${
-                heroImage ? "bg-[#F2DFC0] text-[#102F3B]" : "bg-white/15 text-white"
-              }`}
-            >
-              <CheckIcon className="h-4 w-4 shrink-0" />
-              100% Free to Join &mdash; No Monthly Fees
-            </span>
-            <h1
-              className={`mt-4 font-[family-name:var(--font-fraunces)] text-4xl font-bold tracking-tight sm:text-5xl ${
-                heroImage ? "text-[#102F3B]" : "text-white"
-              }`}
-            >
-              Turn Passport Holders Into New Regulars.
-            </h1>
-            <p
-              className={`mt-4 max-w-xl font-[family-name:var(--font-dm-sans)] text-lg ${
-                heroImage ? "text-[#102F3B]/80" : "text-white/90"
-              } ${heroImage ? "" : "mx-auto"}`}
-            >
-              {area.name} Passport puts your business in front of locals and visitors who are
-              actively deciding where to eat, shop, explore, and spend. Create an exclusive perk,
-              welcome new customers, and give them a reason to come back.
-            </p>
-            <div className={`mt-8 flex flex-wrap items-center gap-4 ${heroImage ? "" : "justify-center"}`}>
-              <Link
-                href={registerHref}
-                className={
-                  heroImage
-                    ? "rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
-                    : "rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
-                }
-              >
-                List Your Business
-              </Link>
-              <a
-                href="#how-it-works"
-                className={
-                  heroImage
-                    ? "text-sm font-semibold text-[#102F3B] hover:text-brand-primary"
-                    : "text-sm font-semibold text-white hover:text-white/80"
-                }
-              >
-                See How It Works &darr;
-              </a>
-            </div>
-            <p className={`mt-3 text-sm ${heroImage ? "text-[#102F3B]/60" : "text-white/70"}`}>
-              Simple registration. You choose the perk. Every listing is reviewed.
-            </p>
+              List Your Business
+            </Link>
+            <a href="#how-it-works" className="text-sm font-semibold text-white hover:text-white/80">
+              See How It Works &darr;
+            </a>
           </div>
-          {heroImage && (
-            <div className="relative aspect-[3/2] overflow-hidden rounded-[24px]">
-              <Image
-                src={heroImage.src}
-                alt={heroImage.alt}
-                fill
-                priority
-                sizes="(min-width: 1024px) 58vw, 100vw"
-                className="object-cover object-[center_right] max-lg:object-[68%_center]"
-              />
-            </div>
-          )}
+          <p className="mt-3 text-sm text-white/70">
+            Simple registration. You choose the perk. Every listing is reviewed.
+          </p>
         </div>
       </section>
 
@@ -326,43 +251,6 @@ export default async function ForBusinessesPage({ params }: Props) {
           </p>
         </div>
       </section>
-    </div>
-  );
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden>
-      <path d="M4 10.5 8 14.5 16 6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function StampStat({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-brand-primary text-brand-primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7" aria-hidden>
-          <path d="M12 3v18M3 12h18" strokeLinecap="round" />
-          <circle cx="12" cy="12" r="9" />
-        </svg>
-      </div>
-      <h3 className="mt-4 font-[family-name:var(--font-fraunces)] text-lg font-semibold text-[#102F3B]">
-        {title}
-      </h3>
-      <p className="mt-2 text-sm text-[#102F3B]/70">{children}</p>
-    </div>
-  );
-}
-
-function RouteStep({ step, title, children }: { step: string; title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary font-[family-name:var(--font-fraunces)] text-sm font-bold text-white">
-        {step}
-      </div>
-      <h3 className="font-[family-name:var(--font-fraunces)] text-lg font-semibold text-[#102F3B]">{title}</h3>
-      <p className="mt-1 text-sm text-[#102F3B]/70">{children}</p>
     </div>
   );
 }
