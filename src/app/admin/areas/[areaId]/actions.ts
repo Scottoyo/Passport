@@ -191,6 +191,7 @@ export async function addAreaManager(areaId: string, formData: FormData) {
     can_manage_subareas: formData.get("can_manage_subareas") === "on",
     can_submit_marketing_requests: formData.get("can_submit_marketing_requests") === "on",
     can_manage_staff: formData.get("can_manage_staff") === "on",
+    can_manage_leads: formData.get("can_manage_leads") === "on",
   };
 
   // If the caller is a state manager granting more than their own

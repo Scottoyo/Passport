@@ -23,6 +23,7 @@ const CAPABILITY_FIELDS: { key: string; label: string }[] = [
   { key: "can_manage_subareas", label: "Manage subareas" },
   { key: "can_submit_marketing_requests", label: "Submit marketing requests" },
   { key: "can_manage_staff", label: "Manage local staff" },
+  { key: "can_manage_leads", label: "Manage leads (CRM)" },
 ];
 
 interface StateManagerRow {
@@ -34,6 +35,7 @@ interface StateManagerRow {
   can_manage_subareas: boolean;
   can_submit_marketing_requests: boolean;
   can_manage_staff: boolean;
+  can_manage_leads: boolean;
 }
 
 interface AreaManagerRow extends StateManagerRow {
@@ -83,7 +85,7 @@ export default async function LocationsAdminPage({
         ? supabase
             .from("state_assignments")
             .select(
-              "id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, profiles:user_id(email)"
+              "id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, can_manage_leads, profiles:user_id(email)"
             )
             .eq("state_id", selected.id)
         : Promise.resolve({ data: null }),
@@ -91,7 +93,7 @@ export default async function LocationsAdminPage({
         ? supabase
             .from("area_assignments")
             .select(
-              "id, passport_area_id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, profiles:user_id(email)"
+              "id, passport_area_id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, can_manage_leads, profiles:user_id(email)"
             )
             .in("passport_area_id", areaIds)
         : Promise.resolve({ data: null }),

@@ -61,6 +61,7 @@ function hasCapability(
     can_manage_subareas: boolean;
     can_submit_marketing_requests: boolean;
     can_manage_staff: boolean;
+    can_manage_leads: boolean;
   },
   capability: AreaCapability
 ): boolean {
@@ -77,6 +78,8 @@ function hasCapability(
       return row.can_submit_marketing_requests;
     case "manage_staff":
       return row.can_manage_staff;
+    case "manage_leads":
+      return row.can_manage_leads;
   }
 }
 
@@ -139,4 +142,43 @@ export async function getAccessibleAreaIds(currentUser: CurrentUser): Promise<st
   const viaState = (data ?? []).map((row) => row.id as string);
 
   return [...new Set([...direct, ...viaState])];
+}
+
+// Same shape as getAccessibleAreaIds, but filtered to areas/states where the
+// user specifically has `capability` set (not just any capability) — for
+// features like the Business Leads CRM where "has some admin role" isn't
+// enough, the user needs *this* capability. Callers handle the
+// isNationalAdmin case themselves (matches how every other scoped admin
+// page already branches: national admin uses getAreaIdsForState/unscoped,
+// everyone else calls a getAccessibleAreaIds*-shaped helper).
+export async function getAccessibleAreaIdsForCapability(
+  currentUser: CurrentUser,
+  capability: AreaCapability
+): Promise<string[]> {
+  const direct = currentUser.areaAssignments
+    .filter((a) => hasCapability(a, capability))
+    .map((a) => a.passport_area_id);
+
+  const capableStateIds = currentUser.stateAssignments
+    .filter((s) => hasCapability(s, capability))
+    .map((s) => s.state_id);
+  if (capableStateIds.length === 0) return [...new Set(direct)];
+
+  const supabase = await createClient();
+  const { data } = await supabase.from("passport_areas").select("id").in("state_id", capableStateIds);
+  const viaState = (data ?? []).map((row) => row.id as string);
+
+  return [...new Set([...direct, ...viaState])];
+}
+
+// True if the user can use a `capability`-gated feature at all (national
+// admin, or at least one area/state assignment row with it set) - for
+// nav-visibility and route-gating, not for scoping a query (use
+// getAccessibleAreaIdsForCapability for that).
+export function hasAnyCapability(currentUser: CurrentUser, capability: AreaCapability): boolean {
+  if (currentUser.isNationalAdmin) return true;
+  return (
+    currentUser.areaAssignments.some((a) => hasCapability(a, capability)) ||
+    currentUser.stateAssignments.some((s) => hasCapability(s, capability))
+  );
 }
