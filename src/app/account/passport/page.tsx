@@ -29,7 +29,7 @@ export default async function MyPassportPage() {
         <p className="text-slate-600">You don&apos;t have a Passport yet.</p>
         <Link
           href="/passport"
-          className="mt-4 inline-block rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+          className="mt-4 inline-block rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
         >
           Get Your Passport
         </Link>

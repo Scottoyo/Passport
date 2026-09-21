@@ -98,7 +98,7 @@ export function MobileMenuButton({
 
 function itemClassName(variant: MobileMenuItem["variant"] = "outline") {
   if (variant === "solid") {
-    return "rounded-full bg-slate-900 px-6 py-3 text-center font-semibold text-white";
+    return "rounded-full bg-brand-primary px-6 py-3 text-center font-semibold text-white";
   }
   if (variant === "text") {
     return "px-6 py-3 text-center font-medium text-slate-600";

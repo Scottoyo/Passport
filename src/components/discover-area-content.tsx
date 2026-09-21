@@ -91,7 +91,7 @@ export async function DiscoverAreaContent({
 
           <Link
             href={resolvedPassportHref}
-            className="mt-6 inline-block rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+            className="mt-6 inline-block rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
           >
             Get the {area.name} Passport
           </Link>
@@ -106,7 +106,7 @@ export async function DiscoverAreaContent({
               href={buildAreaFilterHref(basePath, { q, categoryId })}
               className={
                 !activeSubarea
-                  ? "rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+                  ? "rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white"
                   : "rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-500"
               }
             >
@@ -122,7 +122,7 @@ export async function DiscoverAreaContent({
                 })}
                 className={
                   activeSubarea?.id === subarea.id
-                    ? "rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+                    ? "rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white"
                     : "rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-500"
                 }
               >

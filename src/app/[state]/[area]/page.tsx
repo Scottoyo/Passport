@@ -60,7 +60,7 @@ export default async function AreaHomePage({ params }: Props) {
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               href={`/${state.slug}/${area.slug}/passport`}
-              className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+              className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
             >
               Get the {area.name} Passport
             </Link>

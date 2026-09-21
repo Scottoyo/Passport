@@ -119,7 +119,7 @@ export async function SiteHeader({ region }: { region: { state: State; area: Pas
               <NotificationBell events={notificationEvents} lastReadAt={lastReadAt} />
               <Link
                 href="/account"
-                className="hidden rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700 sm:inline-block"
+                className="hidden rounded-full bg-brand-primary px-4 py-2 text-white hover:bg-brand-primary-dark sm:inline-block"
               >
                 {ownsPassport ? "My Passport" : "My Profile"}
               </Link>
@@ -160,7 +160,7 @@ export async function SiteHeader({ region }: { region: { state: State; area: Pas
             <div className="hidden flex-wrap items-center justify-end gap-3 text-sm font-medium lg:flex">
               <Link
                 href="/passport"
-                className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
+                className="rounded-full bg-brand-primary px-4 py-2 text-white hover:bg-brand-primary-dark"
               >
                 Get Your Passport
               </Link>

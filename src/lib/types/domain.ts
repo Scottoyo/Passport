@@ -28,6 +28,9 @@ export interface PassportArea {
   description: string | null;
   hero_image_url: string | null;
   launched_at: string | null;
+  brand_primary_color: string | null;
+  brand_secondary_color: string | null;
+  brand_logo_url: string | null;
 }
 
 export interface Subarea {
