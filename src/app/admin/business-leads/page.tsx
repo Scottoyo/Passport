@@ -3,11 +3,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getCurrentUser, getAccessibleAreaIdsForCapability, hasAnyCapability } from "@/lib/permissions";
 import { getCurrentAdminScope, getAreaIdsForState, narrowAreaIds } from "@/lib/admin-scope";
-import {
-  getBusinessLeads,
-  getLeadsAccessibleStatesWithAreas,
-  type BusinessLeadsFilters,
-} from "@/lib/business-leads-queries";
+import { getBusinessLeads, type BusinessLeadsFilters } from "@/lib/business-leads-queries";
 import { BusinessLeadsFilterBar } from "@/components/admin/business-leads-filter-bar";
 import type { BusinessLeadDisposition } from "@/lib/types/domain";
 
@@ -33,8 +29,6 @@ const VALID_SORTS = new Set(["business_name", "created_at", "updated_at"]);
 interface Props {
   searchParams: Promise<{
     q?: string;
-    state?: string;
-    region?: string;
     disposition?: string;
     emailed?: string;
     called?: string;
@@ -103,14 +97,7 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
     page: params.page ? Number(params.page) || 1 : 1,
   };
 
-  // The state/region filter dropdowns additionally respect the current
-  // admin state/region selector - a manager or national admin who has
-  // narrowed to Florida shouldn't see Georgia in the filter's own state
-  // list either.
-  const [{ leads, total, page, pageCount }, statesWithAreas] = await Promise.all([
-    getBusinessLeads(scopedAreaIds, filters),
-    getLeadsAccessibleStatesWithAreas(currentUser),
-  ]);
+  const { leads, total, page, pageCount } = await getBusinessLeads(scopedAreaIds, filters);
 
   const basePath = "/admin/business-leads";
 
@@ -128,7 +115,7 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
         </Link>
       </div>
 
-      <BusinessLeadsFilterBar statesWithAreas={statesWithAreas} />
+      <BusinessLeadsFilterBar />
 
       {/* Desktop table */}
       <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-slate-200 lg:block">
