@@ -1,8 +1,8 @@
-import { getActiveStates, getStateIdsWithLivePerks } from "@/lib/queries";
+import { getActiveStates } from "@/lib/queries";
 import { StateMap } from "@/components/state-map";
 
 export default async function HomePage() {
-  const [states, perkStateIds] = await Promise.all([getActiveStates(), getStateIdsWithLivePerks()]);
+  const states = await getActiveStates();
 
   return (
     <div>
@@ -72,7 +72,7 @@ export default async function HomePage() {
       </section>
 
       <section id="states" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <StateMap states={states} perkStateIds={perkStateIds} />
+        <StateMap states={states} />
       </section>
     </div>
   );
