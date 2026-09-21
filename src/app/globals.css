@@ -50,3 +50,14 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+/* The header's colored accent border, keyed off a data attribute on <body>
+   (set server-side on first render by src/app/layout.tsx, and kept correct
+   on every later client-side navigation by BrandColorSync) rather than a
+   React prop - so the border and the --brand-* variables above always
+   agree with each other and both update together, instead of two separate
+   values that could drift out of sync after a client-side navigation. */
+[data-themed="true"] [data-site-header] {
+  border-bottom-width: 2px;
+  border-bottom-color: var(--brand-primary);
+}
