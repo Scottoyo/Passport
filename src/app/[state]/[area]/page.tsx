@@ -156,8 +156,8 @@ export default async function AreaHomePage({ params }: Props) {
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-10 text-center sm:px-6">
           <h2 className="text-lg font-semibold text-slate-900">Own a business in {area.name}?</h2>
           <p className="max-w-xl text-sm text-slate-600">
-            Join the {area.name} Passport and put your business in front of locals and visitors
-            actively looking for new places to go.
+            It&apos;s free to join the {area.name} Passport - no monthly fees - and put your
+            business in front of locals and visitors actively looking for new places to go.
           </p>
           <Link
             href={`/${state.slug}/${area.slug}/for-businesses`}
