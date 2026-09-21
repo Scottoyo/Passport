@@ -104,6 +104,7 @@ export default async function BusinessPage({ params }: Props) {
   ].filter((s) => s.url);
 
   const hoursByDay = new Map((business.business_hours ?? []).map((h) => [h.day, h]));
+  const themed = Boolean(area.brand_primary_color);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
@@ -135,7 +136,11 @@ export default async function BusinessPage({ params }: Props) {
         <div>
           <div className="flex flex-wrap gap-2">
             {category && (
-              <span className="rounded-full bg-slate-900 px-2.5 py-0.5 text-xs font-semibold text-white">
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold text-white ${
+                  themed ? "bg-brand-primary" : "bg-slate-900"
+                }`}
+              >
                 {category.name}
               </span>
             )}
@@ -153,7 +158,11 @@ export default async function BusinessPage({ params }: Props) {
             href={directionsHref}
             target="_blank"
             rel="noreferrer"
-            className="rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-700"
+            className={
+              themed
+                ? "rounded-full bg-brand-primary px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+                : "rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-700"
+            }
           >
             Directions
           </a>
