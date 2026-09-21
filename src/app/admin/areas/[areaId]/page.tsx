@@ -14,6 +14,8 @@ import {
   addAreaManager,
   removeAreaManager,
   createMarketingRequest,
+  updateAreaBranding,
+  resetAreaBranding,
 } from "./actions";
 import { setBusinessApproval, setBusinessFeatured } from "../../businesses/actions";
 
@@ -121,6 +123,56 @@ export default async function AreaWorkspacePage({ params }: Props) {
         State/area lifecycle (launch/pause) is managed by national admins under
         States &amp; Regions.
       </p>
+
+      {isNationalAdmin && (
+        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
+          <h2 className="font-semibold text-slate-900">Branding</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Sets this region&apos;s primary/secondary colors across its public pages and, for its passport
+            holders, their account pages too. Leave unset to use the app&apos;s default look.
+          </p>
+          <form action={updateAreaBranding.bind(null, areaId)} className="mt-4 flex flex-wrap items-end gap-4">
+            <label className="text-sm">
+              <span className="mb-1 block text-slate-600">Primary color</span>
+              <input
+                name="brand_primary_color"
+                type="color"
+                defaultValue={area.brand_primary_color ?? "#0f172a"}
+                className="h-10 w-16 rounded-lg border border-slate-300"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-slate-600">Secondary color</span>
+              <input
+                name="brand_secondary_color"
+                type="color"
+                defaultValue={area.brand_secondary_color ?? "#1e293b"}
+                className="h-10 w-16 rounded-lg border border-slate-300"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-slate-600">Logo URL (optional)</span>
+              <input
+                name="brand_logo_url"
+                type="url"
+                defaultValue={area.brand_logo_url ?? ""}
+                placeholder="https://..."
+                className="w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+            </label>
+            <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+              Save branding
+            </button>
+          </form>
+          {(area.brand_primary_color || area.brand_secondary_color || area.brand_logo_url) && (
+            <form action={resetAreaBranding.bind(null, areaId)} className="mt-3">
+              <button className="text-xs font-semibold text-red-600 hover:text-red-700">
+                Reset to default
+              </button>
+            </form>
+          )}
+        </section>
+      )}
 
       {canSubareas && (
         <section className="mt-8 rounded-2xl border border-slate-200 p-6">

@@ -25,7 +25,7 @@ export function PurchaseForm({
     return (
       <button
         onClick={() => router.push(`/passport/create-profile?next=${encodeURIComponent(next)}`)}
-        className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+        className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
       >
         Get Your Passport
       </button>
@@ -64,7 +64,7 @@ export function PurchaseForm({
             }
           })
         }
-        className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
+        className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark disabled:opacity-50"
       >
         {isPending ? "Setting up your Passport..." : "Get my Passport"}
       </button>

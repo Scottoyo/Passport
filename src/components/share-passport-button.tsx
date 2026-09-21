@@ -28,7 +28,7 @@ export function SharePassportButton({ path }: { path: string }) {
     <button
       type="button"
       onClick={handleShare}
-      className="w-full rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
+      className="w-full rounded-full bg-brand-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-primary-dark"
     >
       {copied ? "Link copied!" : "Share My Passport"}
     </button>

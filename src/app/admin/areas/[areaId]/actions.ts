@@ -216,6 +216,48 @@ export async function removeAreaManager(areaId: string, assignmentId: string) {
   revalidatePath("/admin/locations");
 }
 
+// Branding is a bigger decision than day-to-day capability grants (it
+// affects the region's whole public look), so - same tier as lifecycle
+// launch/pause noted at the top of the page this action backs - it's
+// national-admin-only in v1, not delegated to state/region managers.
+async function requireNationalAdmin() {
+  const currentUser = await getCurrentUser();
+  if (!currentUser?.isNationalAdmin) {
+    throw new Error("Only national admins can update a region's branding.");
+  }
+  return currentUser;
+}
+
+export async function updateAreaBranding(areaId: string, formData: FormData) {
+  await requireNationalAdmin();
+  const supabase = await createClient();
+  const primaryColor = String(formData.get("brand_primary_color") ?? "").trim();
+  const secondaryColor = String(formData.get("brand_secondary_color") ?? "").trim();
+  const logoUrl = String(formData.get("brand_logo_url") ?? "").trim();
+
+  const { error } = await supabase
+    .from("passport_areas")
+    .update({
+      brand_primary_color: primaryColor || null,
+      brand_secondary_color: secondaryColor || null,
+      brand_logo_url: logoUrl || null,
+    })
+    .eq("id", areaId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/areas/${areaId}`);
+}
+
+export async function resetAreaBranding(areaId: string) {
+  await requireNationalAdmin();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("passport_areas")
+    .update({ brand_primary_color: null, brand_secondary_color: null, brand_logo_url: null })
+    .eq("id", areaId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/areas/${areaId}`);
+}
+
 export async function createMarketingRequest(areaId: string, formData: FormData) {
   const currentUser = await requireCapability(areaId, "submit_marketing_requests");
   const supabase = await createClient();
