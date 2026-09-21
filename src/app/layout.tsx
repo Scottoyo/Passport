@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, DM_Sans } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { getStateBySlug, getAreaBySlug, getMyPrimaryRegion } from "@/lib/queries";
@@ -67,14 +67,21 @@ async function resolveBrandArea(
   return getAreaBySlug(state.id, myRegion.areaSlug);
 }
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// The app's only two fonts, site-wide - Fraunces for major hero/marketing
+// headlines, DM Sans for everything else (nav, buttons, forms, body copy,
+// admin, checkout, account). Loaded once here rather than per-page so any
+// component anywhere can use them via the --font-display/--font-sans
+// tokens (see globals.css's @theme inline block).
+const fraunces = Fraunces({
   subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-fraunces",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const dmSans = DM_Sans({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-dm-sans",
 });
 
 export const metadata: Metadata = {
@@ -102,7 +109,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-slate-900" style={brandStyle}>
         <SiteHeader region={region} themed={Boolean(brandArea?.brand_primary_color)} />

@@ -83,7 +83,7 @@ export async function DiscoverAreaContent({
         >
           {area.name} Passport
         </p>
-        <h1 className={`mt-1 text-3xl font-bold sm:text-4xl ${themed ? "text-white" : "text-slate-900"}`}>
+        <h1 className={`mt-1 font-display text-3xl font-bold sm:text-4xl ${themed ? "text-white" : "text-slate-900"}`}>
           Discover {area.name} Perks
         </h1>
         {showPassportCta && (

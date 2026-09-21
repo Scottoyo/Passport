@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { getStateBySlug, getAreaBySlug, getActivePassportProductForArea } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { PurchaseForm } from "@/components/purchase-form";
-import { fraunces, dmSans, StampStat } from "@/components/editorial-kit";
+import { StampStat } from "@/components/editorial-kit";
 
 interface Props {
   params: Promise<{ state: string; area: string }>;
@@ -35,17 +35,17 @@ export default async function AreaPassportPage({ params, searchParams }: Props) 
   } = await supabase.auth.getUser();
 
   return (
-    <div className={`${fraunces.variable} ${dmSans.variable}`}>
+    <div>
       {/* Hero */}
       <section className="bg-brand-primary">
         <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
           <p className="text-sm font-semibold uppercase tracking-wide text-white/80">
             {area.name} Passport
           </p>
-          <h1 className="mt-2 font-[family-name:var(--font-fraunces)] text-4xl font-bold tracking-tight text-white sm:text-5xl">
+          <h1 className="mt-2 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">
             The {area.name} Passport
           </h1>
-          <p className="mx-auto mt-4 max-w-xl font-[family-name:var(--font-dm-sans)] text-lg text-white/90">
+          <p className="mx-auto mt-4 max-w-xl text-lg text-white/90">
             One purchase unlocks every participating business in {area.name} - this Passport is
             only valid in {area.name}. Exploring another region too? You&apos;ll need a separate
             Passport for it.
@@ -61,13 +61,11 @@ export default async function AreaPassportPage({ params, searchParams }: Props) 
               <p className="text-sm font-semibold uppercase tracking-wide text-brand-primary">
                 {area.name} Passport
               </p>
-              <h2 className="mt-1 font-[family-name:var(--font-fraunces)] text-2xl font-bold text-[#102F3B]">
-                {product.name}
-              </h2>
+              <h2 className="mt-1 text-2xl font-bold text-[#102F3B]">{product.name}</h2>
               {product.description && (
                 <p className="mt-2 text-[#102F3B]/70">{product.description}</p>
               )}
-              <p className="mt-4 font-[family-name:var(--font-fraunces)] text-4xl font-bold text-[#102F3B]">
+              <p className="mt-4 text-4xl font-bold text-[#102F3B]">
                 ${(product.price_cents / 100).toFixed(2)}
               </p>
               <p className="mt-1 text-sm text-[#102F3B]/60">Valid for {product.duration_days} days</p>
