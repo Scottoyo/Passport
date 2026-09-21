@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
+import { getCurrentUser, getAccessibleAreaIds, hasAnyCapability } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAdminScope, getAllStatesForAdmin } from "@/lib/admin-scope";
 import { GlobalScopeSelector } from "@/components/admin/global-scope-selector";
@@ -115,6 +115,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
               <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                 Businesses
               </Link>
+              <Link href="/admin/business-leads" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                Business Leads CRM
+              </Link>
               <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                 Featured offers
               </Link>
@@ -153,6 +156,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
                 <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                   Businesses
                 </Link>
+                {hasAnyCapability(currentUser, "manage_leads") && (
+                  <Link href="/admin/business-leads" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                    Business Leads CRM
+                  </Link>
+                )}
                 <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
                   Featured offers
                 </Link>

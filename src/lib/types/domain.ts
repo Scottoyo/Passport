@@ -207,6 +207,7 @@ export interface AreaAssignment {
   can_manage_subareas: boolean;
   can_submit_marketing_requests: boolean;
   can_manage_staff: boolean;
+  can_manage_leads: boolean;
 }
 
 export interface StateAssignment {
@@ -219,6 +220,7 @@ export interface StateAssignment {
   can_manage_subareas: boolean;
   can_submit_marketing_requests: boolean;
   can_manage_staff: boolean;
+  can_manage_leads: boolean;
 }
 
 export type AreaCapability =
@@ -227,7 +229,8 @@ export type AreaCapability =
   | "manage_offers"
   | "manage_subareas"
   | "submit_marketing_requests"
-  | "manage_staff";
+  | "manage_staff"
+  | "manage_leads";
 
 export interface MarketingRequest {
   id: string;
@@ -301,4 +304,33 @@ export interface AdminNotification {
   business_id: string | null;
   marketing_request_id: string | null;
   created_at: string;
+}
+
+export type BusinessLeadDisposition = "lead" | "in_progress" | "closed_won" | "lost";
+
+export interface BusinessLead {
+  id: string;
+  state_id: string;
+  passport_area_id: string;
+  business_name: string;
+  contact_first_name: string | null;
+  contact_last_name: string | null;
+  phone: string | null;
+  email: string | null;
+  disposition: BusinessLeadDisposition;
+  emailed: boolean;
+  called: boolean;
+  visited: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BusinessLeadNote {
+  id: string;
+  business_lead_id: string;
+  note: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
 }
