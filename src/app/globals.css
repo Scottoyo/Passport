@@ -20,6 +20,14 @@
   --color-brand-primary: var(--brand-primary);
   --color-brand-primary-dark: var(--brand-primary-dark);
   --color-brand-secondary: var(--brand-secondary);
+  /* Faint washes of --brand-primary, computed rather than admin-set, for
+     secondary sections/badges that should feel branded without competing
+     with a bold hero band (see resolveBrandArea() call sites). Only ever
+     applied behind an explicit "themed" check, never unconditionally - an
+     unbranded region's near-black --brand-primary would otherwise produce a
+     visible (if faint) gray tint where there should be none. */
+  --color-brand-tint: color-mix(in srgb, var(--brand-primary) 6%, white);
+  --color-brand-tint-strong: color-mix(in srgb, var(--brand-primary) 14%, white);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

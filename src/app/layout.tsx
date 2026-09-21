@@ -105,7 +105,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-slate-900" style={brandStyle}>
-        <SiteHeader region={region} />
+        <SiteHeader region={region} themed={Boolean(brandArea?.brand_primary_color)} />
         <main className="flex-1 pb-16 lg:pb-0">{children}</main>
         <SiteFooter />
       </body>

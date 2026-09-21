@@ -97,7 +97,7 @@ export default async function AccountDashboardPage() {
           </div>
           <Link
             href="/account/passport"
-            className="mt-4 block rounded-full bg-slate-900 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-slate-700"
+            className="mt-4 block rounded-full bg-brand-primary px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-brand-primary-dark"
           >
             View Passport Details
           </Link>
@@ -107,7 +107,7 @@ export default async function AccountDashboardPage() {
           <p className="text-slate-600">You don&apos;t have a Passport yet.</p>
           <Link
             href="/passport"
-            className="mt-4 inline-block rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+            className="mt-4 inline-block rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
           >
             Get Your Passport
           </Link>
@@ -142,7 +142,7 @@ export default async function AccountDashboardPage() {
                     {visitedBusinesses} of {totalBusinesses} businesses visited
                   </p>
                   <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100">
-                    <div className="h-1.5 rounded-full bg-slate-900" style={{ width: `${pct}%` }} />
+                    <div className="h-1.5 rounded-full bg-brand-primary" style={{ width: `${pct}%` }} />
                   </div>
                   <p className="mt-1 text-xs text-slate-400">{pct}% complete</p>
                   {primaryArea && primaryState && (
@@ -168,7 +168,7 @@ export default async function AccountDashboardPage() {
           <div className="mt-2 flex items-center gap-3">
             <div className="h-1.5 flex-1 rounded-full bg-slate-100">
               <div
-                className="h-1.5 rounded-full bg-slate-900"
+                className="h-1.5 rounded-full bg-brand-primary"
                 style={{ width: `${(nextAchievement.current / nextAchievement.target) * 100}%` }}
               />
             </div>
@@ -192,7 +192,7 @@ export default async function AccountDashboardPage() {
             <p className="text-sm text-slate-500">You haven&apos;t redeemed any Passport promotions yet.</p>
             <Link
               href="/account/discover"
-              className="mt-3 inline-block rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+              className="mt-3 inline-block rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white hover:bg-brand-primary-dark"
             >
               Discover Businesses
             </Link>

@@ -11,7 +11,18 @@ import { MobileBottomNav, type MobileBottomNavTab } from "@/components/mobile-bo
 import { MobileMenuButton } from "@/components/mobile-menu-button";
 import type { State, PassportArea } from "@/lib/types/domain";
 
-export async function SiteHeader({ region }: { region: { state: State; area: PassportArea } | null }) {
+export async function SiteHeader({
+  region,
+  themed = false,
+}: {
+  region: { state: State; area: PassportArea } | null;
+  // True when the active region (or, on /account/** pages, the signed-in
+  // holder's own home region) has custom branding set - gives the header a
+  // colored accent border on every page under it. Defaults to false so any
+  // caller that doesn't pass it (none currently, but keeps this safe) renders
+  // today's plain gray border.
+  themed?: boolean;
+}) {
   const currentUser = await getCurrentUser();
   const isAdmin =
     !!currentUser &&
@@ -63,7 +74,7 @@ export async function SiteHeader({ region }: { region: { state: State; area: Pas
   ];
 
   return (
-    <header className="border-b border-slate-200">
+    <header className={themed ? "border-b-2 border-brand-primary" : "border-b border-slate-200"}>
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <Link href="/" className="text-lg font-semibold tracking-tight">
           The Passport

@@ -40,33 +40,54 @@ export default async function AreaHomePage({ params }: Props) {
   } = await supabase.auth.getUser();
   const favoritedIds = user ? await getFavoritedBusinessIds(user.id) : new Set<string>();
   const homePath = `/${state.slug}/${area.slug}`;
+  const themed = Boolean(area.brand_primary_color);
 
   return (
     <div>
-      <section className="border-b border-slate-200 bg-slate-50">
+      <section
+        className={themed ? "bg-brand-primary" : "border-b border-slate-200 bg-slate-50"}
+      >
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <p
+            className={`text-sm font-semibold uppercase tracking-wide ${
+              themed ? "text-white/80" : "text-slate-500"
+            }`}
+          >
             {area.name} Passport
           </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h1
+            className={`mt-1 text-3xl font-bold tracking-tight sm:text-4xl ${
+              themed ? "text-white" : "text-slate-900"
+            }`}
+          >
             The {area.name} Passport
           </h1>
-          <p className="mt-3 max-w-2xl text-lg text-slate-600">
+          <p className={`mt-3 max-w-2xl text-lg ${themed ? "text-white/90" : "text-slate-600"}`}>
             {area.tagline || `Save at the best local spots in ${area.name} with your Passport.`}
           </p>
           {area.description && (
-            <p className="mt-2 max-w-2xl text-slate-600">{area.description}</p>
+            <p className={`mt-2 max-w-2xl ${themed ? "text-white/90" : "text-slate-600"}`}>
+              {area.description}
+            </p>
           )}
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               href={`/${state.slug}/${area.slug}/passport`}
-              className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+              className={
+                themed
+                  ? "rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
+                  : "rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+              }
             >
               Get the {area.name} Passport
             </Link>
             <Link
               href={`/${state.slug}/${area.slug}/discover`}
-              className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-slate-500"
+              className={
+                themed
+                  ? "rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:border-white"
+                  : "rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-slate-500"
+              }
             >
               Browse businesses
             </Link>
@@ -95,13 +116,17 @@ export default async function AreaHomePage({ params }: Props) {
       </section>
 
       {featuredBusinesses.length > 0 && (
-        <section className="border-t border-slate-200 bg-slate-50">
+        <section className={themed ? "border-t border-slate-200 bg-brand-tint" : "border-t border-slate-200 bg-slate-50"}>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <h2 className="text-2xl font-bold text-slate-900">Featured Businesses</h2>
               <Link
                 href={`/${state.slug}/${area.slug}/discover`}
-                className="text-sm font-semibold text-slate-700 hover:text-slate-900"
+                className={
+                  themed
+                    ? "text-sm font-semibold text-brand-primary hover:text-brand-primary-dark"
+                    : "text-sm font-semibold text-slate-700 hover:text-slate-900"
+                }
               >
                 View all businesses &rarr;
               </Link>
@@ -113,6 +138,7 @@ export default async function AreaHomePage({ params }: Props) {
                   business={business}
                   href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
                   offer={primaryOffers.get(business.id) ?? null}
+                  themed={themed}
                   favorite={{
                     isSignedIn: Boolean(user),
                     isFavorited: favoritedIds.has(business.id),

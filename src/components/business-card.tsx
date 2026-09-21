@@ -14,11 +14,15 @@ export function BusinessCard({
   href,
   offer,
   favorite,
+  themed = false,
 }: {
   business: Business;
   href: string;
   offer?: Offer | null;
   favorite?: BusinessCardFavorite | null;
+  // True when this business's region has custom branding set - tints the
+  // promotion badge instead of the default neutral gray.
+  themed?: boolean;
 }) {
   return (
     <div className="relative rounded-2xl border border-slate-200 transition-colors hover:border-slate-400">
@@ -62,8 +66,12 @@ export function BusinessCard({
             </p>
           )}
           {offer && (
-            <div className="mt-3 rounded-lg bg-slate-50 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <div className={`mt-3 rounded-lg p-3 ${themed ? "bg-brand-tint-strong" : "bg-slate-50"}`}>
+              <p
+                className={`text-xs font-semibold uppercase tracking-wide ${
+                  themed ? "text-brand-primary" : "text-slate-400"
+                }`}
+              >
                 Passport promotion
               </p>
               <p className="mt-0.5 text-sm font-medium text-slate-800">{offer.title}</p>
