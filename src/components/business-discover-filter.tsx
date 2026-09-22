@@ -32,7 +32,7 @@ export function BusinessDiscoverFilter({
       if (value) params.set(key, value);
     }
     const qs = params.toString();
-    router.push(qs ? `${basePath}?${qs}` : basePath);
+    router.push(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
   }
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -73,7 +73,11 @@ export function BusinessDiscoverFilter({
       </label>
       <button className={buttonClasses("outline", "sm")}>Search</button>
       {(q || categoryId || subarea) && (
-        <button type="button" onClick={() => router.push(basePath)} className={buttonClasses("ghost", "sm")}>
+        <button
+          type="button"
+          onClick={() => router.push(basePath, { scroll: false })}
+          className={buttonClasses("ghost", "sm")}
+        >
           Clear filters
         </button>
       )}

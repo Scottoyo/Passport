@@ -150,6 +150,7 @@ export async function DiscoverAreaContent({
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
               href={buildAreaFilterHref(basePath, { q, categoryId })}
+              scroll={false}
               className={
                 !activeSubarea
                   ? "rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white"
@@ -166,6 +167,7 @@ export async function DiscoverAreaContent({
                   categoryId,
                   subarea: subarea.slug,
                 })}
+                scroll={false}
                 className={
                   activeSubarea?.id === subarea.id
                     ? "rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white"
