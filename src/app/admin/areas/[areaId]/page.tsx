@@ -17,6 +17,7 @@ import {
   createMarketingRequest,
   updateAreaBranding,
   resetAreaBranding,
+  uploadAreaHeroImage,
 } from "./actions";
 import { setBusinessApproval, setBusinessFeatured } from "../../businesses/actions";
 
@@ -40,6 +41,7 @@ const CAPABILITY_FIELDS: { key: string; label: string }[] = [
   { key: "can_submit_marketing_requests", label: "Submit marketing requests" },
   { key: "can_manage_staff", label: "Manage local staff" },
   { key: "can_manage_leads", label: "Manage leads (CRM)" },
+  { key: "can_manage_branding", label: "Manage branding" },
 ];
 
 interface Props {
@@ -64,8 +66,9 @@ export default async function AreaWorkspacePage({ params }: Props) {
   const canSubareas = canManageArea(currentUser, areaId, "manage_subareas", area.state_id);
   const canStaff = canManageArea(currentUser, areaId, "manage_staff", area.state_id);
   const canMarketing = canManageArea(currentUser, areaId, "submit_marketing_requests", area.state_id);
+  const canBranding = canManageArea(currentUser, areaId, "manage_branding", area.state_id);
 
-  if (!canView && !canBusinesses && !canSubareas && !canStaff && !canMarketing) {
+  if (!canView && !canBusinesses && !canSubareas && !canStaff && !canMarketing && !canBranding) {
     redirect("/admin");
   }
 
@@ -109,7 +112,7 @@ export default async function AreaWorkspacePage({ params }: Props) {
         ? supabase
             .from("area_assignments")
             .select(
-              "id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, can_manage_leads, profiles:user_id(email)"
+              "id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, can_manage_leads, can_manage_branding, profiles:user_id(email)"
             )
             .eq("passport_area_id", areaId)
         : Promise.resolve({ data: null }),
@@ -126,12 +129,13 @@ export default async function AreaWorkspacePage({ params }: Props) {
         States &amp; Regions.
       </p>
 
-      {isNationalAdmin && (
+      {canBranding && (
         <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
           <h2 className="font-semibold text-ink">Branding</h2>
           <p className="mt-1 text-sm text-ink-muted">
-            Sets this region&apos;s primary/secondary colors across its public pages and, for its passport
-            holders, their account pages too. Leave unset to use the app&apos;s default look.
+            Sets this region&apos;s colors and hero image across its public pages and, for its passport
+            holders, their account pages too. Any field left unset inherits from the state, then the
+            app&apos;s default look.
           </p>
           <form action={updateAreaBranding.bind(null, areaId)} className="mt-4 flex flex-wrap items-end gap-4">
             <label className="text-sm">
@@ -153,6 +157,44 @@ export default async function AreaWorkspacePage({ params }: Props) {
               />
             </label>
             <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Accent color</span>
+              <input
+                name="brand_accent_color"
+                type="color"
+                defaultValue={area.brand_accent_color ?? "#f04a1d"}
+                className="h-10 w-16 rounded-lg border border-border"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Text color</span>
+              <input
+                name="brand_text_color"
+                type="color"
+                defaultValue={area.brand_text_color ?? "#172e3d"}
+                className="h-10 w-16 rounded-lg border border-border"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Background color</span>
+              <input
+                name="brand_background_color"
+                type="color"
+                defaultValue={area.brand_background_color ?? "#fff7e8"}
+                className="h-10 w-16 rounded-lg border border-border"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Hero overlay</span>
+              <select
+                name="brand_hero_overlay"
+                defaultValue={area.brand_hero_overlay ?? "scrim"}
+                className="rounded-lg border border-border px-3 py-2 text-sm"
+              >
+                <option value="scrim">Gradient scrim</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+            <label className="text-sm">
               <span className="mb-1 block text-ink-muted">Logo URL (optional)</span>
               <input
                 name="brand_logo_url"
@@ -166,13 +208,36 @@ export default async function AreaWorkspacePage({ params }: Props) {
               Save branding
             </button>
           </form>
-          {(area.brand_primary_color || area.brand_secondary_color || area.brand_logo_url) && (
+          {(area.brand_primary_color ||
+            area.brand_secondary_color ||
+            area.brand_accent_color ||
+            area.brand_text_color ||
+            area.brand_background_color ||
+            area.brand_hero_overlay ||
+            area.brand_logo_url) && (
             <form action={resetAreaBranding.bind(null, areaId)} className="mt-3">
               <button className="text-xs font-semibold text-error hover:text-red-700">
                 Reset to default
               </button>
             </form>
           )}
+
+          <form action={uploadAreaHeroImage.bind(null, areaId)} className="mt-6 flex flex-wrap items-end gap-3 border-t border-border pt-4">
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Hero image</span>
+              <input
+                name="hero_image"
+                type="file"
+                accept="image/*"
+                required
+                className="text-sm"
+              />
+            </label>
+            <button className={buttonClasses("outline")}>Upload hero image</button>
+            {area.hero_image_url && (
+              <span className="text-xs text-ink-muted">Current hero image is set.</span>
+            )}
+          </form>
         </section>
       )}
 
@@ -391,6 +456,7 @@ export default async function AreaWorkspacePage({ params }: Props) {
                 can_submit_marketing_requests: boolean;
                 can_manage_staff: boolean;
                 can_manage_leads: boolean;
+                can_manage_branding: boolean;
               }[]
             ).map((m) => (
               <li key={m.id} className="rounded-lg bg-surface-elevated p-3">

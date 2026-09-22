@@ -60,3 +60,29 @@ export async function uploadPassportPhoto(passportId: string, file: File): Promi
   const { data } = supabase.storage.from(PASSPORT_PHOTOS_BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }
+
+const BRANDING_MEDIA_BUCKET = "branding-media";
+
+// Same shape as uploadBusinessMedia — storage RLS (0047) parses the path
+// prefix to gate writes: "national/..." (national admin only),
+// "states/{stateId}/..." or "areas/{areaId}/..." (manage_branding
+// capability at that scope, or national admin).
+export async function uploadBrandingHero(
+  level: "national" | "state" | "area",
+  scopeId: string | null,
+  file: File
+): Promise<string> {
+  const supabase = await createClient();
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const prefix = level === "national" ? "national" : level === "state" ? `states/${scopeId}` : `areas/${scopeId}`;
+  const path = `${prefix}/hero.${ext}`;
+
+  const { error } = await supabase.storage.from(BRANDING_MEDIA_BUCKET).upload(path, file, {
+    upsert: true,
+    contentType: file.type || undefined,
+  });
+  if (error) throw new Error(error.message);
+
+  const { data } = supabase.storage.from(BRANDING_MEDIA_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}

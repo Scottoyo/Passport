@@ -141,6 +141,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
               <Link href="/admin/locations" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 States &amp; Regions
               </Link>
+              <Link href="/admin/national-branding" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
+                National Branding
+              </Link>
             </>
           )}
           {!currentUser.isNationalAdmin &&

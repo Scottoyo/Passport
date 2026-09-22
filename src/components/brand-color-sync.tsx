@@ -27,21 +27,40 @@ export function BrandColorSync() {
 
     fetch(`/api/brand-colors?path=${encodeURIComponent(pathname)}`)
       .then((res) => res.json())
-      .then((data: { themed: boolean; primary?: string; primaryDark?: string; secondary?: string }) => {
-        if (cancelled) return;
-        const body = document.body;
-        if (data.themed && data.primary) {
-          body.style.setProperty("--brand-primary", data.primary);
-          body.style.setProperty("--brand-primary-dark", data.primaryDark ?? data.primary);
-          body.style.setProperty("--brand-secondary", data.secondary ?? data.primary);
-          body.dataset.themed = "true";
-        } else {
-          body.style.removeProperty("--brand-primary");
-          body.style.removeProperty("--brand-primary-dark");
-          body.style.removeProperty("--brand-secondary");
-          delete body.dataset.themed;
+      .then(
+        (data: {
+          themed: boolean;
+          primary?: string;
+          primaryDark?: string;
+          secondary?: string;
+          accent?: string | null;
+          text?: string | null;
+          background?: string | null;
+          surfaceAlt?: string | null;
+        }) => {
+          if (cancelled) return;
+          const body = document.body;
+          if (data.themed && data.primary) {
+            body.style.setProperty("--brand-primary", data.primary);
+            body.style.setProperty("--brand-primary-dark", data.primaryDark ?? data.primary);
+            body.style.setProperty("--brand-secondary", data.secondary ?? data.primary);
+            body.dataset.themed = "true";
+          } else {
+            body.style.removeProperty("--brand-primary");
+            body.style.removeProperty("--brand-primary-dark");
+            body.style.removeProperty("--brand-secondary");
+            delete body.dataset.themed;
+          }
+          if (data.accent) body.style.setProperty("--brand-accent", data.accent);
+          else body.style.removeProperty("--brand-accent");
+          if (data.text) body.style.setProperty("--brand-text", data.text);
+          else body.style.removeProperty("--brand-text");
+          if (data.background) body.style.setProperty("--brand-background", data.background);
+          else body.style.removeProperty("--brand-background");
+          if (data.surfaceAlt) body.style.setProperty("--brand-surface-alt", data.surfaceAlt);
+          else body.style.removeProperty("--brand-surface-alt");
         }
-      })
+      )
       .catch(() => {
         // Best-effort - if this fails, colors just stay whatever they were
         // (worst case: a stale theme until the next successful sync or a
