@@ -10,13 +10,17 @@ export default async function HomePage() {
       {/* The hero image already carries its own headline/logo/tagline (see
           the national branding admin page) - no visible H1/CTA on top of
           it, per the national hero's own no-overlay/no-crop requirements.
-          A visually-hidden H1 covers accessibility/SEO instead. */}
-      <RegionHeroBanner
-        variant="contain"
-        overlay="none"
-        src="/images/branding/national/local-perks-national-hero.webp"
-        alt="Local Perks Passport. More to explore. Discover attractions, experiences, and restaurants across America."
-      />
+          A visually-hidden H1 covers accessibility/SEO instead. Sized to
+          match every other region/state hero on the site (variant="card"). */}
+      <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
+        <RegionHeroBanner
+          variant="card"
+          fit="contain"
+          overlay="none"
+          src="/images/branding/national/local-perks-national-hero.webp"
+          alt="Local Perks Passport. More to explore. Discover attractions, experiences, and restaurants across America."
+        />
+      </div>
       <h1 className="sr-only">Local Perks Passport - a Passport for every region you explore</h1>
 
       <div className="border-b border-border bg-brand-surface-alt">

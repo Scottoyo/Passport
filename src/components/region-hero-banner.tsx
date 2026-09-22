@@ -14,37 +14,43 @@ export function getRegionHeroImage(area: { slug: string; hero_image_url: string 
 // callers should NOT render a second, redundant visible H1/tagline on
 // top of it - just the functional CTAs (when overlay="scrim").
 //
-// variant "full-bleed" - a top-level page section, full viewport width
-// (the region Home page hero).
-// variant "card" - a rounded, inset card that fits inside a narrower
-// column (Discover's hero, which also renders inside the account
-// sidebar's content area, not just the standalone page - it has always
-// been an inset card in both contexts, never full-bleed).
-// variant "contain" - a fixed-aspect-ratio box using object-contain
-// instead of object-cover, so the full image is always visible with no
-// cropping at any viewport width (the national hero's own requirement -
-// it has fine text baked into the artwork that must never be cut off).
+// `variant` controls width/shape - kept uniform across every tier
+// (region/state/national) so every hero on the site renders at the same
+// size, per explicit request:
+// "full-bleed" - a top-level page section, full viewport width.
+// "card" - a rounded, inset card constrained to whatever parent column
+// the caller wraps it in (typically `mx-auto max-w-6xl`) - the standard
+// size for every hero on the site today.
+//
+// `fit` controls crop behavior, independent of `variant`:
+// "cover" (default) - fills the box, cropping if the image's own aspect
+// ratio doesn't exactly match.
+// "contain" - the full image is always visible with no cropping at any
+// viewport width - for a region whose art has fine text baked in near
+// the edges that must never be cut off (e.g. the national hero).
 //
 // overlay "scrim" (default) - a bottom gradient for legible light-on-dark
 // CTAs/headings over the image, matching every region hero today.
-// overlay "none" - no gradient at all; pairs with variant="contain" for a
+// overlay "none" - no gradient at all; pairs with fit="contain" for a
 // hero that's pure photography with nothing overlaid on top of it.
 export function RegionHeroBanner({
   src,
   alt,
   variant = "full-bleed",
+  fit = "cover",
   overlay = "scrim",
   children,
 }: {
   src: string;
   alt: string;
-  variant?: "full-bleed" | "card" | "contain";
+  variant?: "full-bleed" | "card";
+  fit?: "cover" | "contain";
   overlay?: "scrim" | "none";
   children?: React.ReactNode;
 }) {
   return (
     <div
-      className={`relative aspect-[2.4/1] w-full ${variant === "contain" ? "" : "sm:aspect-[2.6/1]"} ${
+      className={`relative aspect-[2.4/1] w-full sm:aspect-[2.6/1] ${
         variant === "card" ? "overflow-hidden rounded-2xl" : ""
       }`}
     >
@@ -54,7 +60,7 @@ export function RegionHeroBanner({
         fill
         priority
         sizes={variant === "card" ? "(min-width: 1024px) 60vw, 100vw" : "100vw"}
-        className={variant === "contain" ? "object-contain" : "object-cover"}
+        className={fit === "contain" ? "object-contain" : "object-cover"}
       />
       {overlay === "scrim" && (
         <>
