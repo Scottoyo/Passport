@@ -133,16 +133,12 @@ export function RegisterBusinessForm({
             <input name="city" className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-ink-muted">State</span>
-            <input name="state_code" maxLength={2} placeholder="FL" className={`${inputClass} uppercase`} />
-          </label>
-          <label className="text-sm">
             <span className="mb-1 block text-ink-muted">ZIP code</span>
             <input name="zip" className={inputClass} />
           </label>
 
           <label className="text-sm">
-            <span className="mb-1 block text-ink-muted">State (Passport)</span>
+            <span className="mb-1 block text-ink-muted">State</span>
             <select
               name="prefill_state_id"
               value={selectedStateId}
