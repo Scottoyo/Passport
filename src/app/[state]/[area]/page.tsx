@@ -7,6 +7,7 @@ import {
   getBusinessesForArea,
   getPrimaryOffersForBusinesses,
   getFavoritedBusinessIds,
+  getActivePassportForArea,
 } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { BusinessCard } from "@/components/business-card";
@@ -41,6 +42,9 @@ export default async function AreaHomePage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
   const favoritedIds = user ? await getFavoritedBusinessIds(user.id) : new Set<string>();
+  // Someone who already owns this exact region's Passport doesn't need the
+  // "Get the Passport" upsell CTA repeated at them here.
+  const ownsAreaPassport = user ? Boolean(await getActivePassportForArea(user.id, area.id)) : false;
   const homePath = `/${state.slug}/${area.slug}`;
   const themed = Boolean(area.brand_primary_color);
   const heroImage = getRegionHeroImage(area);
@@ -60,12 +64,14 @@ export default async function AreaHomePage({ params }: Props) {
                 <>
                   <h1 className="sr-only">The {area.name} Passport</h1>
                   <div className="flex flex-wrap items-center gap-4">
-                    <Link
-                      href={`/${state.slug}/${area.slug}/passport`}
-                      className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
-                    >
-                      Get the {area.name} Passport
-                    </Link>
+                    {!ownsAreaPassport && (
+                      <Link
+                        href={`/${state.slug}/${area.slug}/passport`}
+                        className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
+                      >
+                        Get the {area.name} Passport
+                      </Link>
+                    )}
                     <Link
                       href={`/${state.slug}/${area.slug}/discover`}
                       className="rounded-lg border border-white/60 px-6 py-3 text-sm font-semibold text-white hover:border-white"
@@ -86,9 +92,11 @@ export default async function AreaHomePage({ params }: Props) {
                     {area.tagline || `Save at the best local spots in ${area.name} with your Passport.`}
                   </p>
                   <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
-                    <Link href={`/${state.slug}/${area.slug}/passport`} className={buttonClasses("primary")}>
-                      Get the {area.name} Passport
-                    </Link>
+                    {!ownsAreaPassport && (
+                      <Link href={`/${state.slug}/${area.slug}/passport`} className={buttonClasses("primary")}>
+                        Get the {area.name} Passport
+                      </Link>
+                    )}
                     <Link href={`/${state.slug}/${area.slug}/discover`} className={buttonClasses("outline")}>
                       Browse businesses
                     </Link>
@@ -124,16 +132,18 @@ export default async function AreaHomePage({ params }: Props) {
               </p>
             )}
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link
-                href={`/${state.slug}/${area.slug}/passport`}
-                className={
-                  themed
-                    ? "rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
-                    : buttonClasses("primary")
-                }
-              >
-                Get the {area.name} Passport
-              </Link>
+              {!ownsAreaPassport && (
+                <Link
+                  href={`/${state.slug}/${area.slug}/passport`}
+                  className={
+                    themed
+                      ? "rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
+                      : buttonClasses("primary")
+                  }
+                >
+                  Get the {area.name} Passport
+                </Link>
+              )}
               <Link
                 href={`/${state.slug}/${area.slug}/discover`}
                 className={
