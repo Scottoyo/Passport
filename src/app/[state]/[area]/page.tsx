@@ -45,26 +45,59 @@ export default async function AreaHomePage({ params }: Props) {
   const themed = Boolean(area.brand_primary_color);
   const heroImage = getRegionHeroImage(area);
 
+  const heroOverlay = area.brand_hero_overlay === "none" ? "none" : "scrim";
+
   return (
     <div>
       {heroImage ? (
-        <RegionHeroBanner src={heroImage.src} alt={heroImage.alt}>
-          <h1 className="sr-only">The {area.name} Passport</h1>
-          <div className="flex flex-wrap items-center gap-4">
-            <Link
-              href={`/${state.slug}/${area.slug}/passport`}
-              className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
-            >
-              Get the {area.name} Passport
-            </Link>
-            <Link
-              href={`/${state.slug}/${area.slug}/discover`}
-              className="rounded-lg border border-white/60 px-6 py-3 text-sm font-semibold text-white hover:border-white"
-            >
-              Browse businesses
-            </Link>
+        <>
+          {/* "card" variant, matching the Discover page's hero size exactly
+              (an inset, max-w-6xl card, not full browser width) rather than
+              a separate full-bleed treatment for Home alone. */}
+          <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
+            <RegionHeroBanner src={heroImage.src} alt={heroImage.alt} variant="card" overlay={heroOverlay}>
+              {heroOverlay === "scrim" && (
+                <>
+                  <h1 className="sr-only">The {area.name} Passport</h1>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Link
+                      href={`/${state.slug}/${area.slug}/passport`}
+                      className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
+                    >
+                      Get the {area.name} Passport
+                    </Link>
+                    <Link
+                      href={`/${state.slug}/${area.slug}/discover`}
+                      className="rounded-lg border border-white/60 px-6 py-3 text-sm font-semibold text-white hover:border-white"
+                    >
+                      Browse businesses
+                    </Link>
+                  </div>
+                </>
+              )}
+            </RegionHeroBanner>
           </div>
-        </RegionHeroBanner>
+          {heroOverlay === "none" && (
+            <>
+              <h1 className="sr-only">The {area.name} Passport</h1>
+              <div className="mt-6 border-b border-border bg-brand-surface-alt">
+                <div className="mx-auto max-w-6xl px-4 py-8 text-center sm:px-6">
+                  <p className="text-brand-text">
+                    {area.tagline || `Save at the best local spots in ${area.name} with your Passport.`}
+                  </p>
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
+                    <Link href={`/${state.slug}/${area.slug}/passport`} className={buttonClasses("primary")}>
+                      Get the {area.name} Passport
+                    </Link>
+                    <Link href={`/${state.slug}/${area.slug}/discover`} className={buttonClasses("outline")}>
+                      Browse businesses
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </>
       ) : (
         <section className={themed ? "bg-brand-primary" : "border-b border-border bg-surface-elevated"}>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
@@ -137,7 +170,7 @@ export default async function AreaHomePage({ params }: Props) {
       </section>
 
       {featuredBusinesses.length > 0 && (
-        <section className={themed ? "border-t border-border bg-brand-tint" : "border-t border-border bg-surface-elevated"}>
+        <section className={themed ? "border-t border-border bg-brand-surface-alt" : "border-t border-border bg-surface-elevated"}>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <h2 className="font-display text-2xl font-bold text-ink">Featured Businesses</h2>

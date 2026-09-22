@@ -75,19 +75,36 @@ export async function DiscoverAreaContent({
   const resolvedPassportHref = passportHref ?? `/${state.slug}/${area.slug}/passport`;
   const themed = Boolean(area.brand_primary_color);
   const heroImage = getRegionHeroImage(area);
+  const heroOverlay = area.brand_hero_overlay === "none" ? "none" : "scrim";
 
   return (
     <div>
       {heroImage ? (
         <div className="mb-10">
-          <RegionHeroBanner src={heroImage.src} alt={heroImage.alt} variant="card">
-            <h1 className="sr-only">Discover {area.name} Perks</h1>
-            {showPassportCta && (
-              <Link href={resolvedPassportHref} className="inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated">
-                Get the {area.name} Passport
-              </Link>
+          <RegionHeroBanner src={heroImage.src} alt={heroImage.alt} variant="card" overlay={heroOverlay}>
+            {heroOverlay === "scrim" && (
+              <>
+                <h1 className="sr-only">Discover {area.name} Perks</h1>
+                {showPassportCta && (
+                  <Link href={resolvedPassportHref} className="inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated">
+                    Get the {area.name} Passport
+                  </Link>
+                )}
+              </>
             )}
           </RegionHeroBanner>
+          {heroOverlay === "none" && (
+            <>
+              <h1 className="sr-only">Discover {area.name} Perks</h1>
+              {showPassportCta && (
+                <div className="mt-4 text-center">
+                  <Link href={resolvedPassportHref} className={buttonClasses("primary")}>
+                    Get the {area.name} Passport
+                  </Link>
+                </div>
+              )}
+            </>
+          )}
         </div>
       ) : (
         <section className={themed ? "mb-10 rounded-2xl bg-brand-primary p-6 sm:p-10" : ""}>

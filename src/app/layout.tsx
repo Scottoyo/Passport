@@ -48,13 +48,14 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   }
   if (theme.accent) Object.assign(brandStyle, { "--brand-accent": theme.accent });
   if (theme.text) Object.assign(brandStyle, { "--brand-text": theme.text });
-  if (theme.background) Object.assign(brandStyle, { "--brand-background": theme.background });
-  if (theme.level === "national") {
-    // The requested national palette's "secondary section background" is
-    // a specific cool light gray, not admin-configurable (see the plan's
-    // field-mapping decision) - a fixed refinement applied only on the
-    // national tier, distinct from the warm cream tint every other
-    // unbranded page keeps as --brand-surface-alt's default.
+  if (theme.background) {
+    Object.assign(brandStyle, { "--brand-background": theme.background });
+    // Any tier with its own custom background (region/state/national)
+    // gets the same cool-light-gray "alternate section" treatment
+    // requested for the national palette, rather than the warm cream
+    // tint every unbranded page keeps as --brand-surface-alt's default -
+    // a fixed refinement, not an admin-configurable field (see the
+    // field-mapping decision in this feature's plan).
     Object.assign(brandStyle, { "--brand-surface-alt": "#F7F8FA" });
   }
   if (isAdminPath(pathname)) {
