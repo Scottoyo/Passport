@@ -48,12 +48,12 @@ export default async function ForBusinessesPage({ params }: Props) {
             100% Free to Join &mdash; No Monthly Fees
           </span>
           <h1 className="mt-4 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">
-            Turn Passport Holders Into New Regulars.
+            Turn Passport Holders Into Customers.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-white/90">
             The Passport puts your business in front of locals and visitors who are
             actively deciding where to eat, shop, explore, and spend. Create an exclusive perk,
-            welcome new customers, and give them a reason to come back.
+            welcome new customers.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
@@ -86,15 +86,15 @@ export default async function ForBusinessesPage({ params }: Props) {
             visits&mdash;and first visits into lasting customers.
           </p>
           <div className="mt-12 grid gap-10 sm:grid-cols-3">
-            <StampStat title="Get found at the right moment">
+            <StampStat title="Get found at the right moment" icon={<SearchIcon className="h-7 w-7" />}>
               Reach people while they are actively looking for their next meal, activity, shop, or
               local experience.
             </StampStat>
-            <StampStat title="Create a reason to visit">
+            <StampStat title="Create a reason to visit" icon={<StarIcon className="h-7 w-7" />}>
               Offer a perk that feels worthwhile to the customer and still makes sense for your
               business.
             </StampStat>
-            <StampStat title="Win the return visit">
+            <StampStat title="Get the customer" icon={<PersonCheckIcon className="h-7 w-7" />}>
               The perk opens the door. Your product, service, and hospitality create the
               relationship.
             </StampStat>
@@ -250,6 +250,37 @@ export default async function ForBusinessesPage({ params }: Props) {
         </div>
       </section>
     </div>
+  );
+}
+
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className} aria-hidden>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m20 20-4.8-4.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function StarIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className} aria-hidden>
+      <path
+        d="M12 3.5 14.6 9l6 .87-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.87Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function PersonCheckIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className} aria-hidden>
+      <circle cx="10.5" cy="8" r="3.5" />
+      <path d="M4 20c1.3-3.8 3.9-5.8 6.5-5.8" strokeLinecap="round" />
+      <path d="m14.5 16.5 2 2 3.5-3.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

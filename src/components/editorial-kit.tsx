@@ -13,19 +13,37 @@ export function CheckIcon({ className }: { className?: string }) {
   );
 }
 
+// The default icon - a plain compass-style stamp mark - kept as StampStat's
+// fallback so every existing caller that doesn't pass its own `icon` (the
+// region passport purchase page's three stats) renders exactly as before.
+function DefaultStampIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7" aria-hidden>
+      <path d="M12 3v18M3 12h18" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="9" />
+    </svg>
+  );
+}
+
 // A circular "passport stamp" icon paired with a title/body - used for
 // parallel value-prop style facts (not sequential steps; see RouteStep for
 // that). The title is a small card-level sub-heading, so it stays DM Sans
 // (font-semibold) rather than the display font - Fraunces is reserved for
-// major hero/section headlines, not this tier.
-export function StampStat({ title, children }: { title: string; children: React.ReactNode }) {
+// major hero/section headlines, not this tier. `icon` lets a caller swap in
+// a mark relevant to that specific stat instead of the generic default.
+export function StampStat({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="text-center">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-brand-primary text-brand-primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7" aria-hidden>
-          <path d="M12 3v18M3 12h18" strokeLinecap="round" />
-          <circle cx="12" cy="12" r="9" />
-        </svg>
+        {icon ?? <DefaultStampIcon />}
       </div>
       <h3 className="mt-4 text-lg font-semibold text-ink">{title}</h3>
       <p className="mt-2 text-sm text-ink-muted">{children}</p>
