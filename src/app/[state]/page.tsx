@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getStateBySlug, getAreasForState } from "@/lib/queries";
 import { cardClasses } from "@/lib/ui-classes";
+import { RegionHeroBanner, getRegionHeroImage } from "@/components/region-hero-banner";
 
 interface Props {
   params: Promise<{ state: string }>;
@@ -20,9 +21,16 @@ export default async function StatePage({ params }: Props) {
   if (!state) notFound();
 
   const areas = await getAreasForState(state.id);
+  const heroImage = getRegionHeroImage(state);
+  const heroOverlay = state.brand_hero_overlay === "scrim" ? "scrim" : "none";
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      {heroImage && (
+        <div className="mb-6">
+          <RegionHeroBanner src={heroImage.src} alt={heroImage.alt} variant="card" fit="contain" overlay={heroOverlay} />
+        </div>
+      )}
       <h1 className="font-display text-3xl font-bold text-ink">{state.name}</h1>
       {state.intro_copy && (
         <p className="mt-2 max-w-2xl text-ink-muted">{state.intro_copy}</p>
