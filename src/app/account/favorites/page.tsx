@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getFavoriteBusinessesForHolder } from "@/lib/admin-queries";
-import { getPrimaryOffersForBusinesses } from "@/lib/queries";
+import { getPrimaryOffersForBusinesses, getCategories } from "@/lib/queries";
 import { BusinessCard } from "@/components/business-card";
 import { toggleFavorite } from "@/app/[state]/[area]/businesses/[business]/actions";
 
@@ -24,6 +24,8 @@ export default async function FavoritesPage() {
   const areaById = new Map((areas ?? []).map((a) => [a.id as string, a]));
   const stateSlugById = new Map((states ?? []).map((s) => [s.id as string, s.slug as string]));
   const primaryOffers = await getPrimaryOffersForBusinesses(favorites.map((b) => b.id));
+  const categories = await getCategories();
+  const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
 
   return (
     <div>
@@ -44,6 +46,7 @@ export default async function FavoritesPage() {
                 business={business}
                 href={href}
                 offer={primaryOffers.get(business.id) ?? null}
+                category={business.category_id ? categoryNameById.get(business.category_id) : null}
                 favorite={{
                   isSignedIn: true,
                   isFavorited: true,
