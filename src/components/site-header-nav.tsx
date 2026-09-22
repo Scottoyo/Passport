@@ -48,6 +48,15 @@ export function SiteHeaderNav({
 
   const homeHref = regionSlugs ? `/${regionSlugs.stateSlug}/${regionSlugs.areaSlug}` : "/";
   const discoverHref = regionSlugs ? `/${regionSlugs.stateSlug}/${regionSlugs.areaSlug}/discover` : "/#states";
+  // "Get Your Passport"/FAQ/"Create a Profile" should land on that exact
+  // region's own version of each page when browsing one, same as
+  // Home/Discover already do - not the national picker that makes the
+  // visitor pick their region a second time.
+  const passportHref = regionSlugs ? `/${regionSlugs.stateSlug}/${regionSlugs.areaSlug}/passport` : "/passport";
+  const faqHref = regionSlugs ? `/${regionSlugs.stateSlug}/${regionSlugs.areaSlug}/faq` : "/faq";
+  const createProfileHref = regionSlugs
+    ? `/${regionSlugs.stateSlug}/${regionSlugs.areaSlug}/create-profile`
+    : "/create-profile";
   const customerDiscoverHref = regionSlugs ? discoverHref : "/account/discover";
   // The account sidebar's own "Discover" link (/account/discover) renders
   // inline within the account layout so the sidebar stays visible - but the
@@ -72,7 +81,7 @@ export function SiteHeaderNav({
   const signedOutBottomTabs: MobileBottomNavTab[] = [
     { href: homeHref, label: "Home", icon: "home" },
     { href: discoverHref, label: "Discover", icon: "discover" },
-    { href: "/passport", label: "Passport", icon: "passport" },
+    { href: passportHref, label: "Passport", icon: "passport" },
     { href: "/sign-in", label: "Login", icon: "account" },
   ];
 
@@ -143,7 +152,7 @@ export function SiteHeaderNav({
               { href: "/account/notifications", label: "Notifications", badge: unreadNotifications },
               { href: "/account/referrals", label: "Referrals" },
               { href: "/account/settings", label: "Settings" },
-              { href: "/faq", label: "FAQ" },
+              { href: faqHref, label: "FAQ" },
             ]}
             signOutAction={signOut}
           />
@@ -162,15 +171,15 @@ export function SiteHeaderNav({
         <Link href={discoverHref} className="hover:text-ink">
           Discover
         </Link>
-        <Link href="/faq" className="hover:text-ink">
+        <Link href={faqHref} className="hover:text-ink">
           FAQ
         </Link>
       </nav>
       <div className="hidden flex-wrap items-center justify-end gap-3 text-sm font-medium lg:flex">
-        <Link href="/passport" className={buttonClasses("primary")}>
+        <Link href={passportHref} className={buttonClasses("primary")}>
           Get Your Passport
         </Link>
-        <Link href="/create-profile" className={buttonClasses("outline")}>
+        <Link href={createProfileHref} className={buttonClasses("outline")}>
           Create a Profile
         </Link>
         <RegisterBusinessLink className={buttonClasses("outline")} />
@@ -181,10 +190,10 @@ export function SiteHeaderNav({
       <MobileMenuButton
         items={[
           { href: "/sign-in", label: "Login", variant: "text" },
-          { href: "/passport", label: "Get Your Passport", variant: "solid" },
-          { href: "/create-profile", label: "Create a Profile", variant: "outline" },
+          { href: passportHref, label: "Get Your Passport", variant: "solid" },
+          { href: createProfileHref, label: "Create a Profile", variant: "outline" },
           { href: discoverHref, label: "Discover", variant: "outline" },
-          { href: "/faq", label: "FAQ", variant: "outline" },
+          { href: faqHref, label: "FAQ", variant: "outline" },
         ]}
         showRegisterBusiness
         breakpoint="lg"

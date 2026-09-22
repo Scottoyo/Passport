@@ -20,7 +20,10 @@ export function SiteFooter() {
           <Link href="/#states" className="hover:text-white">
             States
           </Link>
-          <Link href="/passport" className="hover:text-white">
+          <Link
+            href={regionSlugs ? `/${regionSlugs.stateSlug}/${regionSlugs.areaSlug}/passport` : "/passport"}
+            className="hover:text-white"
+          >
             The Passport
           </Link>
           {regionSlugs && (
