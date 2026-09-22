@@ -23,7 +23,6 @@ export async function registerBusiness(formData: FormData) {
   const website = String(formData.get("website") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
-  const stateCode = String(formData.get("state_code") ?? "").trim().toUpperCase();
   const zip = String(formData.get("zip") ?? "").trim();
   const areaId = String(formData.get("area_id") ?? "");
 
@@ -64,6 +63,25 @@ export async function registerBusiness(formData: FormData) {
   if (contactPhone) {
     await supabase.from("profiles").update({ phone: contactPhone }).eq("id", signUpData.user.id);
   }
+
+  // The form only collects a Passport region (area_id) - the business's
+  // mailing-address state code is derived from that region's own state
+  // rather than asked for a second time as free text, since a region
+  // always belongs to exactly one state.
+  const { data: area } = await supabase
+    .from("passport_areas")
+    .select("state_id")
+    .eq("id", areaId)
+    .maybeSingle();
+  if (!area) {
+    return { error: "Please select a valid region." };
+  }
+  const { data: state } = await supabase
+    .from("states")
+    .select("abbreviation")
+    .eq("id", area.state_id)
+    .maybeSingle();
+  const stateCode = state?.abbreviation ?? null;
 
   const { error: businessError } = await supabase.from("businesses").insert({
     passport_area_id: areaId,
