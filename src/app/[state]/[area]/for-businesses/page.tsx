@@ -224,9 +224,9 @@ export default async function ForBusinessesPage({ params }: Props) {
       </section>
 
       {/* Final CTA */}
-      <section className="relative overflow-hidden bg-brand-primary-dark">
+      <section className="relative overflow-hidden bg-brand-primary">
         <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <p className="text-sm font-semibold uppercase tracking-wide text-accent">
+          <p className="text-sm font-semibold uppercase tracking-wide text-white/80">
             Your Next Customer Is Exploring
           </p>
           <h2 className="mt-2 font-display text-3xl font-bold text-white sm:text-4xl">
@@ -239,7 +239,7 @@ export default async function ForBusinessesPage({ params }: Props) {
           <div className="mt-8">
             <Link
               href={registerHref}
-              className="inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary-dark hover:bg-surface-elevated"
+              className="inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
             >
               Register Your Business
             </Link>
