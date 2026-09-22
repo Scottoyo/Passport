@@ -15,8 +15,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const area = await getAreaBySlug(state.id, areaSlug);
   if (!area) return {};
 
-  const title = `Join ${area.name} Passport | Reach Locals & Visitors`;
-  const description = `List your ${area.name}-area business, create an exclusive Passport perk, and reach locals and visitors ready to eat, shop, explore, and experience more. Free to join.`;
+  const title = "Join The Passport | Reach Locals & Visitors";
+  const description =
+    "List your local business, create an exclusive Passport perk, and reach locals and visitors ready to eat, shop, explore, and experience more. Free to join.";
 
   return {
     title,
@@ -40,7 +41,7 @@ export default async function ForBusinessesPage({ params }: Props) {
       <section className="bg-brand-primary">
         <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-20">
           <p className="text-sm font-semibold uppercase tracking-wide text-white/80">
-            For {area.name} Businesses
+            For Local Businesses
           </p>
           <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-1.5 text-sm font-semibold text-white">
             <CheckIcon className="h-4 w-4 shrink-0" />
@@ -50,7 +51,7 @@ export default async function ForBusinessesPage({ params }: Props) {
             Turn Passport Holders Into New Regulars.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-white/90">
-            {area.name} Passport puts your business in front of locals and visitors who are
+            The Passport puts your business in front of locals and visitors who are
             actively deciding where to eat, shop, explore, and spend. Create an exclusive perk,
             welcome new customers, and give them a reason to come back.
           </p>
@@ -81,7 +82,7 @@ export default async function ForBusinessesPage({ params }: Props) {
             A better way to be discovered.
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-ink/70">
-            {area.name} Passport is a local discovery platform designed to turn curiosity into
+            The Passport is a local discovery platform designed to turn curiosity into
             visits&mdash;and first visits into lasting customers.
           </p>
           <div className="mt-12 grid gap-10 sm:grid-cols-3">
@@ -119,7 +120,7 @@ export default async function ForBusinessesPage({ params }: Props) {
               Build an offer around your goals, margins, and customer experience.
             </RouteStep>
             <RouteStep step="03" title="Get published">
-              Once approved, your business becomes discoverable to {area.name} Passport holders.
+              Once approved, your business becomes discoverable to Passport holders.
             </RouteStep>
             <RouteStep step="04" title="Welcome new customers">
               Customers visit, redeem, explore what else you offer, and have a reason to return.
@@ -165,7 +166,7 @@ export default async function ForBusinessesPage({ params }: Props) {
       <section className="border-t border-border bg-brand-surface-alt">
         <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-20">
           <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">
-            If you help people enjoy {area.name}, you belong here.
+            If you help people enjoy where they are, you belong here.
           </h2>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             {[
@@ -193,14 +194,14 @@ export default async function ForBusinessesPage({ params }: Props) {
             Frequently asked questions
           </h2>
           <div className="mt-10 space-y-3">
-            <FaqItem question={`Who can join ${area.name} Passport?`}>
-              Independent businesses, regional operators, and distinctive {area.name}-area
-              experiences may apply. Every listing is reviewed to keep the Passport useful and
-              engaging for holders.
+            <FaqItem question="Who can join The Passport?">
+              Independent businesses, regional operators, and distinctive local experiences may
+              apply. Every listing is reviewed to keep the Passport useful and engaging for
+              holders.
             </FaqItem>
             <FaqItem question="Do I choose my own perk?">
-              Yes. You propose the offer, terms, and any reasonable restrictions. The{" "}
-              {area.name} Passport team can help make it clear and compelling.
+              Yes. You propose the offer, terms, and any reasonable restrictions. The Passport
+              team can help make it clear and compelling.
             </FaqItem>
             <FaqItem question="Does the perk need to be a percentage discount?">
               No. Upgrades, add-ons, complimentary items, packages, and exclusive experiences can
@@ -215,8 +216,8 @@ export default async function ForBusinessesPage({ params }: Props) {
               promotion details.
             </FaqItem>
             <FaqItem question="Is there a cost to join?">
-              No. Listing your business and offering a perk on {area.name} Passport is free, with
-              no monthly fees.
+              No. Listing your business and offering a perk on The Passport is free, with no
+              monthly fees.
             </FaqItem>
           </div>
         </div>
@@ -232,8 +233,8 @@ export default async function ForBusinessesPage({ params }: Props) {
             Give them a reason to choose you.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-white/80">
-            Join {area.name} Passport and become part of the places, flavors, and experiences
-            people remember most.
+            Join The Passport and become part of the places, flavors, and experiences people
+            remember most.
           </p>
           <div className="mt-8">
             <Link

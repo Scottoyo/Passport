@@ -53,6 +53,16 @@ export function isAdminPath(pathname: string): boolean {
   return pathname.split("/").filter(Boolean)[0] === "admin";
 }
 
+// Every region's "For Businesses" page (/[state]/[area]/for-businesses) is
+// a standardized, national-branded page - deliberately not region-themed
+// like the rest of that region's public pages, since the businesses it's
+// pitching to see the exact same generic sales page regardless of which
+// region they're in.
+export function isForBusinessesPath(pathname: string): boolean {
+  const segments = pathname.split("/").filter(Boolean);
+  return segments[segments.length - 1] === "for-businesses";
+}
+
 export function getPageTier(pathname: string): PageTier {
   if (parseRegionSlugsFromPath(pathname)) return "region";
   if (parseStateSlugFromPath(pathname)) return "state";
