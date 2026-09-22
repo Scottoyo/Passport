@@ -10,6 +10,7 @@ export const NON_REGION_TOP_SEGMENTS = new Set([
   "portal",
   "create-profile",
   "register-business",
+  "for-businesses",
   "forgot-password",
   "reset-password",
   "sign-in",

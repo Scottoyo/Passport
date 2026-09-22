@@ -26,11 +26,12 @@ export function SiteFooter() {
           >
             The Passport
           </Link>
-          {regionSlugs && (
-            <Link href={`/${regionSlugs.stateSlug}/${regionSlugs.areaSlug}/for-businesses`} className="hover:text-white">
-              For Businesses
-            </Link>
-          )}
+          <Link
+            href={regionSlugs ? `/${regionSlugs.stateSlug}/${regionSlugs.areaSlug}/for-businesses` : "/for-businesses"}
+            className="hover:text-white"
+          >
+            For Businesses
+          </Link>
           <Link href="/admin" className="hover:text-white">
             Admin
           </Link>
