@@ -9,9 +9,11 @@ import {
   getFavoritedBusinessIds,
   getActivePassportForArea,
   getCategories,
+  hasPublishedOffersForArea,
 } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { BusinessCard } from "@/components/business-card";
+import { ComingSoonBusinesses } from "@/components/coming-soon-businesses";
 import { RegionHeroBanner, getRegionHeroImage } from "@/components/region-hero-banner";
 import { toggleFavorite } from "@/app/[state]/[area]/businesses/[business]/actions";
 import { buttonClasses } from "@/lib/ui-classes";
@@ -36,9 +38,10 @@ export default async function AreaHomePage({ params }: Props) {
   if (!area) notFound();
 
   const featuredBusinesses = await getBusinessesForArea(area.id, { featured: true });
-  const [primaryOffers, categories] = await Promise.all([
+  const [primaryOffers, categories, hasOffers] = await Promise.all([
     getPrimaryOffersForBusinesses(featuredBusinesses.map((b) => b.id)),
     getCategories([state.id]),
+    hasPublishedOffersForArea(area.id),
   ]);
   const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
 
@@ -164,6 +167,17 @@ export default async function AreaHomePage({ params }: Props) {
         </section>
       )}
 
+      {!hasOffers && (
+        <section className={themed ? "border-t border-border bg-brand-surface-alt" : "border-t border-border bg-surface-elevated"}>
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <ComingSoonBusinesses
+              areaName={area.name}
+              registerHref={`/register-business?state=${state.slug}&region=${area.slug}`}
+            />
+          </div>
+        </section>
+      )}
+
       {/* Someone who already owns this region's Passport doesn't need the
           sales pitch for it, or the "why get a Passport"/business-signup
           upsells that go with it - they're here to browse, not buy. */}
@@ -189,7 +203,7 @@ export default async function AreaHomePage({ params }: Props) {
         </section>
       )}
 
-      {(featuredBusinesses.length > 0 || ownsAreaPassport) && (
+      {hasOffers && (featuredBusinesses.length > 0 || ownsAreaPassport) && (
         <section className={themed ? "border-t border-border bg-brand-surface-alt" : "border-t border-border bg-surface-elevated"}>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             {featuredBusinesses.length > 0 && (

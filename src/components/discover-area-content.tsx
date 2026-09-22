@@ -6,10 +6,12 @@ import {
   getPrimaryOffersForBusinesses,
   getFavoritedBusinessIds,
   getActivePassportForArea,
+  hasPublishedOffersForArea,
 } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { BusinessCard } from "@/components/business-card";
 import { BusinessDiscoverFilter } from "@/components/business-discover-filter";
+import { ComingSoonBusinesses } from "@/components/coming-soon-businesses";
 import { RegionHeroBanner, getRegionHeroImage } from "@/components/region-hero-banner";
 import { toggleFavorite } from "@/app/[state]/[area]/businesses/[business]/actions";
 import { buttonClasses } from "@/lib/ui-classes";
@@ -57,14 +59,20 @@ export async function DiscoverAreaContent({
   const subareas = await getSubareasForArea(area.id);
   const activeSubarea = subareaSlug ? subareas.find((s) => s.slug === subareaSlug) : null;
 
-  const [businesses, categories] = await Promise.all([
+  const [businesses, categories, hasOffers] = await Promise.all([
     getBusinessesForArea(area.id, {
       q: q || undefined,
       categoryId: categoryId || undefined,
       subareaId: activeSubarea?.id,
     }),
     getCategories([state.id]),
+    hasPublishedOffersForArea(area.id),
   ]);
+  // The "coming soon" replacement only applies to the default, unfiltered
+  // view - someone actively searching/filtering should still get real
+  // search feedback ("no results") rather than a marketing pitch standing
+  // in for it.
+  const isDefaultView = !q && !categoryId && !activeSubarea;
   const primaryOffers = await getPrimaryOffersForBusinesses(businesses.map((b) => b.id));
 
   const supabase = await createClient();
@@ -193,40 +201,49 @@ export async function DiscoverAreaContent({
       )}
 
       <section className="mt-10">
-        <h2 className="text-xl font-semibold text-ink">
-          {activeSubarea ? `Participating businesses in ${activeSubarea.name}` : "Participating businesses"}
-        </h2>
-        <BusinessDiscoverFilter
-          basePath={basePath}
-          q={q}
-          categoryId={categoryId ?? ""}
-          subarea={subareaSlug ?? ""}
-          categories={categories.map((c) => ({ value: c.id, label: c.name }))}
-        />
-        {businesses.length === 0 ? (
-          <p className="mt-4 text-ink-muted">
-            {q || categoryId || activeSubarea
-              ? "No businesses match your search."
-              : `No businesses are live in ${area.name} yet.`}
-          </p>
+        {!hasOffers && isDefaultView ? (
+          <ComingSoonBusinesses
+            areaName={area.name}
+            registerHref={`/register-business?state=${state.slug}&region=${area.slug}`}
+          />
         ) : (
-          <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {businesses.map((business) => (
-              <BusinessCard
-                key={business.id}
-                business={business}
-                href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
-                offer={primaryOffers.get(business.id) ?? null}
-                category={business.category_id ? categoryNameById.get(business.category_id) : null}
-                favorite={{
-                  isSignedIn: Boolean(user),
-                  isFavorited: favoritedIds.has(business.id),
-                  toggleAction: toggleFavorite.bind(null, business.id, basePath),
-                  passportHref: resolvedPassportHref,
-                }}
-              />
-            ))}
-          </div>
+          <>
+            <h2 className="text-xl font-semibold text-ink">
+              {activeSubarea ? `Participating businesses in ${activeSubarea.name}` : "Participating businesses"}
+            </h2>
+            <BusinessDiscoverFilter
+              basePath={basePath}
+              q={q}
+              categoryId={categoryId ?? ""}
+              subarea={subareaSlug ?? ""}
+              categories={categories.map((c) => ({ value: c.id, label: c.name }))}
+            />
+            {businesses.length === 0 ? (
+              <p className="mt-4 text-ink-muted">
+                {q || categoryId || activeSubarea
+                  ? "No businesses match your search."
+                  : `No businesses are live in ${area.name} yet.`}
+              </p>
+            ) : (
+              <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {businesses.map((business) => (
+                  <BusinessCard
+                    key={business.id}
+                    business={business}
+                    href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
+                    offer={primaryOffers.get(business.id) ?? null}
+                    category={business.category_id ? categoryNameById.get(business.category_id) : null}
+                    favorite={{
+                      isSignedIn: Boolean(user),
+                      isFavorited: favoritedIds.has(business.id),
+                      toggleAction: toggleFavorite.bind(null, business.id, basePath),
+                      passportHref: resolvedPassportHref,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </section>
     </div>
