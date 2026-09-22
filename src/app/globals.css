@@ -25,6 +25,18 @@
   --brand-primary-dark: #05263d;
   --brand-secondary: #4d8db7;
 
+  /* Per-tier theme overrides (region/state/national) - resolveTheme()
+     (src/lib/resolve-theme.ts) sets these per-request on <body> in
+     src/app/layout.tsx whenever the resolved theme has a value for that
+     field. Each defaults to an existing token so every page keeps its
+     exact current look until a request-specific override actually
+     applies - the same "inert until overridden" pattern --brand-primary
+     above already uses. */
+  --brand-accent: var(--color-accent);
+  --brand-text: var(--color-ink);
+  --brand-background: var(--color-bg);
+  --brand-surface-alt: var(--color-surface-elevated);
+
   /* Fixed, non-region-overridable accent - Orlando Orange. Used selectively:
      large-text headline accents, promotional badges, pricing/savings
      highlights, small decorative accents. --color-accent-strong is a
@@ -53,6 +65,10 @@
   --color-brand-primary: var(--brand-primary);
   --color-brand-primary-dark: var(--brand-primary-dark);
   --color-brand-secondary: var(--brand-secondary);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-text: var(--brand-text);
+  --color-brand-background: var(--brand-background);
+  --color-brand-surface-alt: var(--brand-surface-alt);
   /* Faint washes of --brand-primary, computed rather than admin-set, for
      secondary sections/badges that should feel branded without competing
      with a bold hero band (see resolveBrandArea() call sites). Only ever
@@ -100,8 +116,8 @@
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-ink);
+  background: var(--brand-background);
+  color: var(--brand-text);
   font-family: var(--font-sans);
 }
 

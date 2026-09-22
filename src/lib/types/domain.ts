@@ -16,6 +16,13 @@ export interface State {
   intro_copy: string | null;
   hero_image_url: string | null;
   launched_at: string | null;
+  brand_primary_color: string | null;
+  brand_secondary_color: string | null;
+  brand_accent_color: string | null;
+  brand_text_color: string | null;
+  brand_background_color: string | null;
+  brand_hero_overlay: string | null;
+  brand_logo_url: string | null;
 }
 
 export interface PassportArea {
@@ -31,6 +38,26 @@ export interface PassportArea {
   brand_primary_color: string | null;
   brand_secondary_color: string | null;
   brand_logo_url: string | null;
+  brand_accent_color: string | null;
+  brand_text_color: string | null;
+  brand_background_color: string | null;
+  brand_hero_overlay: string | null;
+}
+
+// A true singleton - always exactly one row, fixed id
+// '00000000-0000-0000-0000-000000000001' (enforced by a DB check
+// constraint). See supabase/migrations/0047_national_state_branding.sql.
+export interface NationalBranding {
+  id: string;
+  brand_primary_color: string | null;
+  brand_secondary_color: string | null;
+  brand_accent_color: string | null;
+  brand_text_color: string | null;
+  brand_background_color: string | null;
+  brand_hero_overlay: string | null;
+  brand_logo_url: string | null;
+  hero_image_url: string | null;
+  updated_at: string;
 }
 
 export interface Subarea {
@@ -208,6 +235,7 @@ export interface AreaAssignment {
   can_submit_marketing_requests: boolean;
   can_manage_staff: boolean;
   can_manage_leads: boolean;
+  can_manage_branding: boolean;
 }
 
 export interface StateAssignment {
@@ -221,6 +249,7 @@ export interface StateAssignment {
   can_submit_marketing_requests: boolean;
   can_manage_staff: boolean;
   can_manage_leads: boolean;
+  can_manage_branding: boolean;
 }
 
 export type AreaCapability =
@@ -230,7 +259,8 @@ export type AreaCapability =
   | "manage_subareas"
   | "submit_marketing_requests"
   | "manage_staff"
-  | "manage_leads";
+  | "manage_leads"
+  | "manage_branding";
 
 export interface MarketingRequest {
   id: string;

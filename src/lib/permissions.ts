@@ -62,6 +62,7 @@ function hasCapability(
     can_submit_marketing_requests: boolean;
     can_manage_staff: boolean;
     can_manage_leads: boolean;
+    can_manage_branding: boolean;
   },
   capability: AreaCapability
 ): boolean {
@@ -80,6 +81,8 @@ function hasCapability(
       return row.can_manage_staff;
     case "manage_leads":
       return row.can_manage_leads;
+    case "manage_branding":
+      return row.can_manage_branding;
   }
 }
 

@@ -16,7 +16,7 @@ const BENEFITS = [
 export default function CreateProfilePage() {
   return (
     <div className="grid min-h-[calc(100vh-73px)] lg:grid-cols-2">
-      <div className="bg-surface-elevated px-6 py-16 sm:px-12 lg:py-24">
+      <div className="bg-brand-surface-alt px-6 py-16 sm:px-12 lg:py-24">
         <div className="mx-auto max-w-md">
           <h1 className="font-display text-3xl font-bold text-ink">Create Your Free Profile</h1>
           <p className="mt-3 text-ink-muted">

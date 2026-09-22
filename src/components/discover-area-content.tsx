@@ -74,7 +74,7 @@ export async function DiscoverAreaContent({
 
   const resolvedPassportHref = passportHref ?? `/${state.slug}/${area.slug}/passport`;
   const themed = Boolean(area.brand_primary_color);
-  const heroImage = getRegionHeroImage(area.slug);
+  const heroImage = getRegionHeroImage(area);
 
   return (
     <div>

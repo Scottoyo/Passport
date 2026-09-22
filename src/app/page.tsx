@@ -1,34 +1,45 @@
 import { getActiveStates } from "@/lib/queries";
 import { StateMap } from "@/components/state-map";
+import { RegionHeroBanner } from "@/components/region-hero-banner";
 
 export default async function HomePage() {
   const states = await getActiveStates();
 
   return (
     <div>
-      <section className="bg-brand-primary">
-        <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
-          <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">
-            A <span className="text-accent">Passport</span> for every region you explore.
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-white/85">
-            Each region has its own Passport - one purchase unlocks
-            exclusive offers at participating restaurants, attractions,
-            shops, and experiences across that region.
+      {/* The hero image already carries its own headline/logo/tagline (see
+          the national branding admin page) - no visible H1/CTA on top of
+          it, per the national hero's own no-overlay/no-crop requirements.
+          A visually-hidden H1 covers accessibility/SEO instead. */}
+      <RegionHeroBanner
+        variant="contain"
+        overlay="none"
+        src="/images/branding/national/local-perks-national-hero.webp"
+        alt="Local Perks Passport. More to explore. Discover attractions, experiences, and restaurants across America."
+      />
+      <h1 className="sr-only">Local Perks Passport - a Passport for every region you explore</h1>
+
+      <div className="border-b border-border bg-brand-surface-alt">
+        <div className="mx-auto max-w-6xl px-4 py-8 text-center sm:px-6">
+          <p className="text-brand-text">
+            Each region has its own Passport - one purchase unlocks exclusive
+            offers at participating restaurants, attractions, shops, and
+            experiences across that region.
           </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-4">
             <a
               href="#states"
-              className="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-primary transition-colors hover:bg-surface-elevated"
+              className="inline-flex items-center justify-center rounded-lg bg-brand-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-primary-dark"
             >
               Find your region
             </a>
           </div>
         </div>
-      </section>
+      </div>
 
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <h2 className="text-center font-display text-2xl font-bold text-ink">Why get a Passport</h2>
+        <div className="mx-auto mt-3 h-0.5 w-12 bg-brand-accent" />
         <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <Benefit
             title="Deep local savings"
@@ -49,7 +60,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-t border-border bg-surface-elevated">
+      <section className="border-t border-border bg-brand-surface-alt">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <div className="grid gap-10 sm:grid-cols-3">
             <HowItWorksStep

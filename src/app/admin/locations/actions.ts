@@ -69,6 +69,74 @@ export async function updateStateDetails(stateId: string, formData: FormData) {
   revalidatePath("/admin/locations");
 }
 
+async function requireStateBranding(stateId: string) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser || !hasStateCapability(currentUser, stateId, "manage_branding")) {
+    throw new Error("You don't have permission to manage this state's branding.");
+  }
+  return currentUser;
+}
+
+export async function updateStateBranding(stateId: string, formData: FormData) {
+  await requireStateBranding(stateId);
+  const supabase = await createClient();
+  const primaryColor = String(formData.get("brand_primary_color") ?? "").trim();
+  const secondaryColor = String(formData.get("brand_secondary_color") ?? "").trim();
+  const accentColor = String(formData.get("brand_accent_color") ?? "").trim();
+  const textColor = String(formData.get("brand_text_color") ?? "").trim();
+  const backgroundColor = String(formData.get("brand_background_color") ?? "").trim();
+  const heroOverlay = String(formData.get("brand_hero_overlay") ?? "").trim();
+  const logoUrl = String(formData.get("brand_logo_url") ?? "").trim();
+
+  const { error } = await supabase
+    .from("states")
+    .update({
+      brand_primary_color: primaryColor || null,
+      brand_secondary_color: secondaryColor || null,
+      brand_accent_color: accentColor || null,
+      brand_text_color: textColor || null,
+      brand_background_color: backgroundColor || null,
+      brand_hero_overlay: heroOverlay || null,
+      brand_logo_url: logoUrl || null,
+    })
+    .eq("id", stateId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/locations");
+}
+
+export async function resetStateBranding(stateId: string) {
+  await requireStateBranding(stateId);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("states")
+    .update({
+      brand_primary_color: null,
+      brand_secondary_color: null,
+      brand_accent_color: null,
+      brand_text_color: null,
+      brand_background_color: null,
+      brand_hero_overlay: null,
+      brand_logo_url: null,
+    })
+    .eq("id", stateId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/locations");
+}
+
+export async function uploadStateHeroImage(stateId: string, formData: FormData) {
+  await requireStateBranding(stateId);
+  const file = formData.get("hero_image") as File | null;
+  if (!file || file.size === 0) throw new Error("Choose an image to upload.");
+
+  const { uploadBrandingHero, withCacheBust } = await import("@/lib/storage");
+  const url = withCacheBust(await uploadBrandingHero("state", stateId, file));
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("states").update({ hero_image_url: url }).eq("id", stateId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/locations");
+}
+
 export async function createArea(formData: FormData) {
   const stateId = String(formData.get("state_id") ?? "");
   if (!stateId) throw new Error("A Passport Area needs a state.");
@@ -134,6 +202,7 @@ export async function addStateManager(stateId: string, formData: FormData) {
     can_submit_marketing_requests: formData.get("can_submit_marketing_requests") === "on",
     can_manage_staff: formData.get("can_manage_staff") === "on",
     can_manage_leads: formData.get("can_manage_leads") === "on",
+    can_manage_branding: formData.get("can_manage_branding") === "on",
   };
 
   const { error } = await supabase

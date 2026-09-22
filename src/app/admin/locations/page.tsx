@@ -11,6 +11,9 @@ import {
   setAreaStatus,
   addStateManager,
   removeStateManager,
+  updateStateBranding,
+  resetStateBranding,
+  uploadStateHeroImage,
 } from "./actions";
 import { addAreaManager, removeAreaManager } from "../areas/[areaId]/actions";
 import { StatusBadge } from "@/components/status-badge";
@@ -25,6 +28,7 @@ const CAPABILITY_FIELDS: { key: string; label: string }[] = [
   { key: "can_submit_marketing_requests", label: "Submit marketing requests" },
   { key: "can_manage_staff", label: "Manage local staff" },
   { key: "can_manage_leads", label: "Manage leads (CRM)" },
+  { key: "can_manage_branding", label: "Manage branding" },
 ];
 
 interface StateManagerRow {
@@ -37,6 +41,7 @@ interface StateManagerRow {
   can_submit_marketing_requests: boolean;
   can_manage_staff: boolean;
   can_manage_leads: boolean;
+  can_manage_branding: boolean;
 }
 
 interface AreaManagerRow extends StateManagerRow {
@@ -86,7 +91,7 @@ export default async function LocationsAdminPage({
         ? supabase
             .from("state_assignments")
             .select(
-              "id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, can_manage_leads, profiles:user_id(email)"
+              "id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, can_manage_leads, can_manage_branding, profiles:user_id(email)"
             )
             .eq("state_id", selected.id)
         : Promise.resolve({ data: null }),
@@ -94,7 +99,7 @@ export default async function LocationsAdminPage({
         ? supabase
             .from("area_assignments")
             .select(
-              "id, passport_area_id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, can_manage_leads, profiles:user_id(email)"
+              "id, passport_area_id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, can_manage_leads, can_manage_branding, profiles:user_id(email)"
             )
             .in("passport_area_id", areaIds)
         : Promise.resolve({ data: null }),
@@ -108,7 +113,8 @@ export default async function LocationsAdminPage({
   }
 
   const canEditRegions = selected ? hasStateCapability(currentUser, selected.id, "manage_subareas") : false;
-  const canEdit = isNationalAdmin || canEditRegions;
+  const canBranding = selected ? hasStateCapability(currentUser, selected.id, "manage_branding") : false;
+  const canEdit = isNationalAdmin || canEditRegions || canBranding;
 
   return (
     <div>
@@ -154,6 +160,7 @@ export default async function LocationsAdminPage({
               isNationalAdmin={isNationalAdmin}
               canEditRegions={canEditRegions}
               canManageUsers={canManageUsers}
+              canBranding={canBranding}
             />
           ) : (
             <StateViewPanel
@@ -273,6 +280,7 @@ function StateEditPanel({
   isNationalAdmin,
   canEditRegions,
   canManageUsers,
+  canBranding,
 }: {
   state: State;
   areas: PassportArea[];
@@ -281,10 +289,119 @@ function StateEditPanel({
   isNationalAdmin: boolean;
   canEditRegions: boolean;
   canManageUsers: boolean;
+  canBranding: boolean;
 }) {
   return (
     <div>
       <h2 className="text-xl font-bold text-ink">Edit {state.name}</h2>
+
+      {canBranding && (
+        <section className="mt-4 rounded-2xl border border-border bg-surface p-4">
+          <h3 className="text-sm font-semibold text-ink">Branding</h3>
+          <p className="mt-1 text-xs text-ink-muted">
+            Sets this state&apos;s colors and hero image for its own page, and as the default for
+            every region in the state that hasn&apos;t set its own. Any field left unset inherits
+            the app&apos;s default look.
+          </p>
+          <form
+            action={updateStateBranding.bind(null, state.id)}
+            className="mt-3 flex flex-wrap items-end gap-4"
+          >
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Primary color</span>
+              <input
+                name="brand_primary_color"
+                type="color"
+                defaultValue={state.brand_primary_color ?? "#0f172a"}
+                className="h-10 w-16 rounded-lg border border-border"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Secondary color</span>
+              <input
+                name="brand_secondary_color"
+                type="color"
+                defaultValue={state.brand_secondary_color ?? "#1e293b"}
+                className="h-10 w-16 rounded-lg border border-border"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Accent color</span>
+              <input
+                name="brand_accent_color"
+                type="color"
+                defaultValue={state.brand_accent_color ?? "#f04a1d"}
+                className="h-10 w-16 rounded-lg border border-border"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Text color</span>
+              <input
+                name="brand_text_color"
+                type="color"
+                defaultValue={state.brand_text_color ?? "#172e3d"}
+                className="h-10 w-16 rounded-lg border border-border"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Background color</span>
+              <input
+                name="brand_background_color"
+                type="color"
+                defaultValue={state.brand_background_color ?? "#fff7e8"}
+                className="h-10 w-16 rounded-lg border border-border"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Hero overlay</span>
+              <select
+                name="brand_hero_overlay"
+                defaultValue={state.brand_hero_overlay ?? "scrim"}
+                className="rounded-lg border border-border px-3 py-2 text-sm"
+              >
+                <option value="scrim">Gradient scrim</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Logo URL (optional)</span>
+              <input
+                name="brand_logo_url"
+                type="url"
+                defaultValue={state.brand_logo_url ?? ""}
+                placeholder="https://..."
+                className="w-64 rounded-lg border border-border px-3 py-2 text-sm"
+              />
+            </label>
+            <button className={buttonClasses("primary", "sm")}>Save branding</button>
+          </form>
+          {(state.brand_primary_color ||
+            state.brand_secondary_color ||
+            state.brand_accent_color ||
+            state.brand_text_color ||
+            state.brand_background_color ||
+            state.brand_hero_overlay ||
+            state.brand_logo_url) && (
+            <form action={resetStateBranding.bind(null, state.id)} className="mt-3">
+              <button className="text-xs font-semibold text-error hover:text-red-700">
+                Reset to default
+              </button>
+            </form>
+          )}
+
+          <form
+            action={uploadStateHeroImage.bind(null, state.id)}
+            className="mt-4 flex flex-wrap items-end gap-3 border-t border-border pt-3"
+          >
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Hero image</span>
+              <input name="hero_image" type="file" accept="image/*" required className="text-sm" />
+            </label>
+            <button className={buttonClasses("outline", "sm")}>Upload hero image</button>
+            {state.hero_image_url && <span className="text-xs text-ink-muted">Current hero image is set.</span>}
+          </form>
+        </section>
+      )}
 
       {isNationalAdmin && (
         <>

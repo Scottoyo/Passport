@@ -192,6 +192,7 @@ export async function addAreaManager(areaId: string, formData: FormData) {
     can_submit_marketing_requests: formData.get("can_submit_marketing_requests") === "on",
     can_manage_staff: formData.get("can_manage_staff") === "on",
     can_manage_leads: formData.get("can_manage_leads") === "on",
+    can_manage_branding: formData.get("can_manage_branding") === "on",
   };
 
   // If the caller is a state manager granting more than their own
@@ -221,19 +222,15 @@ export async function removeAreaManager(areaId: string, assignmentId: string) {
 // affects the region's whole public look), so - same tier as lifecycle
 // launch/pause noted at the top of the page this action backs - it's
 // national-admin-only in v1, not delegated to state/region managers.
-async function requireNationalAdmin() {
-  const currentUser = await getCurrentUser();
-  if (!currentUser?.isNationalAdmin) {
-    throw new Error("Only national admins can update a region's branding.");
-  }
-  return currentUser;
-}
-
 export async function updateAreaBranding(areaId: string, formData: FormData) {
-  await requireNationalAdmin();
+  await requireCapability(areaId, "manage_branding");
   const supabase = await createClient();
   const primaryColor = String(formData.get("brand_primary_color") ?? "").trim();
   const secondaryColor = String(formData.get("brand_secondary_color") ?? "").trim();
+  const accentColor = String(formData.get("brand_accent_color") ?? "").trim();
+  const textColor = String(formData.get("brand_text_color") ?? "").trim();
+  const backgroundColor = String(formData.get("brand_background_color") ?? "").trim();
+  const heroOverlay = String(formData.get("brand_hero_overlay") ?? "").trim();
   const logoUrl = String(formData.get("brand_logo_url") ?? "").trim();
 
   const { error } = await supabase
@@ -241,6 +238,10 @@ export async function updateAreaBranding(areaId: string, formData: FormData) {
     .update({
       brand_primary_color: primaryColor || null,
       brand_secondary_color: secondaryColor || null,
+      brand_accent_color: accentColor || null,
+      brand_text_color: textColor || null,
+      brand_background_color: backgroundColor || null,
+      brand_hero_overlay: heroOverlay || null,
       brand_logo_url: logoUrl || null,
     })
     .eq("id", areaId);
@@ -249,12 +250,34 @@ export async function updateAreaBranding(areaId: string, formData: FormData) {
 }
 
 export async function resetAreaBranding(areaId: string) {
-  await requireNationalAdmin();
+  await requireCapability(areaId, "manage_branding");
   const supabase = await createClient();
   const { error } = await supabase
     .from("passport_areas")
-    .update({ brand_primary_color: null, brand_secondary_color: null, brand_logo_url: null })
+    .update({
+      brand_primary_color: null,
+      brand_secondary_color: null,
+      brand_accent_color: null,
+      brand_text_color: null,
+      brand_background_color: null,
+      brand_hero_overlay: null,
+      brand_logo_url: null,
+    })
     .eq("id", areaId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/areas/${areaId}`);
+}
+
+export async function uploadAreaHeroImage(areaId: string, formData: FormData) {
+  await requireCapability(areaId, "manage_branding");
+  const file = formData.get("hero_image") as File | null;
+  if (!file || file.size === 0) throw new Error("Choose an image to upload.");
+
+  const { uploadBrandingHero, withCacheBust } = await import("@/lib/storage");
+  const url = withCacheBust(await uploadBrandingHero("area", areaId, file));
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("passport_areas").update({ hero_image_url: url }).eq("id", areaId);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/areas/${areaId}`);
 }

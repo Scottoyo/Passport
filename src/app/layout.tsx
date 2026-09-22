@@ -4,7 +4,8 @@ import { Fraunces, DM_Sans } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BrandColorSync } from "@/components/brand-color-sync";
-import { resolveBrandArea } from "@/lib/resolve-brand-area";
+import { resolveTheme } from "@/lib/resolve-theme";
+import { isAdminPath } from "@/lib/region-path";
 import "./globals.css";
 
 // The app's only two fonts, site-wide - Fraunces for major hero/marketing
@@ -35,15 +36,37 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const pathname = (await headers()).get("x-current-path") ?? "";
-  const brandArea = await resolveBrandArea(pathname);
+  const theme = await resolveTheme(pathname);
 
-  const brandStyle = brandArea?.brand_primary_color
-    ? ({
-        "--brand-primary": brandArea.brand_primary_color,
-        "--brand-primary-dark": brandArea.brand_secondary_color ?? brandArea.brand_primary_color,
-        "--brand-secondary": brandArea.brand_secondary_color ?? brandArea.brand_primary_color,
-      } as React.CSSProperties)
-    : undefined;
+  const brandStyle: React.CSSProperties = {};
+  if (theme.primary) {
+    Object.assign(brandStyle, {
+      "--brand-primary": theme.primary,
+      "--brand-primary-dark": theme.primaryDark,
+      "--brand-secondary": theme.secondary ?? theme.primary,
+    });
+  }
+  if (theme.accent) Object.assign(brandStyle, { "--brand-accent": theme.accent });
+  if (theme.text) Object.assign(brandStyle, { "--brand-text": theme.text });
+  if (theme.background) Object.assign(brandStyle, { "--brand-background": theme.background });
+  if (theme.level === "national") {
+    // The requested national palette's "secondary section background" is
+    // a specific cool light gray, not admin-configurable (see the plan's
+    // field-mapping decision) - a fixed refinement applied only on the
+    // national tier, distinct from the warm cream tint every other
+    // unbranded page keeps as --brand-surface-alt's default.
+    Object.assign(brandStyle, { "--brand-surface-alt": "#F7F8FA" });
+  }
+  if (isAdminPath(pathname)) {
+    // Admin always stays plain white/black, regardless of any
+    // region/state/national theming - an operational panel, not a
+    // public-facing branded page.
+    Object.assign(brandStyle, {
+      "--brand-background": "#FFFFFF",
+      "--brand-text": "#000000",
+      "--brand-surface-alt": "#F7F8FA",
+    });
+  }
 
   return (
     <html
@@ -51,9 +74,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${fraunces.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body
-        className="min-h-full flex flex-col bg-bg text-ink"
-        style={brandStyle}
-        data-themed={brandArea?.brand_primary_color ? "true" : undefined}
+        className="min-h-full flex flex-col"
+        style={Object.keys(brandStyle).length ? brandStyle : undefined}
+        data-themed={theme.primary ? "true" : undefined}
       >
         <BrandColorSync />
         <SiteHeader />

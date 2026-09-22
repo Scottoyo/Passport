@@ -43,7 +43,7 @@ export default async function AreaHomePage({ params }: Props) {
   const favoritedIds = user ? await getFavoritedBusinessIds(user.id) : new Set<string>();
   const homePath = `/${state.slug}/${area.slug}`;
   const themed = Boolean(area.brand_primary_color);
-  const heroImage = getRegionHeroImage(area.slug);
+  const heroImage = getRegionHeroImage(area);
 
   return (
     <div>
