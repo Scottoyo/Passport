@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getActiveStates } from "@/lib/queries";
 import { StateMap } from "@/components/state-map";
 import { RegionHeroBanner } from "@/components/region-hero-banner";
@@ -88,6 +89,22 @@ export default async function HomePage() {
 
       <section id="states" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <StateMap states={states} />
+      </section>
+
+      <section className="border-t border-border">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-10 text-center sm:px-6">
+          <h2 className="text-lg font-semibold text-ink">Own a business?</h2>
+          <p className="max-w-xl text-sm text-ink-muted">
+            It&apos;s free to join The Passport - no monthly fees - and put your business in
+            front of locals and visitors actively looking for new places to go.
+          </p>
+          <Link
+            href="/register-business"
+            className="text-sm font-semibold text-brand-primary hover:text-brand-primary-dark"
+          >
+            Register Your Business &rarr;
+          </Link>
+        </div>
       </section>
     </div>
   );
