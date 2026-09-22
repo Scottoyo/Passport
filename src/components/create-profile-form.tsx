@@ -4,8 +4,10 @@ import { useState, useTransition, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createProfile } from "@/app/create-profile/actions";
+import { buttonClasses } from "@/lib/ui-classes";
 
-const inputClass = "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm";
+const inputClass =
+  "w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary";
 
 export function CreateProfileForm() {
   const router = useRouter();
@@ -32,64 +34,60 @@ export function CreateProfileForm() {
   if (needsEmailConfirmation) {
     return (
       <div className="text-center">
-        <h2 className="text-xl font-semibold text-slate-900">Profile created</h2>
-        <p className="mt-2 text-slate-600">Check your email to confirm your account before signing in.</p>
+        <h2 className="text-xl font-semibold text-ink">Profile created</h2>
+        <p className="mt-2 text-ink-muted">Check your email to confirm your account before signing in.</p>
       </div>
     );
   }
 
   return (
     <>
-      <h2 className="text-2xl font-bold text-slate-900">Create Your Free Profile</h2>
-      <p className="mt-1 text-sm text-slate-600">No Passport purchase required. Upgrade anytime.</p>
+      <h2 className="font-display text-2xl font-bold text-ink">Create Your Free Profile</h2>
+      <p className="mt-1 text-sm text-ink-muted">No Passport purchase required. Upgrade anytime.</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">First name</span>
+            <span className="mb-1 block text-ink-muted">First name</span>
             <input name="first_name" required className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Last name</span>
+            <span className="mb-1 block text-ink-muted">Last name</span>
             <input name="last_name" required className={inputClass} />
           </label>
         </div>
 
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-600">Email</span>
+          <span className="mb-1 block text-ink-muted">Email</span>
           <input name="email" type="email" required className={inputClass} />
         </label>
 
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-600">Phone</span>
+          <span className="mb-1 block text-ink-muted">Phone</span>
           <input name="phone" type="tel" placeholder="123-456-7890" className={inputClass} />
         </label>
 
-        <div className="grid gap-4 border-t border-slate-200 pt-4 sm:grid-cols-2">
+        <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Password</span>
+            <span className="mb-1 block text-ink-muted">Password</span>
             <input name="password" type="password" required minLength={8} className={inputClass} />
-            <span className="mt-1 block text-xs text-slate-400">Must be at least 8 characters.</span>
+            <span className="mt-1 block text-xs text-ink-muted">Must be at least 8 characters.</span>
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Confirm password</span>
+            <span className="mb-1 block text-ink-muted">Confirm password</span>
             <input name="confirm_password" type="password" required minLength={8} className={inputClass} />
           </label>
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-error">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
-        >
+        <button type="submit" disabled={isPending} className={`w-full ${buttonClasses("primary")}`}>
           {isPending ? "Creating your profile..." : "Create Free Profile"}
         </button>
 
-        <p className="text-center text-sm text-slate-500">
+        <p className="text-center text-sm text-ink-muted">
           Already have an account?{" "}
-          <Link href="/sign-in" className="font-semibold text-slate-700 hover:text-slate-900">
+          <Link href="/sign-in" className="font-semibold text-brand-primary hover:underline">
             Log In
           </Link>
         </p>

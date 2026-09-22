@@ -38,12 +38,12 @@ const FAQS = [
 export default function FaqPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-bold text-slate-900">Frequently asked questions</h1>
+      <h1 className="font-display text-3xl font-bold text-ink">Frequently asked questions</h1>
       <div className="mt-8 space-y-8">
         {FAQS.map((item) => (
           <div key={item.question}>
-            <h2 className="font-semibold text-slate-900">{item.question}</h2>
-            <p className="mt-1 text-sm text-slate-600">{item.answer}</p>
+            <h2 className="font-semibold text-ink">{item.question}</h2>
+            <p className="mt-1 text-sm text-ink-muted">{item.answer}</p>
           </div>
         ))}
       </div>

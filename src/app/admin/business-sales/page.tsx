@@ -18,8 +18,8 @@ export default async function BusinessSalesAdminPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Business Passport Sales</h1>
-      <p className="mt-1 text-slate-600">
+      <h1 className="text-2xl font-bold text-ink">Business Passport Sales</h1>
+      <p className="mt-1 text-ink-muted">
         Every business whose referral code has generated a Passport purchase within your scope.
       </p>
 

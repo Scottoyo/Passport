@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { getPostSignInRedirect } from "@/app/auth/actions";
+import { buttonClasses, cardClasses } from "@/lib/ui-classes";
 
 function SignInForm() {
   const router = useRouter();
@@ -35,52 +36,50 @@ function SignInForm() {
 
   return (
     <div className="mx-auto max-w-sm px-4 py-16 sm:px-6">
-      <h1 className="text-2xl font-bold text-slate-900">Sign in</h1>
-      <p className="mt-2 text-sm text-slate-600">
-        Enter your email and password to sign in.
-      </p>
+      <div className={`p-8 ${cardClasses()}`}>
+        <h1 className="font-display text-2xl font-bold text-ink">Sign in</h1>
+        <p className="mt-2 text-sm text-ink-muted">
+          Enter your email and password to sign in.
+        </p>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
-        <input
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
-        <button
-          type="submit"
-          disabled={status === "submitting"}
-          className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
-        >
-          {status === "submitting" ? "Signing in..." : "Sign in"}
-        </button>
-        {status === "error" && (
-          <p className="text-sm text-red-600">{errorMessage}</p>
-        )}
-      </form>
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className="w-full rounded-lg border border-border px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+          />
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            className="w-full rounded-lg border border-border px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+          />
+          <button type="submit" disabled={status === "submitting"} className={`w-full ${buttonClasses("primary")}`}>
+            {status === "submitting" ? "Signing in..." : "Sign in"}
+          </button>
+          {status === "error" && (
+            <p className="text-sm text-error">{errorMessage}</p>
+          )}
+        </form>
 
-      <p className="mt-4 text-sm">
-        <Link href="/forgot-password" className="font-semibold text-slate-900 hover:underline">
-          Forgot password?
-        </Link>
-      </p>
+        <p className="mt-4 text-sm">
+          <Link href="/forgot-password" className="font-semibold text-brand-primary hover:underline">
+            Forgot password?
+          </Link>
+        </p>
 
-      <p className="mt-2 text-sm text-slate-600">
-        Don&apos;t have an account?{" "}
-        <Link href="/create-profile" className="font-semibold text-slate-900 hover:underline">
-          Create one
-        </Link>
-      </p>
+        <p className="mt-2 text-sm text-ink-muted">
+          Don&apos;t have an account?{" "}
+          <Link href="/create-profile" className="font-semibold text-brand-primary hover:underline">
+            Create one
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

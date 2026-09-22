@@ -6,6 +6,7 @@ import { getCurrentAdminScope, getAreaIdsForState, narrowAreaIds } from "@/lib/a
 import { getBusinessLeads, type BusinessLeadsFilters } from "@/lib/business-leads-queries";
 import { BusinessLeadsFilterBar } from "@/components/admin/business-leads-filter-bar";
 import type { BusinessLeadDisposition } from "@/lib/types/domain";
+import { buttonClasses } from "@/lib/ui-classes";
 
 export const metadata: Metadata = { title: "Business Leads CRM" };
 
@@ -17,10 +18,10 @@ const DISPOSITION_LABELS: Record<BusinessLeadDisposition, string> = {
 };
 
 const DISPOSITION_STYLES: Record<BusinessLeadDisposition, string> = {
-  lead: "bg-slate-100 text-slate-700",
-  in_progress: "bg-amber-100 text-amber-800",
-  closed_won: "bg-green-100 text-green-800",
-  lost: "bg-red-100 text-red-700",
+  lead: "bg-surface-elevated text-ink",
+  in_progress: "bg-warning-bg text-warning",
+  closed_won: "bg-success-bg text-success",
+  lost: "bg-error-bg text-error",
 };
 
 const VALID_DISPOSITIONS = new Set<string>(["lead", "in_progress", "closed_won", "lost"]);
@@ -62,7 +63,7 @@ function sortLink(
   qs.set("dir", nextDir);
   const indicator = currentSort === column ? (currentDir === "asc" ? " ↑" : " ↓") : "";
   return (
-    <Link href={`${basePath}?${qs.toString()}`} className="hover:text-slate-900">
+    <Link href={`${basePath}?${qs.toString()}`} className="hover:text-ink">
       {label}
       {indicator}
     </Link>
@@ -105,12 +106,9 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Business Leads CRM</h1>
+          <h1 className="text-2xl font-bold text-ink">Business Leads CRM</h1>
         </div>
-        <Link
-          href="/admin/business-leads/new"
-          className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
-        >
+        <Link href="/admin/business-leads/new" className={buttonClasses("primary")}>
           Add Lead
         </Link>
       </div>
@@ -118,9 +116,9 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
       <BusinessLeadsFilterBar />
 
       {/* Desktop table */}
-      <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-slate-200 lg:block">
-        <table className="min-w-full divide-y divide-slate-100 text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-border bg-surface lg:block">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-elevated text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
             <tr>
               <th className="px-4 py-3">{sortLink(basePath, params, "business_name", "Business Name")}</th>
               <th className="px-4 py-3">State</th>
@@ -136,10 +134,10 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border">
             {leads.length === 0 ? (
               <tr>
-                <td colSpan={12} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={12} className="px-4 py-8 text-center text-ink-muted">
                   {total === 0 && !filters.q && !filters.disposition
                     ? "No leads yet - add your first one to get started."
                     : "No leads match this search/filter combination."}
@@ -148,14 +146,14 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
             ) : (
               leads.map((lead) => (
                 <tr key={lead.id}>
-                  <td className="px-4 py-3 font-medium text-slate-900">{lead.business_name}</td>
-                  <td className="px-4 py-3 text-slate-600">{lead.state?.name ?? "-"}</td>
-                  <td className="px-4 py-3 text-slate-600">{lead.area?.name ?? "-"}</td>
-                  <td className="px-4 py-3 text-slate-600">
+                  <td className="px-4 py-3 font-medium text-ink">{lead.business_name}</td>
+                  <td className="px-4 py-3 text-ink-muted">{lead.state?.name ?? "-"}</td>
+                  <td className="px-4 py-3 text-ink-muted">{lead.area?.name ?? "-"}</td>
+                  <td className="px-4 py-3 text-ink-muted">
                     {[lead.contact_first_name, lead.contact_last_name].filter(Boolean).join(" ") || "-"}
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{lead.phone ?? "-"}</td>
-                  <td className="px-4 py-3 text-slate-600">{lead.email ?? "-"}</td>
+                  <td className="px-4 py-3 text-ink-muted">{lead.phone ?? "-"}</td>
+                  <td className="px-4 py-3 text-ink-muted">{lead.email ?? "-"}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${DISPOSITION_STYLES[lead.disposition]}`}
@@ -172,11 +170,11 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
                   <td className="px-4 py-3">
                     <ActivityIndicator on={lead.visited} />
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{new Date(lead.updated_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-ink-muted">{new Date(lead.updated_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
                     <Link
                       href={`/admin/business-leads/${lead.id}`}
-                      className="font-semibold text-slate-700 hover:text-slate-900"
+                      className="font-semibold text-ink hover:text-brand-primary"
                     >
                       Open
                     </Link>
@@ -191,7 +189,7 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
       {/* Mobile cards */}
       <div className="mt-6 space-y-3 lg:hidden">
         {leads.length === 0 ? (
-          <p className="rounded-2xl border border-slate-200 px-4 py-8 text-center text-slate-500">
+          <p className="rounded-2xl border border-border bg-surface px-4 py-8 text-center text-ink-muted">
             {total === 0 && !filters.q && !filters.disposition
               ? "No leads yet - add your first one to get started."
               : "No leads match this search/filter combination."}
@@ -201,12 +199,12 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
             <Link
               key={lead.id}
               href={`/admin/business-leads/${lead.id}`}
-              className="block rounded-2xl border border-slate-200 p-4 hover:border-slate-400"
+              className="block rounded-2xl border border-border bg-surface p-4 hover:border-brand-primary"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-semibold text-slate-900">{lead.business_name}</p>
-                  <p className="mt-0.5 text-sm text-slate-500">
+                  <p className="font-semibold text-ink">{lead.business_name}</p>
+                  <p className="mt-0.5 text-sm text-ink-muted">
                     {lead.area?.name ?? "-"}, {lead.state?.name ?? "-"}
                   </p>
                 </div>
@@ -216,11 +214,11 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
                   {DISPOSITION_LABELS[lead.disposition]}
                 </span>
               </div>
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-2 text-sm text-ink-muted">
                 {[lead.contact_first_name, lead.contact_last_name].filter(Boolean).join(" ") || "No contact name"}
               </p>
-              <p className="text-sm text-slate-500">{lead.phone || lead.email || "No phone or email"}</p>
-              <div className="mt-3 flex gap-4 text-xs text-slate-500">
+              <p className="text-sm text-ink-muted">{lead.phone || lead.email || "No phone or email"}</p>
+              <div className="mt-3 flex gap-4 text-xs text-ink-muted">
                 <span>Emailed <ActivityIndicator on={lead.emailed} /></span>
                 <span>Called <ActivityIndicator on={lead.called} /></span>
                 <span>Visited <ActivityIndicator on={lead.visited} /></span>
@@ -231,7 +229,7 @@ export default async function BusinessLeadsPage({ searchParams }: Props) {
       </div>
 
       {pageCount > 1 && (
-        <div className="mt-6 flex items-center justify-between text-sm text-slate-600">
+        <div className="mt-6 flex items-center justify-between text-sm text-ink-muted">
           <p>
             Page {page} of {pageCount} - {total} lead{total === 1 ? "" : "s"} total
           </p>
@@ -249,7 +247,7 @@ function ActivityIndicator({ on }: { on: boolean }) {
   return (
     <span
       className={`inline-flex h-5 w-5 items-center justify-center rounded-full ${
-        on ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400"
+        on ? "bg-success-bg text-success" : "bg-surface-elevated text-ink-muted"
       }`}
       aria-label={on ? "Yes" : "No"}
     >
@@ -280,7 +278,7 @@ function PageLink({
   label: string;
 }) {
   if (disabled) {
-    return <span className="rounded-full border border-slate-200 px-4 py-2 text-slate-300">{label}</span>;
+    return <span className="rounded-full border border-border px-4 py-2 text-disabled">{label}</span>;
   }
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
@@ -288,10 +286,7 @@ function PageLink({
   }
   qs.set("page", String(page));
   return (
-    <Link
-      href={`${basePath}?${qs.toString()}`}
-      className="rounded-full border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:border-slate-500"
-    >
+    <Link href={`${basePath}?${qs.toString()}`} className={buttonClasses("outline")}>
       {label}
     </Link>
   );

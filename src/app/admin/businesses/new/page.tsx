@@ -3,6 +3,7 @@ import { getCurrentUser, canManageArea } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import type { PassportArea, State } from "@/lib/types/domain";
 import { createBusinessNational } from "./actions";
+import { buttonClasses } from "@/lib/ui-classes";
 
 export default async function NewBusinessPage() {
   const currentUser = await getCurrentUser();
@@ -30,8 +31,8 @@ export default async function NewBusinessPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="text-2xl font-bold text-slate-900">Add a business</h1>
-      <p className="mt-1 text-slate-600">
+      <h1 className="text-2xl font-bold text-ink">Add a business</h1>
+      <p className="mt-1 text-ink-muted">
         Pick the region it belongs to and give it a name - everything else
         (contact info, hours, media, offers) gets filled in on its profile
         page next.
@@ -39,11 +40,11 @@ export default async function NewBusinessPage() {
 
       <form action={createBusinessNational} className="mt-8 space-y-4">
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-600">Region</span>
+          <span className="mb-1 block text-ink-muted">Region</span>
           <select
             name="area_id"
             required
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm"
           >
             <option value="">Choose a region&hellip;</option>
             {[...areasByState.entries()].map(([stateId, stateAreas]) => (
@@ -59,16 +60,16 @@ export default async function NewBusinessPage() {
         </label>
 
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-600">Business name</span>
+          <span className="mb-1 block text-ink-muted">Business name</span>
           <input
             name="name"
             required
             placeholder="The Salty Pelican"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm"
           />
         </label>
 
-        <button className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+        <button className={buttonClasses("primary")}>
           Create business
         </button>
       </form>

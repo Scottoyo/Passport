@@ -27,11 +27,11 @@ export default async function FavoritesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">My Favorites</h1>
-      <p className="mt-1 text-slate-600">Businesses you&apos;ve saved to visit later.</p>
+      <h1 className="text-2xl font-bold text-ink">My Favorites</h1>
+      <p className="mt-1 text-ink-muted">Businesses you&apos;ve saved to visit later.</p>
 
       {favorites.length === 0 ? (
-        <p className="mt-6 text-slate-600">You haven&apos;t saved any businesses yet.</p>
+        <p className="mt-6 text-ink-muted">You haven&apos;t saved any businesses yet.</p>
       ) : (
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {favorites.map((business) => {

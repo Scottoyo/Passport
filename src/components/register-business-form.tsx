@@ -4,13 +4,14 @@ import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { registerBusiness } from "@/app/register-business/actions";
 import type { PassportArea, State } from "@/lib/types/domain";
+import { buttonClasses } from "@/lib/ui-classes";
 
 interface StateWithAreas {
   state: State;
   areas: PassportArea[];
 }
 
-const inputClass = "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm";
+const inputClass = "w-full rounded-lg border border-border px-3 py-2 text-sm";
 
 export function RegisterBusinessForm({
   statesWithAreas,
@@ -49,21 +50,21 @@ export function RegisterBusinessForm({
 
   if (success) {
     return (
-      <div className="rounded-2xl border border-slate-200 p-8 text-center">
-        <h2 className="text-xl font-semibold text-slate-900">Application submitted</h2>
-        <p className="mt-2 text-slate-600">
+      <div className="rounded-2xl border border-border bg-surface p-8 text-center">
+        <h2 className="text-xl font-semibold text-ink">Application submitted</h2>
+        <p className="mt-2 text-ink-muted">
           Your business has been submitted for review. A national, state, or
           regional admin will review it before it goes live.
         </p>
         {success.signedIn ? (
           <button
             onClick={() => router.push("/account")}
-            className="mt-6 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+            className={`mt-6 ${buttonClasses("primary")}`}
           >
             Go to my account
           </button>
         ) : (
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-sm text-ink-muted">
             Check your email to confirm your account before signing in.
           </p>
         )}
@@ -74,74 +75,74 @@ export function RegisterBusinessForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-10">
       <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
           Account contact
         </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Contact first name</span>
+            <span className="mb-1 block text-ink-muted">Contact first name</span>
             <input name="first_name" required className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Contact last name</span>
+            <span className="mb-1 block text-ink-muted">Contact last name</span>
             <input name="last_name" required className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Work email</span>
+            <span className="mb-1 block text-ink-muted">Work email</span>
             <input name="work_email" type="email" required className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Phone number</span>
+            <span className="mb-1 block text-ink-muted">Phone number</span>
             <input name="contact_phone" type="tel" placeholder="123-456-7890" className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Password</span>
+            <span className="mb-1 block text-ink-muted">Password</span>
             <input name="password" type="password" required minLength={8} className={inputClass} />
-            <span className="mt-1 block text-xs text-slate-400">Must be at least 8 characters.</span>
+            <span className="mt-1 block text-xs text-ink-muted">Must be at least 8 characters.</span>
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Confirm password</span>
+            <span className="mb-1 block text-ink-muted">Confirm password</span>
             <input name="confirm_password" type="password" required minLength={8} className={inputClass} />
           </label>
         </div>
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
           Business details
         </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <label className="text-sm sm:col-span-2">
-            <span className="mb-1 block text-slate-600">Business name</span>
+            <span className="mb-1 block text-ink-muted">Business name</span>
             <input name="business_name" required className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Business phone</span>
+            <span className="mb-1 block text-ink-muted">Business phone</span>
             <input name="business_phone" type="tel" placeholder="123-456-7890" className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Website</span>
+            <span className="mb-1 block text-ink-muted">Website</span>
             <input name="website" type="url" placeholder="https://" className={inputClass} />
           </label>
           <label className="text-sm sm:col-span-2">
-            <span className="mb-1 block text-slate-600">Business address</span>
+            <span className="mb-1 block text-ink-muted">Business address</span>
             <input name="address" className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">City</span>
+            <span className="mb-1 block text-ink-muted">City</span>
             <input name="city" className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">State</span>
+            <span className="mb-1 block text-ink-muted">State</span>
             <input name="state_code" maxLength={2} placeholder="FL" className={`${inputClass} uppercase`} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">ZIP code</span>
+            <span className="mb-1 block text-ink-muted">ZIP code</span>
             <input name="zip" className={inputClass} />
           </label>
 
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">State (Passport)</span>
+            <span className="mb-1 block text-ink-muted">State (Passport)</span>
             <select
               name="prefill_state_id"
               value={selectedStateId}
@@ -161,7 +162,7 @@ export function RegisterBusinessForm({
             </select>
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Region</span>
+            <span className="mb-1 block text-ink-muted">Region</span>
             <select
               name="area_id"
               value={selectedAreaId}
@@ -181,7 +182,7 @@ export function RegisterBusinessForm({
         </div>
       </section>
 
-      <label className="flex items-start gap-2 text-sm text-slate-600">
+      <label className="flex items-start gap-2 text-sm text-ink-muted">
         <input type="checkbox" required className="mt-1" />
         <span>
           I agree to the Terms of Service and Privacy Policy. I authorize
@@ -189,12 +190,12 @@ export function RegisterBusinessForm({
         </span>
       </label>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
 
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
+        className={`w-full ${buttonClasses("primary")}`}
       >
         {isPending ? "Creating your account..." : "Create Business Account"}
       </button>

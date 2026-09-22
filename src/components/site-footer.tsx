@@ -13,22 +13,22 @@ export function SiteFooter() {
   const regionSlugs = parseRegionSlugsFromPath(pathname);
 
   return (
-    <footer className="border-t border-slate-200 bg-slate-50">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p>&copy; {new Date().getFullYear()} The Passport.</p>
+    <footer className="bg-brand-primary">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-white/70 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <p className="font-display text-white">&copy; {new Date().getFullYear()} The Passport.</p>
         <div className="flex gap-4">
-          <Link href="/#states" className="hover:text-slate-700">
+          <Link href="/#states" className="hover:text-white">
             States
           </Link>
-          <Link href="/passport" className="hover:text-slate-700">
+          <Link href="/passport" className="hover:text-white">
             The Passport
           </Link>
           {regionSlugs && (
-            <Link href={`/${regionSlugs.stateSlug}/${regionSlugs.areaSlug}/for-businesses`} className="hover:text-slate-700">
+            <Link href={`/${regionSlugs.stateSlug}/${regionSlugs.areaSlug}/for-businesses`} className="hover:text-white">
               For Businesses
             </Link>
           )}
-          <Link href="/admin" className="hover:text-slate-700">
+          <Link href="/admin" className="hover:text-white">
             Admin
           </Link>
         </div>

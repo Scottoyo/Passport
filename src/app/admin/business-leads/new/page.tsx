@@ -17,11 +17,11 @@ export default async function NewBusinessLeadPage() {
   if (statesWithAreas.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-slate-900">No regions available</h1>
-        <p className="mt-2 text-slate-600">
+        <h1 className="text-2xl font-bold text-ink">No regions available</h1>
+        <p className="mt-2 text-ink-muted">
           You aren&apos;t assigned to any region with CRM access yet. Ask a national admin to grant it.
         </p>
-        <Link href="/admin/business-leads" className="mt-4 inline-block text-sm font-semibold text-slate-700">
+        <Link href="/admin/business-leads" className="mt-4 inline-block text-sm font-semibold text-ink">
           &larr; Back to Business Leads CRM
         </Link>
       </div>
@@ -30,11 +30,11 @@ export default async function NewBusinessLeadPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <Link href="/admin/business-leads" className="text-sm font-semibold text-slate-600 hover:text-slate-900">
+      <Link href="/admin/business-leads" className="text-sm font-semibold text-ink-muted hover:text-ink">
         &larr; Business Leads CRM
       </Link>
-      <h1 className="mt-2 text-2xl font-bold text-slate-900">Add Lead</h1>
-      <p className="mt-1 text-slate-600">Track a prospective business you&apos;re courting to join the Passport.</p>
+      <h1 className="mt-2 text-2xl font-bold text-ink">Add Lead</h1>
+      <p className="mt-1 text-ink-muted">Track a prospective business you&apos;re courting to join the Passport.</p>
 
       <div className="mt-8">
         <BusinessLeadForm mode="create" statesWithAreas={statesWithAreas} />

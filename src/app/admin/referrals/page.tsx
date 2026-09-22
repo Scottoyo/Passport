@@ -18,8 +18,8 @@ export default async function ReferralsAdminPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Referral Program</h1>
-      <p className="mt-1 text-slate-600">
+      <h1 className="text-2xl font-bold text-ink">Referral Program</h1>
+      <p className="mt-1 text-ink-muted">
         Every passport holder whose referral code has generated a purchase within your scope.
       </p>
 

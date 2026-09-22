@@ -6,6 +6,7 @@ import { getAllBusinessesNational } from "@/lib/admin-queries";
 import { getCategories } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/status-badge";
+import { buttonClasses } from "@/lib/ui-classes";
 import { BusinessesFilterBar } from "@/components/admin/businesses-filter-bar";
 import { BusinessActionsMenu } from "@/components/admin/business-actions-menu";
 import { ExportBusinessesCsvButton } from "@/components/admin/export-businesses-csv-button";
@@ -13,9 +14,9 @@ import { setBusinessFeatured, setBusinessApproval } from "./actions";
 import type { BusinessApprovalStatus } from "@/lib/types/domain";
 
 const APPROVAL_STYLES: Record<BusinessApprovalStatus, string> = {
-  pending_review: "bg-amber-100 text-amber-800",
-  approved: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-700",
+  pending_review: "bg-warning-bg text-warning",
+  approved: "bg-success-bg text-success",
+  rejected: "bg-error-bg text-error",
 };
 
 const APPROVAL_LABELS: Record<BusinessApprovalStatus, string> = {
@@ -119,8 +120,8 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Businesses</h1>
-          <p className="mt-1 text-slate-600">
+          <h1 className="text-2xl font-bold text-ink">Businesses</h1>
+          <p className="mt-1 text-ink-muted">
             Every business across every Passport Area. Region managers, state
             managers, and national admins can each approve, reject, and
             feature businesses within their own hierarchy.
@@ -130,7 +131,7 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
           <ExportBusinessesCsvButton rows={csvRows} />
           <Link
             href="/admin/businesses/new"
-            className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+            className={buttonClasses("primary")}
           >
             Add Business
           </Link>
@@ -149,9 +150,9 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
         areas={areaOptions}
       />
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
-        <table className="min-w-full divide-y divide-slate-100 text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-border bg-surface">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-elevated text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
             <tr>
               <th className="px-4 py-3">Business</th>
               <th className="px-4 py-3">Category</th>
@@ -162,43 +163,43 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
               <th className="px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border">
             {businesses.map((b) => {
               const detailBase = `/admin/areas/${b.passport_area_id}/businesses/${b.id}`;
               const canManage = canManageArea(currentUser, b.passport_area_id, "manage_businesses", b.stateId);
               return (
                 <tr key={b.id}>
                   <td className="px-4 py-3">
-                    <p className="font-medium text-slate-900">{b.name}</p>
+                    <p className="font-medium text-ink">{b.name}</p>
                     <span
                       className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${APPROVAL_STYLES[b.approval_status]}`}
                     >
                       {APPROVAL_LABELS[b.approval_status]}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">
+                  <td className="px-4 py-3 text-ink-muted">
                     {(b.category_id && categoryNameById.get(b.category_id)) || "-"}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-ink-muted">
                     {b.areaName ?? "Unknown area"}
                     {b.stateName ? `, ${b.stateName}` : ""}
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={b.status} />
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{b.featured ? "Yes" : "No"}</td>
-                  <td className="px-4 py-3 text-slate-500">{new Date(b.updated_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-ink-muted">{b.featured ? "Yes" : "No"}</td>
+                  <td className="px-4 py-3 text-ink-muted">{new Date(b.updated_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-right">
                     <BusinessActionsMenu viewHref={`${detailBase}?mode=view`} editHref={`${detailBase}?mode=edit`}>
                       {canManage && b.approval_status === "pending_review" && (
                         <>
                           <form action={setBusinessApproval.bind(null, b.id, "approved")}>
-                            <button className="block w-full px-3 py-1.5 text-left text-sm text-green-700 hover:bg-slate-50">
+                            <button className="block w-full px-3 py-1.5 text-left text-sm text-success hover:bg-surface-elevated">
                               Approve
                             </button>
                           </form>
                           <form action={setBusinessApproval.bind(null, b.id, "rejected")}>
-                            <button className="block w-full px-3 py-1.5 text-left text-sm text-red-600 hover:bg-slate-50">
+                            <button className="block w-full px-3 py-1.5 text-left text-sm text-error hover:bg-surface-elevated">
                               Reject
                             </button>
                           </form>
@@ -206,14 +207,14 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
                       )}
                       {canManage && b.approval_status === "rejected" && (
                         <form action={setBusinessApproval.bind(null, b.id, "approved")}>
-                          <button className="block w-full px-3 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-50">
+                          <button className="block w-full px-3 py-1.5 text-left text-sm text-ink hover:bg-surface-elevated">
                             Approve anyway
                           </button>
                         </form>
                       )}
                       {canManage && b.approval_status === "approved" && (
                         <form action={setBusinessFeatured.bind(null, b.id, !b.featured)}>
-                          <button className="block w-full px-3 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-50">
+                          <button className="block w-full px-3 py-1.5 text-left text-sm text-ink hover:bg-surface-elevated">
                             {b.featured ? "Unfeature" : "Feature"}
                           </button>
                         </form>
@@ -225,7 +226,7 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
             })}
             {businesses.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-4 text-sm text-slate-500">
+                <td colSpan={7} className="px-4 py-4 text-sm text-ink-muted">
                   No businesses match this view.
                 </td>
               </tr>

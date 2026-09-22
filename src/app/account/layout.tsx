@@ -39,7 +39,7 @@ export default async function AccountLayout({ children }: LayoutProps<"/account"
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <div className="flex flex-col gap-6 md:flex-row md:gap-8">
         <aside className="md:w-56 md:shrink-0">
-          <p className="mb-2 hidden px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 md:mb-4 md:block">
+          <p className="mb-2 hidden px-3 text-xs font-semibold uppercase tracking-wide text-ink-muted md:mb-4 md:block">
             My Account
           </p>
           <nav className="flex gap-2 overflow-x-auto pb-2 text-sm md:block md:space-y-1 md:overflow-visible md:pb-0">
@@ -47,11 +47,11 @@ export default async function AccountLayout({ children }: LayoutProps<"/account"
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-full border border-slate-200 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 md:rounded-lg md:border-0 md:px-3 md:py-2"
+                className="flex shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-full border border-border px-4 py-2 font-medium text-ink hover:bg-surface-elevated md:rounded-lg md:border-0 md:px-3 md:py-2"
               >
                 {item.label}
                 {"badge" in item && item.badge! > 0 && (
-                  <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
+                  <span className="rounded-full bg-error px-2 py-0.5 text-xs font-semibold text-white">
                     {item.badge}
                   </span>
                 )}

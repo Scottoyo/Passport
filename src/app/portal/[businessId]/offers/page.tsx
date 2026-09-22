@@ -37,18 +37,18 @@ export default async function PortalOffersPage({ params }: Props) {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Offers</h2>
-          <p className="mt-1 text-slate-600">View and manage the perks available at your business.</p>
+          <h2 className="text-2xl font-bold text-ink">Offers</h2>
+          <p className="mt-1 text-ink-muted">View and manage the perks available at your business.</p>
         </div>
       </div>
 
       <div className="mt-6 space-y-3">
         {(offers ?? []).map((offer) => (
-          <div key={offer.id} className="rounded-2xl border border-slate-200 p-4">
+          <div key={offer.id} className="rounded-2xl border border-border bg-surface p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="font-semibold text-slate-900">{offer.title}</p>
-                {offer.description && <p className="text-sm text-slate-500">{offer.description}</p>}
+                <p className="font-semibold text-ink">{offer.title}</p>
+                {offer.description && <p className="text-sm text-ink-muted">{offer.description}</p>}
               </div>
               <div className="flex items-center gap-3">
                 <StatusBadge status={offer.status} />
@@ -67,16 +67,16 @@ export default async function PortalOffersPage({ params }: Props) {
                 )}
               </div>
             </div>
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-ink-muted">
               {offer.redemptions_per_passport === null
                 ? "Unlimited redemptions per Passport"
                 : `${offer.redemptions_per_passport} redemption${offer.redemptions_per_passport === 1 ? "" : "s"} per Passport`}
             </p>
             <details className="mt-3">
-              <summary className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-slate-700">
+              <summary className="cursor-pointer text-xs font-semibold text-ink-muted hover:text-ink">
                 Edit
               </summary>
-              <div className="mt-3 border-t border-slate-100 pt-3">
+              <div className="mt-3 border-t border-border pt-3">
                 <OfferForm
                   offer={offer}
                   action={updateOffer.bind(null, areaId, businessId, offer.id)}
@@ -86,11 +86,11 @@ export default async function PortalOffersPage({ params }: Props) {
             </details>
           </div>
         ))}
-        {(offers ?? []).length === 0 && <p className="text-sm text-slate-500">No offers yet.</p>}
+        {(offers ?? []).length === 0 && <p className="text-sm text-ink-muted">No offers yet.</p>}
       </div>
 
-      <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-        <h3 className="font-semibold text-slate-900">Add offer</h3>
+      <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+        <h3 className="font-semibold text-ink">Add offer</h3>
         <div className="mt-4">
           <OfferForm action={createOffer.bind(null, areaId, businessId)} submitLabel="Add offer" />
         </div>

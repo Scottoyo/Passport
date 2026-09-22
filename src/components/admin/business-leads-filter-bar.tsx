@@ -10,7 +10,7 @@ const DISPOSITIONS = [
   { value: "lost", label: "Lost" },
 ];
 
-const selectClass = "rounded-lg border border-slate-300 px-3 py-2 text-sm";
+const selectClass = "rounded-lg border border-border px-3 py-2 text-sm";
 
 // No State/Region filter here - the admin section's own "Viewing" scope
 // selector (GlobalScopeSelector/RegionScopeSelector in admin/layout.tsx)
@@ -54,19 +54,19 @@ export function BusinessLeadsFilterBar() {
   const hasActiveFilters = ["q", "disposition", "emailed", "called", "visited"].some((key) => searchParams.get(key));
 
   return (
-    <div className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 p-4">
+    <div className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-surface p-4">
       <label className="text-sm">
-        <span className="mb-1 block text-slate-600">Search</span>
+        <span className="mb-1 block text-ink-muted">Search</span>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Business, contact, phone, email"
-          className="w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-56 rounded-lg border border-border px-3 py-2 text-sm"
         />
       </label>
 
       <label className="text-sm">
-        <span className="mb-1 block text-slate-600">Disposition</span>
+        <span className="mb-1 block text-ink-muted">Disposition</span>
         <select
           value={searchParams.get("disposition") ?? ""}
           onChange={(e) => updateParams({ disposition: e.target.value || null, page: null })}
@@ -92,7 +92,7 @@ export function BusinessLeadsFilterBar() {
             setQ("");
             router.push(pathname);
           }}
-          className="text-sm font-semibold text-slate-600 hover:text-slate-900"
+          className="text-sm font-semibold text-ink-muted hover:text-ink"
         >
           Clear filters
         </button>
@@ -114,7 +114,7 @@ function TriStateFilter({
 }) {
   return (
     <label className="text-sm">
-      <span className="mb-1 block text-slate-600">{label}</span>
+      <span className="mb-1 block text-ink-muted">{label}</span>
       <select
         value={searchParams.get(paramKey) ?? ""}
         onChange={(e) => onChange({ [paramKey]: e.target.value || null, page: null })}

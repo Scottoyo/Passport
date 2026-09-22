@@ -13,6 +13,7 @@ import { ShareButton } from "@/components/share-button";
 import { FavoriteButton } from "@/components/favorite-button";
 import type { BusinessHoursDay } from "@/lib/types/domain";
 import { toggleFavorite } from "./actions";
+import { buttonClasses, cardClasses } from "@/lib/ui-classes";
 
 interface Props {
   params: Promise<{ state: string; area: string; business: string }>;
@@ -104,7 +105,6 @@ export default async function BusinessPage({ params }: Props) {
   ].filter((s) => s.url);
 
   const hoursByDay = new Map((business.business_hours ?? []).map((h) => [h.day, h]));
-  const themed = Boolean(area.brand_primary_color);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
@@ -127,7 +127,7 @@ export default async function BusinessPage({ params }: Props) {
             className="h-16 w-16 shrink-0 rounded-xl object-cover"
           />
         ) : (
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-surface-elevated text-ink-muted">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8" aria-hidden>
               <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -136,63 +136,36 @@ export default async function BusinessPage({ params }: Props) {
         <div>
           <div className="flex flex-wrap gap-2">
             {category && (
-              <span
-                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold text-white ${
-                  themed ? "bg-brand-primary" : "bg-slate-900"
-                }`}
-              >
+              <span className="rounded-full bg-brand-primary px-2.5 py-0.5 text-xs font-semibold text-white">
                 {category.name}
               </span>
             )}
-            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+            <span className="rounded-full bg-surface-elevated px-2.5 py-0.5 text-xs font-semibold text-ink-muted">
               {area.name}
             </span>
           </div>
-          <h1 className="mt-1 text-3xl font-bold text-slate-900">{business.name}</h1>
+          <h1 className="mt-1 text-3xl font-bold text-ink">{business.name}</h1>
         </div>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {directionsHref && (
-          <a
-            href={directionsHref}
-            target="_blank"
-            rel="noreferrer"
-            className={
-              themed
-                ? "rounded-full bg-brand-primary px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-primary-dark"
-                : "rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-700"
-            }
-          >
+          <a href={directionsHref} target="_blank" rel="noreferrer" className={buttonClasses("primary", "sm")}>
             Directions
           </a>
         )}
         {business.phone && (
-          <a
-            href={`tel:${business.phone}`}
-            className="rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
-          >
+          <a href={`tel:${business.phone}`} className={buttonClasses("outline", "sm")}>
             Call
           </a>
         )}
         {business.website_url && (
-          <a
-            href={business.website_url}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
-          >
+          <a href={business.website_url} target="_blank" rel="noreferrer" className={buttonClasses("outline", "sm")}>
             Website
           </a>
         )}
         {socialLinks.map((s) => (
-          <a
-            key={s.label}
-            href={s.url!}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
-          >
+          <a key={s.label} href={s.url!} target="_blank" rel="noreferrer" className={buttonClasses("outline", "sm")}>
             {s.label}
           </a>
         ))}
@@ -209,18 +182,18 @@ export default async function BusinessPage({ params }: Props) {
         <div className="lg:col-span-2">
           {(business.short_description || business.description) && (
             <section>
-              <h2 className="text-xl font-semibold text-slate-900">About</h2>
+              <h2 className="text-xl font-semibold text-ink">About</h2>
               {business.short_description && (
-                <p className="mt-2 font-medium text-slate-700">{business.short_description}</p>
+                <p className="mt-2 font-medium text-ink">{business.short_description}</p>
               )}
-              {business.description && <p className="mt-2 text-slate-600">{business.description}</p>}
+              {business.description && <p className="mt-2 text-ink-muted">{business.description}</p>}
             </section>
           )}
 
           <section className="mt-8">
-            <h2 className="text-xl font-semibold text-slate-900">Passport offers</h2>
+            <h2 className="text-xl font-semibold text-ink">Passport offers</h2>
             {offers.length === 0 ? (
-              <p className="mt-2 text-slate-600">No active offers right now - check back soon.</p>
+              <p className="mt-2 text-ink-muted">No active offers right now - check back soon.</p>
             ) : (
               <div className="mt-4 space-y-4">
                 {offers.map((offer) => (
@@ -232,7 +205,7 @@ export default async function BusinessPage({ params }: Props) {
 
           {business.gallery_image_urls.length > 0 && (
             <section className="mt-8">
-              <h2 className="text-xl font-semibold text-slate-900">Gallery</h2>
+              <h2 className="text-xl font-semibold text-ink">Gallery</h2>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {business.gallery_image_urls.map((url) => (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -245,19 +218,19 @@ export default async function BusinessPage({ params }: Props) {
 
         <div className="space-y-6">
           {(address || business.phone || business.email || business.website_url) && (
-            <section className="rounded-2xl border border-slate-200 p-5">
-              <h3 className="font-semibold text-slate-900">Information</h3>
+            <section className={`p-5 ${cardClasses()}`}>
+              <h3 className="font-semibold text-ink">Information</h3>
               <dl className="mt-3 space-y-3 text-sm">
                 {address && (
                   <div>
-                    <dt className="text-slate-500">Address</dt>
-                    <dd className="text-slate-900">{address}</dd>
+                    <dt className="text-ink-muted">Address</dt>
+                    <dd className="text-ink">{address}</dd>
                     {directionsHref && (
                       <a
                         href={directionsHref}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-xs font-semibold text-slate-700 hover:text-slate-900"
+                        className="text-xs font-semibold text-brand-primary hover:text-brand-primary-dark"
                       >
                         Get Directions &rarr;
                       </a>
@@ -266,20 +239,20 @@ export default async function BusinessPage({ params }: Props) {
                 )}
                 {business.phone && (
                   <div>
-                    <dt className="text-slate-500">Phone</dt>
-                    <dd className="text-slate-900">{business.phone}</dd>
+                    <dt className="text-ink-muted">Phone</dt>
+                    <dd className="text-ink">{business.phone}</dd>
                   </div>
                 )}
                 {business.email && (
                   <div>
-                    <dt className="text-slate-500">Email</dt>
-                    <dd className="text-slate-900">{business.email}</dd>
+                    <dt className="text-ink-muted">Email</dt>
+                    <dd className="text-ink">{business.email}</dd>
                   </div>
                 )}
                 {business.website_url && (
                   <div>
-                    <dt className="text-slate-500">Website</dt>
-                    <dd className="truncate text-slate-900">{business.website_url}</dd>
+                    <dt className="text-ink-muted">Website</dt>
+                    <dd className="truncate text-ink">{business.website_url}</dd>
                   </div>
                 )}
               </dl>
@@ -287,16 +260,16 @@ export default async function BusinessPage({ params }: Props) {
           )}
 
           {(business.business_hours || business.weather_permitting || business.call_for_appointment) && (
-            <section className="rounded-2xl border border-slate-200 p-5">
-              <h3 className="font-semibold text-slate-900">Hours</h3>
+            <section className={`p-5 ${cardClasses()}`}>
+              <h3 className="font-semibold text-ink">Hours</h3>
               {business.business_hours && (
                 <dl className="mt-3 space-y-1 text-sm">
                   {DAY_ORDER.map((day) => {
                     const h = hoursByDay.get(day);
                     return (
                       <div key={day} className="flex justify-between">
-                        <dt className="text-slate-500">{DAY_LABELS[day]}</dt>
-                        <dd className="text-slate-900">
+                        <dt className="text-ink-muted">{DAY_LABELS[day]}</dt>
+                        <dd className="text-ink">
                           {h?.is_open ? `${formatTime(h.opens_at)} – ${formatTime(h.closes_at)}` : "Closed"}
                         </dd>
                       </div>
@@ -305,10 +278,10 @@ export default async function BusinessPage({ params }: Props) {
                 </dl>
               )}
               {business.weather_permitting && (
-                <p className="mt-3 text-xs text-slate-500">Weather permitting.</p>
+                <p className="mt-3 text-xs text-ink-muted">Weather permitting.</p>
               )}
               {business.call_for_appointment && (
-                <p className="mt-1 text-xs text-slate-500">By appointment only - please call ahead.</p>
+                <p className="mt-1 text-xs text-ink-muted">By appointment only - please call ahead.</p>
               )}
             </section>
           )}

@@ -7,9 +7,9 @@ import { formatPassportNumber } from "@/lib/format";
 import type { PassportStatus } from "@/lib/types/domain";
 
 const STATUS_STYLES: Record<PassportStatus, string> = {
-  active: "bg-green-100 text-green-800",
-  expired: "bg-slate-100 text-slate-600",
-  revoked: "bg-red-100 text-red-700",
+  active: "bg-success-bg text-success",
+  expired: "bg-surface-elevated text-ink-muted",
+  revoked: "bg-error-bg text-error",
 };
 
 export default async function PassportHoldersPage() {
@@ -36,12 +36,12 @@ export default async function PassportHoldersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Passport holders</h1>
-      <p className="mt-1 text-slate-600">Every Passport that&apos;s been issued.</p>
+      <h1 className="text-2xl font-bold text-ink">Passport holders</h1>
+      <p className="mt-1 text-ink-muted">Every Passport that&apos;s been issued.</p>
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
-        <table className="min-w-full divide-y divide-slate-100 text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-border bg-surface">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-elevated text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
             <tr>
               <th className="px-4 py-3">Passport</th>
               <th className="px-4 py-3">Customer</th>
@@ -55,36 +55,36 @@ export default async function PassportHoldersPage() {
               <th className="px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border">
             {passports.map((p) => (
               <tr key={p.id}>
                 <td className="px-4 py-3">
-                  <p className="font-medium text-slate-900">{formatPassportNumber(p.passport_number)}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="font-medium text-ink">{formatPassportNumber(p.passport_number)}</p>
+                  <p className="text-xs text-ink-muted">
                     {p.areaName ?? "Unknown region"}, {p.stateName ?? "Unknown state"}
                   </p>
                 </td>
-                <td className="px-4 py-3 text-slate-900">
+                <td className="px-4 py-3 text-ink">
                   {p.owner?.full_name || p.owner?.email || "Unknown holder"}
                   {p.owner?.deleted_at && (
-                    <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                    <span className="ml-2 rounded-full bg-error-bg px-2 py-0.5 text-xs font-semibold text-error">
                       Deleted
                     </span>
                   )}
                   {p.owner?.suspended_at && !p.owner?.deleted_at && (
-                    <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                    <span className="ml-2 rounded-full bg-warning-bg px-2 py-0.5 text-xs font-semibold text-warning">
                       Suspended
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-slate-500">
+                <td className="px-4 py-3 text-ink-muted">
                   <p>{p.owner?.email ?? "-"}</p>
                   <p>{p.owner?.phone ?? ""}</p>
                 </td>
-                <td className="px-4 py-3 text-slate-500">{new Date(p.purchased_at).toLocaleDateString()}</td>
-                <td className="px-4 py-3 text-slate-500">{new Date(p.expires_at).toLocaleDateString()}</td>
-                <td className="px-4 py-3 text-slate-500">{p.owner?.age_range ?? "-"}</td>
-                <td className="px-4 py-3 text-slate-500">
+                <td className="px-4 py-3 text-ink-muted">{new Date(p.purchased_at).toLocaleDateString()}</td>
+                <td className="px-4 py-3 text-ink-muted">{new Date(p.expires_at).toLocaleDateString()}</td>
+                <td className="px-4 py-3 text-ink-muted">{p.owner?.age_range ?? "-"}</td>
+                <td className="px-4 py-3 text-ink-muted">
                   {p.travel_start_date && p.travel_end_date ? (
                     <>
                       {new Date(p.travel_start_date).toLocaleDateString()} –{" "}
@@ -94,7 +94,7 @@ export default async function PassportHoldersPage() {
                     "-"
                   )}
                 </td>
-                <td className="px-4 py-3 text-slate-500">
+                <td className="px-4 py-3 text-ink-muted">
                   {p.owner ? new Date(p.owner.created_at).toLocaleDateString() : "-"}
                 </td>
                 <td className="px-4 py-3">
@@ -106,7 +106,7 @@ export default async function PassportHoldersPage() {
                   {p.owner && (
                     <Link
                       href={`/admin/passport-holders/${p.owner.id}`}
-                      className="font-semibold text-slate-700 hover:underline"
+                      className="font-semibold text-ink hover:underline"
                     >
                       View &rarr;
                     </Link>
@@ -116,7 +116,7 @@ export default async function PassportHoldersPage() {
             ))}
             {passports.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-4 py-4 text-sm text-slate-500">
+                <td colSpan={10} className="px-4 py-4 text-sm text-ink-muted">
                   No Passports match this view.
                 </td>
               </tr>

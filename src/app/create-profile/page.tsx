@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CreateProfileForm } from "@/components/create-profile-form";
+import { buttonClasses } from "@/lib/ui-classes";
 
 export const metadata: Metadata = { title: "Create a Profile" };
 
@@ -15,27 +16,27 @@ const BENEFITS = [
 export default function CreateProfilePage() {
   return (
     <div className="grid min-h-[calc(100vh-73px)] lg:grid-cols-2">
-      <div className="bg-slate-50 px-6 py-16 sm:px-12 lg:py-24">
+      <div className="bg-surface-elevated px-6 py-16 sm:px-12 lg:py-24">
         <div className="mx-auto max-w-md">
-          <h1 className="text-3xl font-bold text-slate-900">Create Your Free Profile</h1>
-          <p className="mt-3 text-slate-600">
+          <h1 className="font-display text-3xl font-bold text-ink">Create Your Free Profile</h1>
+          <p className="mt-3 text-ink-muted">
             Explore states across the country, save your favorite businesses,
             and discover Passport experiences before you&apos;re ready to
             purchase a Passport.
           </p>
 
-          <span className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-200 px-4 py-1.5 text-sm font-medium text-slate-700">
+          <span className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand-tint-strong px-4 py-1.5 text-sm font-medium text-brand-primary">
             <CheckIcon />
             No Passport purchase required
           </span>
 
-          <h2 className="mt-10 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="mt-10 text-xs font-semibold uppercase tracking-wide text-ink-muted">
             What you can do with a free profile
           </h2>
           <ul className="mt-4 space-y-3">
             {BENEFITS.map((benefit) => (
-              <li key={benefit} className="flex items-center gap-3 text-sm text-slate-700">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-slate-500 ring-1 ring-slate-200">
+              <li key={benefit} className="flex items-center gap-3 text-sm text-ink">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-ink-muted ring-1 ring-border">
                   <DotIcon />
                 </span>
                 {benefit}
@@ -43,7 +44,7 @@ export default function CreateProfilePage() {
             ))}
           </ul>
 
-          <div className="mt-10 flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+          <div className="mt-10 flex items-start gap-3 rounded-2xl border border-border bg-white p-4 text-sm text-ink-muted">
             <LockIcon />
             <p>
               Passport promotions can be explored with a free profile, but an
@@ -51,12 +52,9 @@ export default function CreateProfilePage() {
             </p>
           </div>
 
-          <div className="mt-10 border-t border-slate-200 pt-6">
-            <p className="text-sm text-slate-600">Ready for the full Passport experience?</p>
-            <Link
-              href="/passport"
-              className="mt-3 inline-block rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
-            >
+          <div className="mt-10 border-t border-border pt-6">
+            <p className="text-sm text-ink-muted">Ready for the full Passport experience?</p>
+            <Link href="/passport" className={`mt-3 ${buttonClasses("outline")}`}>
               Get Your Passport
             </Link>
           </div>
@@ -95,7 +93,7 @@ function LockIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      className="mt-0.5 h-5 w-5 shrink-0 text-slate-400"
+      className="mt-0.5 h-5 w-5 shrink-0 text-ink-muted"
       aria-hidden
     >
       <rect x="4.5" y="9" width="11" height="8" rx="1.5" />

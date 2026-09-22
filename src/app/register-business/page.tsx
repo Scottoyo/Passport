@@ -38,8 +38,8 @@ export default async function RegisterBusinessPage({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-bold text-slate-900">Register a Business</h1>
-      <p className="mt-2 text-slate-600">
+      <h1 className="font-display text-3xl font-bold text-ink">Register a Business</h1>
+      <p className="mt-2 text-ink-muted">
         It&apos;s free to join - no monthly fees. Your business will be reviewed and you will be
         contacted shortly.
       </p>

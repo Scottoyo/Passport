@@ -52,7 +52,7 @@ export function RegionHeroBanner({
         sizes={variant === "card" ? "(min-width: 1024px) 60vw, 100vw" : "100vw"}
         className="object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-brand-primary-dark/85 via-brand-primary-dark/15 to-transparent" />
       <div className={`absolute inset-x-0 bottom-0 px-4 pb-5 sm:px-6 sm:pb-8`}>
         <div className={variant === "full-bleed" ? "mx-auto max-w-6xl" : ""}>{children}</div>
       </div>

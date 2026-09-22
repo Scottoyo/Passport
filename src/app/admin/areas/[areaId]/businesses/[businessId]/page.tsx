@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCategories } from "@/lib/queries";
 import type { Business, BusinessApprovalStatus, BusinessHoursDay, Offer, PassportArea, State } from "@/lib/types/domain";
 import { StatusBadge } from "@/components/status-badge";
+import { buttonClasses } from "@/lib/ui-classes";
 import { OfferForm } from "@/components/business/offer-form";
 import { addStaff, removeStaff } from "../../actions";
 import { setBusinessApproval, setBusinessFeatured } from "../../../../businesses/actions";
@@ -25,9 +26,9 @@ import {
 } from "./actions";
 
 const APPROVAL_STYLES: Record<BusinessApprovalStatus, string> = {
-  pending_review: "bg-amber-100 text-amber-800",
-  approved: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-700",
+  pending_review: "bg-warning-bg text-warning",
+  approved: "bg-success-bg text-success",
+  rejected: "bg-error-bg text-error",
 };
 
 const APPROVAL_LABELS: Record<BusinessApprovalStatus, string> = {
@@ -130,10 +131,10 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900">{business.name}</h1>
+            <h1 className="text-2xl font-bold text-ink">{business.name}</h1>
             <StatusBadge status={business.status} />
           </div>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-ink-muted">
             {[business.city, area.name].filter(Boolean).join(", ")}
           </p>
         </div>
@@ -142,8 +143,8 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
             href={modeHref("view")}
             className={
               mode === "view"
-                ? "rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white"
-                : "rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
+                ? buttonClasses("primary", "sm")
+                : buttonClasses("outline", "sm")
             }
           >
             View
@@ -153,8 +154,8 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
               href={modeHref("edit")}
               className={
                 mode === "edit"
-                  ? "rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white"
-                  : "rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
+                  ? buttonClasses("primary", "sm")
+                  : buttonClasses("outline", "sm")
               }
             >
               Edit
@@ -164,14 +165,14 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
       </div>
 
       {canBusinesses && (
-        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900">Status</h2>
-          <p className="mt-1 text-sm text-slate-500">
+        <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+          <h2 className="font-semibold text-ink">Status</h2>
+          <p className="mt-1 text-sm text-ink-muted">
             Visible only to region managers, state managers, and national admins.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-6">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Active status</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Active status</p>
               <div className="mt-1 flex items-center gap-2">
                 <StatusBadge status={business.status} />
                 {business.status === "active" ? (
@@ -190,7 +191,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Approval status</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Approval status</p>
               <div className="mt-1 flex items-center gap-2">
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${APPROVAL_STYLES[business.approval_status]}`}
@@ -213,7 +214,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                 )}
                 {business.approval_status === "rejected" && (
                   <form action={setBusinessApproval.bind(null, businessId, "approved")}>
-                    <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                    <button className={buttonClasses("outline", "sm")}>
                       Approve anyway
                     </button>
                   </form>
@@ -221,12 +222,12 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Featured listing</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Featured listing</p>
               <div className="mt-1 flex items-center gap-2">
-                <span className="text-sm text-slate-700">{business.featured ? "Featured" : "Not featured"}</span>
+                <span className="text-sm text-ink">{business.featured ? "Featured" : "Not featured"}</span>
                 {business.approval_status === "approved" && (
                   <form action={setBusinessFeatured.bind(null, businessId, !business.featured)}>
-                    <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                    <button className={buttonClasses("outline", "sm")}>
                       {business.featured ? "Unfeature" : "Feature"}
                     </button>
                   </form>
@@ -239,112 +240,112 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
 
       {mode === "view" ? (
         <div className="mt-8 space-y-6">
-          <section className="rounded-2xl border border-slate-200 p-6">
-            <h2 className="font-semibold text-slate-900">Basic information</h2>
+          <section className="rounded-2xl border border-border bg-surface p-6">
+            <h2 className="font-semibold text-ink">Basic information</h2>
             <dl className="mt-3 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-slate-500">Category</dt>
-                <dd className="text-slate-900">
+                <dt className="text-ink-muted">Category</dt>
+                <dd className="text-ink">
                   {categoryList.find((c) => c.id === business.category_id)?.name ?? "-"}
                 </dd>
               </div>
               <div>
-                <dt className="text-slate-500">Slug</dt>
-                <dd className="text-slate-900">{business.slug}</dd>
+                <dt className="text-ink-muted">Slug</dt>
+                <dd className="text-ink">{business.slug}</dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-slate-500">Short description</dt>
-                <dd className="text-slate-900">{business.short_description || "-"}</dd>
+                <dt className="text-ink-muted">Short description</dt>
+                <dd className="text-ink">{business.short_description || "-"}</dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-slate-500">Description</dt>
-                <dd className="whitespace-pre-wrap text-slate-900">{business.description || "-"}</dd>
+                <dt className="text-ink-muted">Description</dt>
+                <dd className="whitespace-pre-wrap text-ink">{business.description || "-"}</dd>
               </div>
             </dl>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 p-6">
-            <h2 className="font-semibold text-slate-900">Location &amp; contact</h2>
+          <section className="rounded-2xl border border-border bg-surface p-6">
+            <h2 className="font-semibold text-ink">Location &amp; contact</h2>
             <dl className="mt-3 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <dt className="text-slate-500">Address</dt>
-                <dd className="text-slate-900">
+                <dt className="text-ink-muted">Address</dt>
+                <dd className="text-ink">
                   {[business.address_line1, business.address_line2, business.city, business.state_code, business.postal_code]
                     .filter(Boolean)
                     .join(", ") || "-"}
                 </dd>
               </div>
               <div>
-                <dt className="text-slate-500">Phone</dt>
-                <dd className="text-slate-900">{business.phone || "-"}</dd>
+                <dt className="text-ink-muted">Phone</dt>
+                <dd className="text-ink">{business.phone || "-"}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Email</dt>
-                <dd className="text-slate-900">{business.email || "-"}</dd>
+                <dt className="text-ink-muted">Email</dt>
+                <dd className="text-ink">{business.email || "-"}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Website</dt>
-                <dd className="text-slate-900">{business.website_url || "-"}</dd>
+                <dt className="text-ink-muted">Website</dt>
+                <dd className="text-ink">{business.website_url || "-"}</dd>
               </div>
             </dl>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 p-6">
-            <h2 className="font-semibold text-slate-900">Social links</h2>
+          <section className="rounded-2xl border border-border bg-surface p-6">
+            <h2 className="font-semibold text-ink">Social links</h2>
             <ul className="mt-3 space-y-1 text-sm">
               {SOCIAL_FIELDS.map((f) => (
                 <li key={f.key} className="flex gap-2">
-                  <span className="w-24 text-slate-500">{f.label}</span>
-                  <span className="text-slate-900">{(business[f.key] as string | null) || "-"}</span>
+                  <span className="w-24 text-ink-muted">{f.label}</span>
+                  <span className="text-ink">{(business[f.key] as string | null) || "-"}</span>
                 </li>
               ))}
             </ul>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 p-6">
-            <h2 className="font-semibold text-slate-900">Business hours</h2>
+          <section className="rounded-2xl border border-border bg-surface p-6">
+            <h2 className="font-semibold text-ink">Business hours</h2>
             <ul className="mt-3 space-y-1 text-sm">
               {DAY_ORDER.map((day) => {
                 const h = hoursByDay.get(day);
                 return (
                   <li key={day} className="flex gap-2">
-                    <span className="w-24 text-slate-500">{DAY_LABELS[day]}</span>
-                    <span className="text-slate-900">
+                    <span className="w-24 text-ink-muted">{DAY_LABELS[day]}</span>
+                    <span className="text-ink">
                       {h?.is_open ? `${h.opens_at ?? "?"} – ${h.closes_at ?? "?"}` : "Closed"}
                     </span>
                   </li>
                 );
               })}
             </ul>
-            <p className="mt-3 text-sm text-slate-500">
+            <p className="mt-3 text-sm text-ink-muted">
               {business.weather_permitting && "Weather permitting. "}
               {business.call_for_appointment && "By appointment only."}
             </p>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 p-6">
-            <h2 className="font-semibold text-slate-900">Media</h2>
+          <section className="rounded-2xl border border-border bg-surface p-6">
+            <h2 className="font-semibold text-ink">Media</h2>
             <div className="mt-3 flex flex-wrap gap-4">
               {business.logo_url && (
                 <div>
-                  <p className="mb-1 text-xs text-slate-500">Logo</p>
+                  <p className="mb-1 text-xs text-ink-muted">Logo</p>
                   <img src={business.logo_url} alt="Logo" className="h-20 w-20 rounded-lg object-cover" />
                 </div>
               )}
               {business.hero_image_url && (
                 <div>
-                  <p className="mb-1 text-xs text-slate-500">Cover</p>
+                  <p className="mb-1 text-xs text-ink-muted">Cover</p>
                   <img src={business.hero_image_url} alt="Cover" className="h-20 w-32 rounded-lg object-cover" />
                 </div>
               )}
               {business.gallery_image_urls.map((url) => (
                 <div key={url}>
-                  <p className="mb-1 text-xs text-slate-500">Gallery</p>
+                  <p className="mb-1 text-xs text-ink-muted">Gallery</p>
                   <img src={url} alt="Gallery" className="h-20 w-20 rounded-lg object-cover" />
                 </div>
               ))}
               {!business.logo_url && !business.hero_image_url && business.gallery_image_urls.length === 0 && (
-                <p className="text-sm text-slate-500">No media uploaded yet.</p>
+                <p className="text-sm text-ink-muted">No media uploaded yet.</p>
               )}
             </div>
           </section>
@@ -352,24 +353,24 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
       ) : (
         <div className="mt-8 space-y-6">
           {canBusinesses && (
-            <section className="rounded-2xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900">Basic information</h2>
+            <section className="rounded-2xl border border-border bg-surface p-6">
+              <h2 className="font-semibold text-ink">Basic information</h2>
               <form action={updateBusinessBasicInfo.bind(null, areaId, businessId)} className="mt-4 space-y-3">
                 <label className="block text-sm">
-                  <span className="mb-1 block text-slate-600">Name</span>
+                  <span className="mb-1 block text-ink-muted">Name</span>
                   <input
                     name="name"
                     defaultValue={business.name}
                     required
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                   />
                 </label>
                 <label className="block text-sm">
-                  <span className="mb-1 block text-slate-600">Category</span>
+                  <span className="mb-1 block text-ink-muted">Category</span>
                   <select
                     name="category_id"
                     defaultValue={business.category_id ?? ""}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                   >
                     <option value="">None</option>
                     {categoryList.map((c) => (
@@ -380,24 +381,24 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                   </select>
                 </label>
                 <label className="block text-sm">
-                  <span className="mb-1 block text-slate-600">Short description</span>
+                  <span className="mb-1 block text-ink-muted">Short description</span>
                   <input
                     name="short_description"
                     defaultValue={business.short_description ?? ""}
                     placeholder="One line for cards and search results"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                   />
                 </label>
                 <label className="block text-sm">
-                  <span className="mb-1 block text-slate-600">Description</span>
+                  <span className="mb-1 block text-ink-muted">Description</span>
                   <textarea
                     name="description"
                     defaultValue={business.description ?? ""}
                     rows={4}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                   />
                 </label>
-                <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+                <button className={buttonClasses("primary")}>
                   Save
                 </button>
               </form>
@@ -405,19 +406,19 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
           )}
 
           {canBusinesses && (
-            <section className="rounded-2xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900">Location &amp; contact</h2>
+            <section className="rounded-2xl border border-border bg-surface p-6">
+              <h2 className="font-semibold text-ink">Location &amp; contact</h2>
               <form
                 action={updateBusinessLocationContact.bind(null, areaId, businessId)}
                 className="mt-4 space-y-3"
               >
                 {reassignAreas.length > 0 && (
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-600">Region</span>
+                    <span className="mb-1 block text-ink-muted">Region</span>
                     <select
                       name="area_id"
                       defaultValue={areaId}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                     >
                       {reassignAreas.map((a) => (
                         <option key={a.id} value={a.id}>
@@ -429,73 +430,73 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                 )}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <label className="block text-sm sm:col-span-2">
-                    <span className="mb-1 block text-slate-600">Address line 1</span>
+                    <span className="mb-1 block text-ink-muted">Address line 1</span>
                     <input
                       name="address_line1"
                       defaultValue={business.address_line1 ?? ""}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </label>
                   <label className="block text-sm sm:col-span-2">
-                    <span className="mb-1 block text-slate-600">Address line 2</span>
+                    <span className="mb-1 block text-ink-muted">Address line 2</span>
                     <input
                       name="address_line2"
                       defaultValue={business.address_line2 ?? ""}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-600">City</span>
+                    <span className="mb-1 block text-ink-muted">City</span>
                     <input
                       name="city"
                       defaultValue={business.city ?? ""}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-600">State code</span>
+                    <span className="mb-1 block text-ink-muted">State code</span>
                     <input
                       name="state_code"
                       defaultValue={business.state_code ?? ""}
                       maxLength={2}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-600">Postal code</span>
+                    <span className="mb-1 block text-ink-muted">Postal code</span>
                     <input
                       name="postal_code"
                       defaultValue={business.postal_code ?? ""}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-600">Phone</span>
+                    <span className="mb-1 block text-ink-muted">Phone</span>
                     <input
                       name="phone"
                       defaultValue={business.phone ?? ""}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-600">Email</span>
+                    <span className="mb-1 block text-ink-muted">Email</span>
                     <input
                       name="email"
                       type="email"
                       defaultValue={business.email ?? ""}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </label>
                   <label className="block text-sm sm:col-span-2">
-                    <span className="mb-1 block text-slate-600">Website</span>
+                    <span className="mb-1 block text-ink-muted">Website</span>
                     <input
                       name="website_url"
                       defaultValue={business.website_url ?? ""}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </label>
                 </div>
-                <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+                <button className={buttonClasses("primary")}>
                   Save
                 </button>
               </form>
@@ -503,21 +504,21 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
           )}
 
           {canBusinesses && (
-            <section className="rounded-2xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900">Social links</h2>
+            <section className="rounded-2xl border border-border bg-surface p-6">
+              <h2 className="font-semibold text-ink">Social links</h2>
               <form action={updateBusinessSocialLinks.bind(null, areaId, businessId)} className="mt-4 space-y-3">
                 {SOCIAL_FIELDS.map((f) => (
                   <label key={f.key} className="block text-sm">
-                    <span className="mb-1 block text-slate-600">{f.label}</span>
+                    <span className="mb-1 block text-ink-muted">{f.label}</span>
                     <input
                       name={f.key}
                       defaultValue={(business[f.key] as string | null) ?? ""}
                       placeholder="https://"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                     />
                   </label>
                 ))}
-                <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+                <button className={buttonClasses("primary")}>
                   Save
                 </button>
               </form>
@@ -525,8 +526,8 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
           )}
 
           {canBusinesses && (
-            <section className="rounded-2xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900">Business hours</h2>
+            <section className="rounded-2xl border border-border bg-surface p-6">
+              <h2 className="font-semibold text-ink">Business hours</h2>
               <form action={updateBusinessHours.bind(null, areaId, businessId)} className="mt-4 space-y-3">
                 {DAY_ORDER.map((day) => {
                   const h = hoursByDay.get(day);
@@ -540,19 +541,19 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                         type="time"
                         name={`opens_at_${day}`}
                         defaultValue={h?.opens_at ?? ""}
-                        className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
+                        className="rounded-lg border border-border px-2 py-1 text-sm"
                       />
-                      <span className="text-slate-400">to</span>
+                      <span className="text-ink-muted">to</span>
                       <input
                         type="time"
                         name={`closes_at_${day}`}
                         defaultValue={h?.closes_at ?? ""}
-                        className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
+                        className="rounded-lg border border-border px-2 py-1 text-sm"
                       />
                     </div>
                   );
                 })}
-                <div className="flex flex-wrap gap-4 border-t border-slate-100 pt-3">
+                <div className="flex flex-wrap gap-4 border-t border-border pt-3">
                   <label className="flex items-center gap-2 text-sm">
                     <input
                       type="checkbox"
@@ -570,7 +571,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                     By appointment only
                   </label>
                 </div>
-                <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+                <button className={buttonClasses("primary")}>
                   Save
                 </button>
               </form>
@@ -578,24 +579,24 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
           )}
 
           {canBusinesses && (
-            <section className="rounded-2xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900">Media</h2>
+            <section className="rounded-2xl border border-border bg-surface p-6">
+              <h2 className="font-semibold text-ink">Media</h2>
 
               <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <p className="mb-2 text-sm font-medium text-slate-700">Logo</p>
+                  <p className="mb-2 text-sm font-medium text-ink">Logo</p>
                   {business.logo_url && (
                     <img src={business.logo_url} alt="Logo" className="mb-2 h-20 w-20 rounded-lg object-cover" />
                   )}
                   <form action={uploadBusinessLogo.bind(null, areaId, businessId)} className="flex items-center gap-2">
                     <input type="file" name="logo" accept="image/*" required className="text-sm" />
-                    <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                    <button className={buttonClasses("outline", "sm")}>
                       Upload
                     </button>
                   </form>
                 </div>
                 <div>
-                  <p className="mb-2 text-sm font-medium text-slate-700">Cover image</p>
+                  <p className="mb-2 text-sm font-medium text-ink">Cover image</p>
                   {business.hero_image_url && (
                     <img
                       src={business.hero_image_url}
@@ -608,7 +609,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                     className="flex items-center gap-2"
                   >
                     <input type="file" name="cover" accept="image/*" required className="text-sm" />
-                    <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                    <button className={buttonClasses("outline", "sm")}>
                       Upload
                     </button>
                   </form>
@@ -616,7 +617,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
               </div>
 
               <div className="mt-6">
-                <p className="mb-2 text-sm font-medium text-slate-700">Gallery</p>
+                <p className="mb-2 text-sm font-medium text-ink">Gallery</p>
                 <div className="flex flex-wrap gap-3">
                   {business.gallery_image_urls.map((url) => (
                     <div key={url} className="relative">
@@ -634,7 +635,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                   className="mt-3 flex items-center gap-2"
                 >
                   <input type="file" name="gallery" accept="image/*" required className="text-sm" />
-                  <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                  <button className={buttonClasses("outline", "sm")}>
                     Add to gallery
                   </button>
                 </form>
@@ -643,36 +644,36 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
           )}
 
           {canBusinesses && (
-            <section className="rounded-2xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900">Redemption code</h2>
-              <p className="mt-1 text-sm text-slate-500">
+            <section className="rounded-2xl border border-border bg-surface p-6">
+              <h2 className="font-semibold text-ink">Redemption code</h2>
+              <p className="mt-1 text-sm text-ink-muted">
                 Staff use this code to authorize a redemption in person. There&apos;s no scan/verify
                 screen yet - this just generates and displays the code.
               </p>
               <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                 <div>
-                  <dt className="text-slate-500">Code</dt>
-                  <dd className="font-mono text-lg text-slate-900">{business.redemption_code ?? "Not generated"}</dd>
+                  <dt className="text-ink-muted">Code</dt>
+                  <dd className="font-mono text-lg text-ink">{business.redemption_code ?? "Not generated"}</dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Last updated</dt>
-                  <dd className="text-slate-900">
+                  <dt className="text-ink-muted">Last updated</dt>
+                  <dd className="text-ink">
                     {business.redemption_code_updated_at
                       ? new Date(business.redemption_code_updated_at).toLocaleString()
                       : "-"}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Failed attempts</dt>
-                  <dd className="text-slate-900">{business.redemption_failed_attempts}</dd>
+                  <dt className="text-ink-muted">Failed attempts</dt>
+                  <dd className="text-ink">{business.redemption_failed_attempts}</dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Locked</dt>
-                  <dd className="text-slate-900">{business.redemption_locked_at ? "Yes" : "No"}</dd>
+                  <dt className="text-ink-muted">Locked</dt>
+                  <dd className="text-ink">{business.redemption_locked_at ? "Yes" : "No"}</dd>
                 </div>
               </dl>
               <form action={regenerateRedemptionCode.bind(null, areaId, businessId)} className="mt-4">
-                <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
+                <button className={buttonClasses("outline")}>
                   {business.redemption_code ? "Regenerate code" : "Generate code"}
                 </button>
               </form>
@@ -680,51 +681,51 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
           )}
 
           {canStaff && (
-            <section className="rounded-2xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900">Business users</h2>
-              <p className="mt-1 text-sm text-slate-500">
+            <section className="rounded-2xl border border-border bg-surface p-6">
+              <h2 className="font-semibold text-ink">Business users</h2>
+              <p className="mt-1 text-sm text-ink-muted">
                 Owner: {(owner as { email: string; full_name: string | null } | null)?.full_name ||
                   (owner as { email: string } | null)?.email ||
                   "Unknown"}
               </p>
-              <ul className="mt-3 divide-y divide-slate-100">
+              <ul className="mt-3 divide-y divide-border">
                 {((staff ?? []) as unknown as { id: string; profiles: { email: string } | null }[]).map((s) => (
                   <li key={s.id} className="flex items-center justify-between py-2">
-                    <span className="text-sm text-slate-800">{s.profiles?.email ?? "Unknown"}</span>
+                    <span className="text-sm text-ink">{s.profiles?.email ?? "Unknown"}</span>
                     <form action={removeStaff.bind(null, areaId, s.id)}>
-                      <button className="text-xs font-semibold text-red-600 hover:text-red-700">Remove</button>
+                      <button className="text-xs font-semibold text-error hover:text-red-700">Remove</button>
                     </form>
                   </li>
                 ))}
                 {(staff ?? []).length === 0 && (
-                  <li className="py-2 text-sm text-slate-500">No staff added yet.</li>
+                  <li className="py-2 text-sm text-ink-muted">No staff added yet.</li>
                 )}
               </ul>
               <form action={addStaff.bind(null, areaId)} className="mt-4 flex flex-wrap items-end gap-3">
                 <input type="hidden" name="business_id" value={businessId} />
                 <label className="text-sm">
-                  <span className="mb-1 block text-slate-600">Staff email</span>
+                  <span className="mb-1 block text-ink-muted">Staff email</span>
                   <input
                     name="email"
                     type="email"
                     required
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="rounded-lg border border-border px-3 py-2 text-sm"
                   />
                 </label>
-                <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
+                <button className={buttonClasses("outline")}>
                   Add staff
                 </button>
               </form>
             </section>
           )}
 
-          <section className="rounded-2xl border border-slate-200 p-6">
-            <h2 className="font-semibold text-slate-900">Offers</h2>
+          <section className="rounded-2xl border border-border bg-surface p-6">
+            <h2 className="font-semibold text-ink">Offers</h2>
             <ul className="mt-3 space-y-3">
               {(offers ?? []).map((offer) => (
-                <li key={offer.id} className="rounded-lg bg-slate-50 p-4">
+                <li key={offer.id} className="rounded-lg bg-surface-elevated p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-slate-800">{offer.title}</span>
+                    <span className="text-sm font-medium text-ink">{offer.title}</span>
                     <div className="flex items-center gap-3">
                       <StatusBadge status={offer.status} />
                       {canOffers &&
@@ -743,21 +744,21 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                         ))}
                     </div>
                   </div>
-                  {offer.description && <p className="mt-1 text-sm text-slate-600">{offer.description}</p>}
-                  <p className="mt-1 text-xs text-slate-500">
+                  {offer.description && <p className="mt-1 text-sm text-ink-muted">{offer.description}</p>}
+                  <p className="mt-1 text-xs text-ink-muted">
                     {offer.redemptions_per_passport === null
                       ? "Unlimited redemptions per Passport"
                       : `${offer.redemptions_per_passport} redemption${offer.redemptions_per_passport === 1 ? "" : "s"} per Passport`}
                   </p>
                   {offer.redemption_instructions && (
-                    <p className="mt-1 text-xs text-slate-500">Instructions: {offer.redemption_instructions}</p>
+                    <p className="mt-1 text-xs text-ink-muted">Instructions: {offer.redemption_instructions}</p>
                   )}
                   {canOffers && (
                     <details className="mt-2">
-                      <summary className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-slate-700">
+                      <summary className="cursor-pointer text-xs font-semibold text-ink-muted hover:text-ink">
                         Edit
                       </summary>
-                      <div className="mt-3 border-t border-slate-200 pt-3">
+                      <div className="mt-3 border-t border-border pt-3">
                         <OfferForm
                           offer={offer}
                           action={updateOffer.bind(null, areaId, businessId, offer.id)}
@@ -768,11 +769,11 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                   )}
                 </li>
               ))}
-              {(offers ?? []).length === 0 && <li className="text-sm text-slate-500">No offers yet.</li>}
+              {(offers ?? []).length === 0 && <li className="text-sm text-ink-muted">No offers yet.</li>}
             </ul>
 
             {canOffers && (
-              <div className="mt-6 border-t border-slate-100 pt-4">
+              <div className="mt-6 border-t border-border pt-4">
                 <OfferForm action={createOffer.bind(null, areaId, businessId)} submitLabel="Add offer" />
               </div>
             )}

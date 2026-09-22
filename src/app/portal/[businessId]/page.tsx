@@ -21,41 +21,41 @@ export default async function PortalDashboardPage({ params }: Props) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-slate-900">Dashboard</h2>
-      <p className="mt-1 text-slate-600">Overview of your business performance (last 30 days).</p>
+      <h2 className="text-2xl font-bold text-ink">Dashboard</h2>
+      <p className="mt-1 text-ink-muted">Overview of your business performance (last 30 days).</p>
 
-      <section className="mt-6 rounded-2xl border border-slate-200 p-6">
-        <h3 className="font-semibold text-slate-900">Your redemption code</h3>
-        <p className="mt-1 text-sm text-slate-500">
+      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
+        <h3 className="font-semibold text-ink">Your redemption code</h3>
+        <p className="mt-1 text-sm text-ink-muted">
           Give this code to eligible Passport holders when they claim your offer.
         </p>
         <div className="mt-4 flex justify-center">
-          <span className="rounded-xl bg-slate-100 px-8 py-4 font-mono text-3xl tracking-widest text-slate-900">
+          <span className="rounded-xl bg-surface-elevated px-8 py-4 font-mono text-3xl tracking-widest text-ink">
             {business.redemption_code ?? "Not set"}
           </span>
         </div>
-        <p className="mt-4 text-center text-xs text-slate-500">
+        <p className="mt-4 text-center text-xs text-ink-muted">
           Your code is stored securely. If you need a new code or have forgotten it, please
           contact an administrator.
         </p>
       </section>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Total redemptions</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{metrics.totalRedemptions}</p>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Total redemptions</p>
+          <p className="mt-1 text-2xl font-bold text-ink">{metrics.totalRedemptions}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Last 30 days</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{metrics.redemptionsLast30Days}</p>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Last 30 days</p>
+          <p className="mt-1 text-2xl font-bold text-ink">{metrics.redemptionsLast30Days}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Unique customers</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{metrics.uniqueCustomers}</p>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Unique customers</p>
+          <p className="mt-1 text-2xl font-bold text-ink">{metrics.uniqueCustomers}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Most redeemed offer</p>
-          <p className="mt-1 text-sm font-semibold text-slate-900">
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Most redeemed offer</p>
+          <p className="mt-1 text-sm font-semibold text-ink">
             {metrics.mostRedeemedOfferLast30Days ?? "No redemptions in this period"}
           </p>
         </div>

@@ -15,12 +15,12 @@ export function RegionScopeSelector({
 }) {
   return (
     <form action={setAdminAreaScope} className="flex items-center gap-2">
-      <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Region</span>
+      <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Region</span>
       <select
         name="area"
         defaultValue={current?.id ?? ""}
         onChange={(e) => e.currentTarget.form?.requestSubmit()}
-        className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-900"
+        className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-ink focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
       >
         <option value="">All regions</option>
         {areas.map((area) => (

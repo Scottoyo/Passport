@@ -15,29 +15,29 @@ export default async function RedemptionHistoryPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Redemption History</h1>
-      <p className="mt-1 text-slate-600">A record of all the perks you&apos;ve claimed.</p>
+      <h1 className="text-2xl font-bold text-ink">Redemption History</h1>
+      <p className="mt-1 text-ink-muted">A record of all the perks you&apos;ve claimed.</p>
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
-        <table className="min-w-full divide-y divide-slate-100 text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-border bg-surface">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-elevated text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
             <tr>
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Business</th>
               <th className="px-4 py-3">Offer</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border">
             {redemptions.map((r) => (
               <tr key={r.id}>
-                <td className="px-4 py-3 text-slate-500">{new Date(r.redeemed_at).toLocaleString()}</td>
-                <td className="px-4 py-3 text-slate-900">{r.businessName}</td>
-                <td className="px-4 py-3 text-slate-500">{r.offerTitle}</td>
+                <td className="px-4 py-3 text-ink-muted">{new Date(r.redeemed_at).toLocaleString()}</td>
+                <td className="px-4 py-3 text-ink">{r.businessName}</td>
+                <td className="px-4 py-3 text-ink-muted">{r.offerTitle}</td>
               </tr>
             ))}
             {redemptions.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-4 text-sm text-slate-500">
+                <td colSpan={3} className="px-4 py-4 text-sm text-ink-muted">
                   You haven&apos;t redeemed any perks yet.
                 </td>
               </tr>

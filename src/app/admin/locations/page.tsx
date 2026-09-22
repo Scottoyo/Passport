@@ -15,6 +15,7 @@ import {
 import { addAreaManager, removeAreaManager } from "../areas/[areaId]/actions";
 import { StatusBadge } from "@/components/status-badge";
 import { Overlay } from "@/components/admin/overlay";
+import { buttonClasses } from "@/lib/ui-classes";
 
 const CAPABILITY_FIELDS: { key: string; label: string }[] = [
   { key: "can_view_metrics", label: "View metrics" },
@@ -111,23 +112,23 @@ export default async function LocationsAdminPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">States &amp; Regions</h1>
-      <p className="mt-1 text-slate-600">
+      <h1 className="text-2xl font-bold text-ink">States &amp; Regions</h1>
+      <p className="mt-1 text-ink-muted">
         {isNationalAdmin
           ? "Select a state to view or edit it, its regions, and its managers."
           : "Select your state to view or edit its regions and their managers."}
       </p>
 
-      <ul className="mt-8 divide-y divide-slate-100 rounded-2xl border border-slate-200">
+      <ul className="mt-8 divide-y divide-border rounded-2xl border border-border bg-surface">
         {(states ?? []).map((state) => (
           <li key={state.id} className="flex items-center justify-between px-6 py-3">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-slate-800">
+              <span className="text-sm font-medium text-ink">
                 {state.name} ({state.abbreviation})
               </span>
               <StatusBadge status={state.status} />
             </div>
-            <div className="flex items-center gap-4 text-sm font-semibold text-slate-700">
+            <div className="flex items-center gap-4 text-sm font-semibold text-ink">
               <Link href={`/admin/locations?state=${state.slug}&mode=view`} className="hover:underline">
                 View
               </Link>
@@ -138,7 +139,7 @@ export default async function LocationsAdminPage({
           </li>
         ))}
         {(states ?? []).length === 0 && (
-          <li className="px-6 py-4 text-sm text-slate-500">No states yet.</li>
+          <li className="px-6 py-4 text-sm text-ink-muted">No states yet.</li>
         )}
       </ul>
 
@@ -200,21 +201,21 @@ function StateViewPanel({
   return (
     <div>
       <div className="flex items-center gap-3">
-        <h2 className="text-xl font-bold text-slate-900">
+        <h2 className="text-xl font-bold text-ink">
           {state.name} ({state.abbreviation})
         </h2>
         <StatusBadge status={state.status} />
       </div>
-      {state.intro_copy && <p className="mt-2 text-sm text-slate-600">{state.intro_copy}</p>}
+      {state.intro_copy && <p className="mt-2 text-sm text-ink-muted">{state.intro_copy}</p>}
 
-      <h3 className="mt-6 text-sm font-semibold text-slate-700">Regions</h3>
-      <ul className="mt-2 divide-y divide-slate-100">
+      <h3 className="mt-6 text-sm font-semibold text-ink">Regions</h3>
+      <ul className="mt-2 divide-y divide-border">
         {areas.map((area) => {
           const managers = areaManagersByAreaId.get(area.id) ?? [];
           return (
             <li key={area.id} className="py-2">
               <div className="flex items-center justify-between">
-                <Link href={`/admin/areas/${area.id}`} className="text-sm font-medium text-slate-800 hover:underline">
+                <Link href={`/admin/areas/${area.id}`} className="text-sm font-medium text-ink hover:underline">
                   {area.name}
                 </Link>
                 <StatusBadge status={area.status} />
@@ -222,7 +223,7 @@ function StateViewPanel({
               {managers.length > 0 && (
                 <ul className="mt-1.5 space-y-1">
                   {managers.map((m) => (
-                    <li key={m.id} className="flex items-center gap-2 text-xs text-slate-600">
+                    <li key={m.id} className="flex items-center gap-2 text-xs text-ink-muted">
                       <ManagerBadge kind="region" />
                       {m.profiles?.email ?? "Unknown"}
                     </li>
@@ -232,21 +233,21 @@ function StateViewPanel({
             </li>
           );
         })}
-        {areas.length === 0 && <li className="py-2 text-sm text-slate-500">No regions yet.</li>}
+        {areas.length === 0 && <li className="py-2 text-sm text-ink-muted">No regions yet.</li>}
       </ul>
 
       {isNationalAdmin && (
         <>
-          <h3 className="mt-6 text-sm font-semibold text-slate-700">State managers</h3>
+          <h3 className="mt-6 text-sm font-semibold text-ink">State managers</h3>
           <ul className="mt-2 space-y-1.5">
             {stateManagers.map((m) => (
-              <li key={m.id} className="flex items-center gap-2 text-sm text-slate-600">
+              <li key={m.id} className="flex items-center gap-2 text-sm text-ink-muted">
                 <ManagerBadge kind="state" />
                 {m.profiles?.email ?? "Unknown"}
               </li>
             ))}
             {stateManagers.length === 0 && (
-              <li className="text-sm text-slate-500">No state managers assigned.</li>
+              <li className="text-sm text-ink-muted">No state managers assigned.</li>
             )}
           </ul>
         </>
@@ -255,7 +256,7 @@ function StateViewPanel({
       {canEdit && (
         <Link
           href={`/admin/locations?state=${state.slug}&mode=edit`}
-          className="mt-6 inline-block rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+          className={`mt-6 inline-block ${buttonClasses("primary")}`}
         >
           Edit
         </Link>
@@ -283,46 +284,46 @@ function StateEditPanel({
 }) {
   return (
     <div>
-      <h2 className="text-xl font-bold text-slate-900">Edit {state.name}</h2>
+      <h2 className="text-xl font-bold text-ink">Edit {state.name}</h2>
 
       {isNationalAdmin && (
         <>
           <form action={updateStateDetails.bind(null, state.id)} className="mt-4 space-y-3">
             <label className="block text-sm">
-              <span className="mb-1 block text-slate-600">Name</span>
+              <span className="mb-1 block text-ink-muted">Name</span>
               <input
                 name="name"
                 defaultValue={state.name}
                 required
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block text-slate-600">Abbreviation</span>
+              <span className="mb-1 block text-ink-muted">Abbreviation</span>
               <input
                 name="abbreviation"
                 defaultValue={state.abbreviation}
                 required
                 maxLength={2}
-                className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm uppercase"
+                className="w-20 rounded-lg border border-border px-3 py-2 text-sm uppercase"
               />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block text-slate-600">Intro copy</span>
+              <span className="mb-1 block text-ink-muted">Intro copy</span>
               <textarea
                 name="intro_copy"
                 defaultValue={state.intro_copy ?? ""}
                 rows={3}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
-            <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+            <button className={buttonClasses("primary")}>
               Save changes
             </button>
           </form>
 
           <div className="mt-4 flex items-center gap-3">
-            <span className="text-sm text-slate-600">Status:</span>
+            <span className="text-sm text-ink-muted">Status:</span>
             <StatusBadge status={state.status} />
             <StatusActions
               current={state.status}
@@ -334,14 +335,14 @@ function StateEditPanel({
         </>
       )}
 
-      <h3 className="mt-6 text-sm font-semibold text-slate-700">Regions</h3>
-      <ul className="mt-2 divide-y divide-slate-100">
+      <h3 className="mt-6 text-sm font-semibold text-ink">Regions</h3>
+      <ul className="mt-2 divide-y divide-border">
         {areas.map((area) => {
           const managers = areaManagersByAreaId.get(area.id) ?? [];
           return (
             <li key={area.id} className="py-3">
               <div className="flex items-center justify-between">
-                <Link href={`/admin/areas/${area.id}`} className="text-sm font-medium text-slate-800 hover:underline">
+                <Link href={`/admin/areas/${area.id}`} className="text-sm font-medium text-ink hover:underline">
                   {area.name}
                 </Link>
                 <div className="flex items-center gap-3">
@@ -358,23 +359,23 @@ function StateEditPanel({
               </div>
 
               {canManageUsers && (
-                <div className="mt-2 rounded-lg bg-slate-50 p-3">
+                <div className="mt-2 rounded-lg bg-surface-elevated p-3">
                   <ul className="space-y-1.5">
                     {managers.map((m) => (
                       <li key={m.id} className="flex items-center justify-between gap-2">
-                        <span className="flex items-center gap-2 text-xs text-slate-600">
+                        <span className="flex items-center gap-2 text-xs text-ink-muted">
                           <ManagerBadge kind="region" />
                           {m.profiles?.email ?? "Unknown"}
                         </span>
                         <form action={removeAreaManager.bind(null, area.id, m.id)}>
-                          <button className="text-xs font-semibold text-red-600 hover:text-red-700">
+                          <button className="text-xs font-semibold text-error hover:text-red-700">
                             Remove
                           </button>
                         </form>
                       </li>
                     ))}
                     {managers.length === 0 && (
-                      <li className="text-xs text-slate-500">No region managers assigned yet.</li>
+                      <li className="text-xs text-ink-muted">No region managers assigned yet.</li>
                     )}
                   </ul>
                   <form action={addAreaManager.bind(null, area.id)} className="mt-2 space-y-2">
@@ -383,17 +384,17 @@ function StateEditPanel({
                       type="email"
                       required
                       placeholder="manager@example.com"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs"
+                      className="w-full rounded-lg border border-border px-3 py-1.5 text-xs"
                     />
                     <div className="flex flex-wrap gap-x-3 gap-y-1">
                       {CAPABILITY_FIELDS.map((f) => (
-                        <label key={f.key} className="flex items-center gap-1 text-xs text-slate-700">
+                        <label key={f.key} className="flex items-center gap-1 text-xs text-ink">
                           <input type="checkbox" name={f.key} defaultChecked={f.key === "can_view_metrics"} />
                           {f.label}
                         </label>
                       ))}
                     </div>
-                    <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                    <button className={buttonClasses("outline", "sm")}>
                       Add region manager
                     </button>
                   </form>
@@ -402,39 +403,39 @@ function StateEditPanel({
             </li>
           );
         })}
-        {areas.length === 0 && <li className="py-2 text-sm text-slate-500">No regions yet.</li>}
+        {areas.length === 0 && <li className="py-2 text-sm text-ink-muted">No regions yet.</li>}
       </ul>
 
       {canEditRegions && (
-        <form action={createArea} className="mt-4 flex flex-wrap items-end gap-3 border-t border-slate-100 pt-4">
+        <form action={createArea} className="mt-4 flex flex-wrap items-end gap-3 border-t border-border pt-4">
           <input type="hidden" name="state_id" value={state.id} />
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Region name</span>
+            <span className="mb-1 block text-ink-muted">Region name</span>
             <input
               name="name"
               required
               placeholder="Miami"
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-lg border border-border px-3 py-2 text-sm"
             />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Tagline</span>
+            <span className="mb-1 block text-ink-muted">Tagline</span>
             <input
               name="tagline"
               placeholder="Beaches, nightlife, and more"
-              className="w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-64 rounded-lg border border-border px-3 py-2 text-sm"
             />
           </label>
-          <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
+          <button className={buttonClasses("outline")}>
             Add region
           </button>
         </form>
       )}
 
       {isNationalAdmin && (
-        <div className="mt-6 border-t border-slate-100 pt-4">
-          <h3 className="text-sm font-semibold text-slate-700">State managers</h3>
-          <p className="mt-1 text-xs text-slate-500">
+        <div className="mt-6 border-t border-border pt-4">
+          <h3 className="text-sm font-semibold text-ink">State managers</h3>
+          <p className="mt-1 text-xs text-ink-muted">
             Same capabilities as a region manager, but across every region in{" "}
             {state.name} - current and future.
           </p>
@@ -442,17 +443,17 @@ function StateEditPanel({
             {stateManagers.map((m) => (
               <li key={m.id} className="rounded-lg bg-indigo-50/60 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-sm font-medium text-slate-800">
+                  <span className="flex items-center gap-2 text-sm font-medium text-ink">
                     <ManagerBadge kind="state" />
                     {m.profiles?.email ?? "Unknown"}
                   </span>
                   <form action={removeStateManager.bind(null, m.id)}>
-                    <button className="text-xs font-semibold text-red-600 hover:text-red-700">
+                    <button className="text-xs font-semibold text-error hover:text-red-700">
                       Remove
                     </button>
                   </form>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-ink-muted">
                   {CAPABILITY_FIELDS.filter((f) => (m as unknown as Record<string, boolean>)[f.key])
                     .map((f) => f.label)
                     .join(", ") || "No capabilities granted"}
@@ -460,7 +461,7 @@ function StateEditPanel({
               </li>
             ))}
             {stateManagers.length === 0 && (
-              <li className="text-sm text-slate-500">No state managers assigned yet.</li>
+              <li className="text-sm text-ink-muted">No state managers assigned yet.</li>
             )}
           </ul>
           <form action={addStateManager.bind(null, state.id)} className="mt-3 space-y-3">
@@ -469,17 +470,17 @@ function StateEditPanel({
               type="email"
               required
               placeholder="manager@example.com"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm"
             />
             <div className="flex flex-wrap gap-x-4 gap-y-2">
               {CAPABILITY_FIELDS.map((f) => (
-                <label key={f.key} className="flex items-center gap-1.5 text-sm text-slate-700">
+                <label key={f.key} className="flex items-center gap-1.5 text-sm text-ink">
                   <input type="checkbox" name={f.key} defaultChecked={f.key === "can_view_metrics"} />
                   {f.label}
                 </label>
               ))}
             </div>
-            <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+            <button className={buttonClasses("primary")}>
               Assign state manager
             </button>
           </form>
@@ -504,21 +505,21 @@ function StatusActions({
     <div className="flex gap-2 text-xs">
       {current !== "active" && (
         <form action={launch}>
-          <button className="rounded-full bg-green-600 px-3 py-1 font-semibold text-white hover:bg-green-500">
+          <button className="rounded-full bg-success px-3 py-1 font-semibold text-white hover:opacity-90">
             Launch
           </button>
         </form>
       )}
       {current === "active" && (
         <form action={pause}>
-          <button className="rounded-full bg-amber-500 px-3 py-1 font-semibold text-white hover:bg-amber-400">
+          <button className="rounded-full bg-warning px-3 py-1 font-semibold text-white hover:opacity-90">
             Pause
           </button>
         </form>
       )}
       {current !== "draft" && (
         <form action={draft}>
-          <button className="rounded-full bg-slate-200 px-3 py-1 font-semibold text-slate-700 hover:bg-slate-300">
+          <button className="rounded-full bg-surface-elevated px-3 py-1 font-semibold text-ink hover:bg-border">
             Move to draft
           </button>
         </form>

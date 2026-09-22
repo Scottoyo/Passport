@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getRegionEventsForUser } from "@/lib/queries";
 import type { Profile } from "@/lib/types/domain";
 import { markNotificationsRead } from "../actions";
+import { buttonClasses } from "@/lib/ui-classes";
 
 interface Props {
   searchParams: Promise<{ tab?: string }>;
@@ -43,13 +44,13 @@ export default async function NotificationsPage({ searchParams }: Props) {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Notifications</h1>
-          <p className="mt-1 text-slate-600">
+          <h1 className="text-2xl font-bold text-ink">Notifications</h1>
+          <p className="mt-1 text-ink-muted">
             Stay up to date with new businesses, promotions, and Passport updates.
           </p>
         </div>
         <form action={markNotificationsRead}>
-          <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
+          <button className={buttonClasses("outline")}>
             Mark All as Read
           </button>
         </form>
@@ -62,8 +63,8 @@ export default async function NotificationsPage({ searchParams }: Props) {
             href={`/account/notifications${t.key === "all" ? "" : `?tab=${t.key}`}`}
             className={
               activeTab === t.key
-                ? "rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white"
-                : "rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
+                ? "rounded-full bg-brand-primary px-4 py-1.5 text-sm font-semibold text-white"
+                : "rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-ink hover:border-brand-primary"
             }
           >
             {t.label}
@@ -78,30 +79,30 @@ export default async function NotificationsPage({ searchParams }: Props) {
             <div
               key={e.id}
               className={`flex items-center justify-between rounded-2xl border p-4 ${
-                isUnread ? "border-slate-300 bg-slate-50" : "border-slate-200"
+                isUnread ? "border-brand-primary/30 bg-surface-elevated" : "border-border"
               }`}
             >
               <div>
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-sm font-semibold text-ink">
                   {e.event_type === "new_business" ? "New Business Added" : "New Passport Promotion"}
                 </p>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-ink-muted">
                   {e.event_type === "new_business"
                     ? `${e.businessName} has joined the Passport!`
                     : `${e.businessName} just added: ${e.offerTitle}`}
                 </p>
-                <p className="mt-1 text-xs text-slate-400">{new Date(e.created_at).toLocaleString()}</p>
+                <p className="mt-1 text-xs text-ink-muted">{new Date(e.created_at).toLocaleString()}</p>
               </div>
               <Link
                 href={`/${e.stateSlug}/${e.areaSlug}/businesses/${e.businessSlug}`}
-                className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500"
+                className={buttonClasses("outline", "sm")}
               >
                 View
               </Link>
             </div>
           );
         })}
-        {filtered.length === 0 && <p className="text-sm text-slate-500">Nothing here yet.</p>}
+        {filtered.length === 0 && <p className="text-sm text-ink-muted">Nothing here yet.</p>}
       </div>
     </div>
   );

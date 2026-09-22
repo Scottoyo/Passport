@@ -11,6 +11,7 @@ import { BusinessCard } from "@/components/business-card";
 import { BusinessDiscoverFilter } from "@/components/business-discover-filter";
 import { RegionHeroBanner, getRegionHeroImage } from "@/components/region-hero-banner";
 import { toggleFavorite } from "@/app/[state]/[area]/businesses/[business]/actions";
+import { buttonClasses } from "@/lib/ui-classes";
 import type { State, PassportArea } from "@/lib/types/domain";
 
 function buildAreaFilterHref(
@@ -82,10 +83,7 @@ export async function DiscoverAreaContent({
           <RegionHeroBanner src={heroImage.src} alt={heroImage.alt} variant="card">
             <h1 className="sr-only">Discover {area.name} Perks</h1>
             {showPassportCta && (
-              <Link
-                href={resolvedPassportHref}
-                className="inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
-              >
+              <Link href={resolvedPassportHref} className="inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated">
                 Get the {area.name} Passport
               </Link>
             )}
@@ -95,21 +93,21 @@ export async function DiscoverAreaContent({
         <section className={themed ? "mb-10 rounded-2xl bg-brand-primary p-6 sm:p-10" : ""}>
           <p
             className={`text-sm font-semibold uppercase tracking-wide ${
-              themed ? "text-white/80" : "text-slate-500"
+              themed ? "text-white/80" : "text-ink-muted"
             }`}
           >
             {area.name} Passport
           </p>
-          <h1 className={`mt-1 font-display text-3xl font-bold sm:text-4xl ${themed ? "text-white" : "text-slate-900"}`}>
+          <h1 className={`mt-1 font-display text-3xl font-bold sm:text-4xl ${themed ? "text-white" : "text-ink"}`}>
             Discover {area.name} Perks
           </h1>
           {showPassportCta && (
             <>
-              <p className={`mt-3 max-w-2xl text-lg ${themed ? "text-white/90" : "text-slate-600"}`}>
+              <p className={`mt-3 max-w-2xl text-lg ${themed ? "text-white/90" : "text-ink-muted"}`}>
                 {area.tagline || `Save at the best local spots in ${area.name} with your Passport.`}
               </p>
               {area.description && (
-                <p className={`mt-2 max-w-2xl ${themed ? "text-white/90" : "text-slate-600"}`}>
+                <p className={`mt-2 max-w-2xl ${themed ? "text-white/90" : "text-ink-muted"}`}>
                   {area.description}
                 </p>
               )}
@@ -118,8 +116,8 @@ export async function DiscoverAreaContent({
                 href={resolvedPassportHref}
                 className={
                   themed
-                    ? "mt-6 inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
-                    : "mt-6 inline-block rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+                    ? "mt-6 inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
+                    : `mt-6 ${buttonClasses("primary")}`
                 }
               >
                 Get the {area.name} Passport
@@ -131,14 +129,14 @@ export async function DiscoverAreaContent({
 
       {subareas.length > 0 && (
         <section className="mt-10">
-          <h2 className="text-xl font-semibold text-slate-900">Neighborhoods</h2>
+          <h2 className="text-xl font-semibold text-ink">Neighborhoods</h2>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
               href={buildAreaFilterHref(basePath, { q, categoryId })}
               className={
                 !activeSubarea
                   ? "rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white"
-                  : "rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-500"
+                  : "rounded-full border border-border px-4 py-2 text-sm font-medium text-ink hover:border-brand-primary"
               }
             >
               All Neighborhoods
@@ -154,7 +152,7 @@ export async function DiscoverAreaContent({
                 className={
                   activeSubarea?.id === subarea.id
                     ? "rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white"
-                    : "rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-500"
+                    : "rounded-full border border-border px-4 py-2 text-sm font-medium text-ink hover:border-brand-primary"
                 }
               >
                 {subarea.name}
@@ -165,7 +163,7 @@ export async function DiscoverAreaContent({
       )}
 
       <section className="mt-10">
-        <h2 className="text-xl font-semibold text-slate-900">
+        <h2 className="text-xl font-semibold text-ink">
           {activeSubarea ? `Participating businesses in ${activeSubarea.name}` : "Participating businesses"}
         </h2>
         <BusinessDiscoverFilter
@@ -176,7 +174,7 @@ export async function DiscoverAreaContent({
           categories={categories.map((c) => ({ value: c.id, label: c.name }))}
         />
         {businesses.length === 0 ? (
-          <p className="mt-4 text-slate-600">
+          <p className="mt-4 text-ink-muted">
             {q || categoryId || activeSubarea
               ? "No businesses match your search."
               : `No businesses are live in ${area.name} yet.`}
@@ -189,7 +187,6 @@ export async function DiscoverAreaContent({
                 business={business}
                 href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
                 offer={primaryOffers.get(business.id) ?? null}
-                themed={themed}
                 favorite={{
                   isSignedIn: Boolean(user),
                   isFavorited: favoritedIds.has(business.id),

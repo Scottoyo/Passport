@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getPostSignInRedirect } from "@/app/auth/actions";
+import { buttonClasses, cardClasses } from "@/lib/ui-classes";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -68,50 +69,50 @@ export default function ResetPasswordPage() {
   if (!hasSession) {
     return (
       <div className="mx-auto max-w-sm px-4 py-16 sm:px-6">
-        <h1 className="text-2xl font-bold text-slate-900">Link expired</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          This password reset link is invalid or has expired.
-        </p>
-        <p className="mt-6 text-sm text-slate-600">
-          <Link href="/forgot-password" className="font-semibold text-slate-900 hover:underline">
-            Request a new link
-          </Link>
-        </p>
+        <div className={`p-8 ${cardClasses()}`}>
+          <h1 className="font-display text-2xl font-bold text-ink">Link expired</h1>
+          <p className="mt-2 text-sm text-ink-muted">
+            This password reset link is invalid or has expired.
+          </p>
+          <p className="mt-6 text-sm text-ink-muted">
+            <Link href="/forgot-password" className="font-semibold text-brand-primary hover:underline">
+              Request a new link
+            </Link>
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-sm px-4 py-16 sm:px-6">
-      <h1 className="text-2xl font-bold text-slate-900">Set a new password</h1>
-      <p className="mt-2 text-sm text-slate-600">Choose a new password for your account.</p>
+      <div className={`p-8 ${cardClasses()}`}>
+        <h1 className="font-display text-2xl font-bold text-ink">Set a new password</h1>
+        <p className="mt-2 text-sm text-ink-muted">Choose a new password for your account.</p>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <input
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="New password"
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
-        <input
-          type="password"
-          required
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="Confirm new password"
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
-        <button
-          type="submit"
-          disabled={status === "submitting"}
-          className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
-        >
-          {status === "submitting" ? "Saving..." : "Save new password"}
-        </button>
-        {status === "error" && <p className="text-sm text-red-600">{errorMessage}</p>}
-      </form>
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="New password"
+            className="w-full rounded-lg border border-border px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+          />
+          <input
+            type="password"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm new password"
+            className="w-full rounded-lg border border-border px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+          />
+          <button type="submit" disabled={status === "submitting"} className={`w-full ${buttonClasses("primary")}`}>
+            {status === "submitting" ? "Saving..." : "Save new password"}
+          </button>
+          {status === "error" && <p className="text-sm text-error">{errorMessage}</p>}
+        </form>
+      </div>
     </div>
   );
 }

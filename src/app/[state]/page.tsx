@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getStateBySlug, getAreasForState } from "@/lib/queries";
+import { cardClasses } from "@/lib/ui-classes";
 
 interface Props {
   params: Promise<{ state: string }>;
@@ -22,16 +23,16 @@ export default async function StatePage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-      <h1 className="font-display text-3xl font-bold text-slate-900">{state.name}</h1>
+      <h1 className="font-display text-3xl font-bold text-ink">{state.name}</h1>
       {state.intro_copy && (
-        <p className="mt-2 max-w-2xl text-slate-600">{state.intro_copy}</p>
+        <p className="mt-2 max-w-2xl text-ink-muted">{state.intro_copy}</p>
       )}
 
-      <h2 className="mt-10 text-xl font-semibold text-slate-900">
+      <h2 className="mt-10 text-xl font-semibold text-ink">
         Passport Areas in {state.name}
       </h2>
       {areas.length === 0 ? (
-        <p className="mt-2 text-slate-600">
+        <p className="mt-2 text-ink-muted">
           No Passport Areas are live in {state.name} yet.
         </p>
       ) : (
@@ -40,11 +41,11 @@ export default async function StatePage({ params }: Props) {
             <Link
               key={area.id}
               href={`/${state.slug}/${area.slug}`}
-              className="rounded-2xl border border-slate-200 p-6 transition-colors hover:border-slate-400"
+              className={`p-6 transition-colors hover:border-brand-primary ${cardClasses()}`}
             >
-              <h3 className="text-lg font-semibold text-slate-900">{area.name}</h3>
+              <h3 className="text-lg font-semibold text-ink">{area.name}</h3>
               {area.tagline && (
-                <p className="mt-1 text-sm text-slate-600">{area.tagline}</p>
+                <p className="mt-1 text-sm text-ink-muted">{area.tagline}</p>
               )}
             </Link>
           ))}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
+import { buttonClasses } from "@/lib/ui-classes";
 
 export function BusinessActionsMenu({
   viewHref,
@@ -59,12 +60,7 @@ export function BusinessActionsMenu({
 
   return (
     <>
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500"
-      >
+      <button ref={buttonRef} type="button" onClick={() => setOpen((v) => !v)} className={buttonClasses("outline", "sm")}>
         Actions
       </button>
 
@@ -74,19 +70,19 @@ export function BusinessActionsMenu({
           <div
             ref={menuRef}
             style={{ position: "fixed", top: position.top, right: position.right }}
-            className="z-50 w-44 rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+            className="z-50 w-44 rounded-lg border border-border bg-surface py-1 shadow-lg"
           >
             <Link
               href={viewHref}
               onClick={() => setOpen(false)}
-              className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+              className="block px-3 py-1.5 text-sm text-ink hover:bg-surface-elevated"
             >
               View
             </Link>
             <Link
               href={editHref}
               onClick={() => setOpen(false)}
-              className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+              className="block px-3 py-1.5 text-sm text-ink hover:bg-surface-elevated"
             >
               Edit
             </Link>

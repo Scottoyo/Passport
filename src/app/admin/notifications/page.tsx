@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/permissions";
 import { getAdminScopedAreaIds } from "@/lib/admin-scope";
 import { getAdminNotifications, getAdminNotificationsLastReadAt, type AdminNotificationWithDetails } from "@/lib/admin-queries";
 import { markAdminNotificationsRead } from "../notifications-actions";
+import { buttonClasses } from "@/lib/ui-classes";
 
 interface Props {
   searchParams: Promise<{ tab?: string }>;
@@ -65,13 +66,13 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Notifications</h1>
-          <p className="mt-1 text-slate-600">
+          <h1 className="text-2xl font-bold text-ink">Notifications</h1>
+          <p className="mt-1 text-ink-muted">
             Businesses pending review and marketing requests submitted within your scope.
           </p>
         </div>
         <form action={markAdminNotificationsRead}>
-          <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
+          <button className={buttonClasses("outline")}>
             Mark All as Read
           </button>
         </form>
@@ -84,8 +85,8 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
             href={`/admin/notifications${t.key === "all" ? "" : `?tab=${t.key}`}`}
             className={
               activeTab === t.key
-                ? "rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white"
-                : "rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
+                ? "rounded-full bg-brand-primary px-4 py-1.5 text-sm font-semibold text-white"
+                : "rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-ink hover:border-brand-primary"
             }
           >
             {t.label}
@@ -101,24 +102,24 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
             <div
               key={n.id}
               className={`flex items-center justify-between rounded-2xl border p-4 ${
-                isUnread ? "border-slate-300 bg-slate-50" : "border-slate-200"
+                isUnread ? "border-border bg-surface-elevated" : "border-border"
               }`}
             >
               <div>
-                <p className="text-sm font-semibold text-slate-900">{label}</p>
-                <p className="text-sm text-slate-600">{detail}</p>
-                <p className="mt-1 text-xs text-slate-400">{new Date(n.created_at).toLocaleString()}</p>
+                <p className="text-sm font-semibold text-ink">{label}</p>
+                <p className="text-sm text-ink-muted">{detail}</p>
+                <p className="mt-1 text-xs text-ink-muted">{new Date(n.created_at).toLocaleString()}</p>
               </div>
               <Link
                 href={href}
-                className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500"
+                className={buttonClasses("outline", "sm")}
               >
                 View
               </Link>
             </div>
           );
         })}
-        {filtered.length === 0 && <p className="text-sm text-slate-500">Nothing here yet.</p>}
+        {filtered.length === 0 && <p className="text-sm text-ink-muted">Nothing here yet.</p>}
       </div>
     </div>
   );
