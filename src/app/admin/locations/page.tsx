@@ -125,7 +125,7 @@ export default async function LocationsAdminPage({
           : "Select your state to view or edit its regions and their managers."}
       </p>
 
-      <ul className="mt-8 divide-y divide-border rounded-2xl border border-border bg-surface">
+      <ul className="mt-8 max-w-2xl divide-y divide-border rounded-2xl border border-border bg-surface">
         {(states ?? []).map((state) => (
           <li key={state.id} className="flex items-center justify-between px-6 py-3">
             <div className="flex items-center gap-3">
