@@ -8,6 +8,7 @@ import {
   getPrimaryOffersForBusinesses,
   getFavoritedBusinessIds,
   getActivePassportForArea,
+  getCategories,
 } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { BusinessCard } from "@/components/business-card";
@@ -35,7 +36,11 @@ export default async function AreaHomePage({ params }: Props) {
   if (!area) notFound();
 
   const featuredBusinesses = await getBusinessesForArea(area.id, { featured: true });
-  const primaryOffers = await getPrimaryOffersForBusinesses(featuredBusinesses.map((b) => b.id));
+  const [primaryOffers, categories] = await Promise.all([
+    getPrimaryOffersForBusinesses(featuredBusinesses.map((b) => b.id)),
+    getCategories([state.id]),
+  ]);
+  const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
 
   const supabase = await createClient();
   const {
@@ -202,6 +207,7 @@ export default async function AreaHomePage({ params }: Props) {
                       business={business}
                       href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
                       offer={primaryOffers.get(business.id) ?? null}
+                      category={business.category_id ? categoryNameById.get(business.category_id) : null}
                       favorite={{
                         isSignedIn: Boolean(user),
                         isFavorited: favoritedIds.has(business.id),

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Business, Offer } from "@/lib/types/domain";
 import { FavoriteButton } from "@/components/favorite-button";
@@ -10,49 +11,69 @@ export interface BusinessCardFavorite {
   passportHref: string;
 }
 
+const CARD_IMAGE_SIZES = "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw";
+
+// Every card in a grid reserves the exact same cover/logo space whether or
+// not a business has uploaded those images, so a mix of businesses with and
+// without photos never staggers the grid or shifts "View Business" buttons
+// out of alignment (the outer card is a flex column with this button
+// pinned to the bottom via mt-auto in the content area below).
 export function BusinessCard({
   business,
   href,
   offer,
   favorite,
+  category,
 }: {
   business: Business;
   href: string;
   offer?: Offer | null;
   favorite?: BusinessCardFavorite | null;
+  category?: string | null;
 }) {
   return (
-    <div className={`relative ${cardClasses()} shadow-sm transition-colors hover:border-brand-primary`}>
+    <div
+      className={`relative flex h-full flex-col overflow-hidden ${cardClasses()} shadow-sm transition-colors hover:border-brand-primary`}
+    >
       {favorite && (
-        <div className="absolute right-3 top-3 z-10">
+        <div className="absolute right-3 top-3 z-20">
           <FavoriteButton variant="icon" {...favorite} />
         </div>
       )}
 
-      <Link href={href} className="block">
-        {business.hero_image_url && (
-          <div className="relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+      <Link href={href} className="flex flex-1 flex-col">
+        <div className="relative aspect-[4/3] w-full shrink-0 bg-surface-elevated">
+          {business.hero_image_url && (
+            <Image
               src={business.hero_image_url}
               alt=""
-              className="h-32 w-full rounded-t-2xl object-cover"
+              fill
+              sizes={CARD_IMAGE_SIZES}
+              className="object-cover"
             />
+          )}
+          {category && (
+            <span className="absolute left-3 top-3 z-10 max-w-[75%] truncate rounded-md bg-ink/70 px-2 py-1 text-xs font-semibold text-white">
+              {category}
+            </span>
+          )}
+          <div className="absolute -bottom-6 left-4 z-10 h-14 w-14 overflow-hidden rounded-full border-4 border-surface bg-surface-elevated shadow-sm">
             {business.logo_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={business.logo_url}
-                alt={`${business.name} logo`}
-                className="absolute -bottom-4 left-4 h-10 w-10 rounded-full border-2 border-white object-cover shadow"
+                alt=""
+                fill
+                sizes="56px"
+                className="object-cover"
               />
             )}
           </div>
-        )}
+        </div>
 
-        <div className={`p-6 ${business.hero_image_url && business.logo_url ? "pt-6" : ""}`}>
-          <h3 className="text-lg font-semibold text-ink">{business.name}</h3>
+        <div className="flex flex-1 flex-col px-6 pb-6 pt-9">
+          <h3 className="truncate text-lg font-semibold text-ink">{business.name}</h3>
           {business.city && (
-            <p className="mt-1 text-sm text-ink-muted">
+            <p className="mt-1 truncate text-sm text-ink-muted">
               {business.city}
               {business.state_code ? `, ${business.state_code}` : ""}
             </p>
@@ -67,9 +88,14 @@ export function BusinessCard({
               <p className="text-xs font-semibold uppercase tracking-wide text-accent-strong">
                 Passport promotion
               </p>
-              <p className="mt-0.5 text-sm font-medium text-ink">{offer.title}</p>
+              <p className="mt-0.5 line-clamp-2 text-sm font-medium text-ink">{offer.title}</p>
             </div>
           )}
+          <div className="mt-auto pt-4">
+            <span className="block w-full rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold text-ink">
+              View Business
+            </span>
+          </div>
         </div>
       </Link>
     </div>

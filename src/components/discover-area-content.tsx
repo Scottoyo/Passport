@@ -76,6 +76,8 @@ export async function DiscoverAreaContent({
     user ? getActivePassportForArea(user.id, area.id).then(Boolean) : Promise.resolve(false),
   ]);
 
+  const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
+
   const resolvedPassportHref = passportHref ?? `/${state.slug}/${area.slug}/passport`;
   // Someone who already owns this exact region's Passport doesn't need the
   // upsell CTA repeated at them here - they'd just be buying it again.
@@ -215,6 +217,7 @@ export async function DiscoverAreaContent({
                 business={business}
                 href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
                 offer={primaryOffers.get(business.id) ?? null}
+                category={business.category_id ? categoryNameById.get(business.category_id) : null}
                 favorite={{
                   isSignedIn: Boolean(user),
                   isFavorited: favoritedIds.has(business.id),

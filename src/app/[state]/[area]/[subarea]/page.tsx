@@ -6,6 +6,7 @@ import {
   getAreaBySlug,
   getSubareaBySlug,
   getBusinessesForArea,
+  getCategories,
 } from "@/lib/queries";
 import { BusinessCard } from "@/components/business-card";
 
@@ -32,7 +33,11 @@ export default async function SubareaPage({ params }: Props) {
   const subarea = await getSubareaBySlug(area.id, subareaSlug);
   if (!subarea) notFound();
 
-  const businesses = await getBusinessesForArea(area.id, { subareaId: subarea.id });
+  const [businesses, categories] = await Promise.all([
+    getBusinessesForArea(area.id, { subareaId: subarea.id }),
+    getCategories([state.id]),
+  ]);
+  const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
@@ -67,6 +72,7 @@ export default async function SubareaPage({ params }: Props) {
                 key={business.id}
                 business={business}
                 href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
+                category={business.category_id ? categoryNameById.get(business.category_id) : null}
               />
             ))}
           </div>
