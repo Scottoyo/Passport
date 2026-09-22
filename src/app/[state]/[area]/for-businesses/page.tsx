@@ -102,7 +102,7 @@ export default async function ForBusinessesPage({ params }: Props) {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="border-t border-border bg-bg scroll-mt-20">
+      <section id="how-it-works" className="border-t border-border bg-brand-surface-alt scroll-mt-20">
         <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20">
           <p className="text-center text-sm font-semibold uppercase tracking-wide text-brand-primary">
             From Listing to Foot Traffic
@@ -162,7 +162,7 @@ export default async function ForBusinessesPage({ params }: Props) {
       </section>
 
       {/* Fit / category ribbon */}
-      <section className="border-t border-border bg-bg">
+      <section className="border-t border-border bg-brand-surface-alt">
         <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-20">
           <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">
             If you help people enjoy {area.name}, you belong here.
@@ -264,7 +264,7 @@ function PerkTicket({ children, rotate = "" }: { children: React.ReactNode; rota
 
 function FaqItem({ question, children }: { question: string; children: React.ReactNode }) {
   return (
-    <details className="group rounded-2xl border border-border bg-bg px-5 py-4 open:bg-white">
+    <details className="group rounded-2xl border border-border bg-brand-surface-alt px-5 py-4 open:bg-white">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-ink">
         {question}
         <svg

@@ -1,22 +1,11 @@
 import Image from "next/image";
 
-// Custom hero photography, per region - a region with no art here falls
+// A region with no hero_image_url set (see the branding admin form) falls
 // back to each page's existing plain/brand-color hero band, so this is
 // purely additive (nothing breaks for a region without a supplied image).
-// A region's own admin-uploaded hero_image_url (see the branding admin
-// form) always wins over this hardcoded fallback map when set.
-const HERO_IMAGES: Record<string, { src: string; alt: string }> = {
-  orlando: {
-    src: "/region-hero/orlando-hero.webp",
-    alt: "Orlando Passport. More to explore. A warm Orlando evening scene - outdoor dining, palm trees, a lit Ferris wheel, and the navy Orlando Passport booklet.",
-  },
-};
-
 export function getRegionHeroImage(area: { slug: string; hero_image_url: string | null }) {
-  if (area.hero_image_url) {
-    return { src: area.hero_image_url, alt: `${area.slug} Passport hero` };
-  }
-  return HERO_IMAGES[area.slug] ?? null;
+  if (!area.hero_image_url) return null;
+  return { src: area.hero_image_url, alt: `${area.slug} Passport hero` };
 }
 
 // A photographic hero, used instead of the plain solid-color hero

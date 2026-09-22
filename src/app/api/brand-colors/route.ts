@@ -38,6 +38,6 @@ export async function GET(request: NextRequest) {
     accent: theme.accent,
     text: theme.text,
     background: theme.background,
-    surfaceAlt: theme.level === "national" ? "#F7F8FA" : null,
+    surfaceAlt: theme.background ? "#F7F8FA" : null,
   });
 }

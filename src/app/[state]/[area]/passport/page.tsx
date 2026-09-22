@@ -4,6 +4,7 @@ import { getStateBySlug, getAreaBySlug, getActivePassportProductForArea } from "
 import { createClient } from "@/lib/supabase/server";
 import { PurchaseForm } from "@/components/purchase-form";
 import { StampStat } from "@/components/editorial-kit";
+import { RegionHeroBanner, getRegionHeroImage } from "@/components/region-hero-banner";
 
 interface Props {
   params: Promise<{ state: string; area: string }>;
@@ -33,28 +34,42 @@ export default async function AreaPassportPage({ params, searchParams }: Props) 
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const heroImage = getRegionHeroImage(area);
+  const heroOverlay = area.brand_hero_overlay === "none" ? "none" : "scrim";
 
   return (
     <div>
-      {/* Hero */}
-      <section className="bg-brand-primary">
-        <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <p className="text-sm font-semibold uppercase tracking-wide text-white/80">
-            {area.name} Passport
-          </p>
-          <h1 className="mt-2 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">
-            The {area.name} Passport
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-white/90">
-            One purchase unlocks every participating business in {area.name} - this Passport is
-            only valid in {area.name}. Exploring another region too? You&apos;ll need a separate
-            Passport for it.
-          </p>
+      {/* Hero - a compact image card above the purchase flow when the
+          region has its own art (the image already carries the "{area}
+          Passport" headline, so no duplicate text on top); otherwise the
+          original plain navy text hero, unchanged. */}
+      {heroImage ? (
+        <div className="mx-auto max-w-4xl px-4 pt-8 sm:px-6">
+          <RegionHeroBanner src={heroImage.src} alt={heroImage.alt} variant="card" overlay={heroOverlay}>
+            {heroOverlay === "scrim" && <h1 className="sr-only">The {area.name} Passport</h1>}
+          </RegionHeroBanner>
+          {heroOverlay === "none" && <h1 className="sr-only">The {area.name} Passport</h1>}
         </div>
-      </section>
+      ) : (
+        <section className="bg-brand-primary">
+          <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
+            <p className="text-sm font-semibold uppercase tracking-wide text-white/80">
+              {area.name} Passport
+            </p>
+            <h1 className="mt-2 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">
+              The {area.name} Passport
+            </h1>
+            <p className="mx-auto mt-4 max-w-xl text-lg text-white/90">
+              One purchase unlocks every participating business in {area.name} - this Passport is
+              only valid in {area.name}. Exploring another region too? You&apos;ll need a separate
+              Passport for it.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Product / pricing */}
-      <section className="bg-bg">
+      <section className="bg-brand-background">
         <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-20">
           {product ? (
             <div className="rounded-[24px] border border-dashed border-brand-primary/40 bg-white p-8 shadow-sm">
