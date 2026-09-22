@@ -20,6 +20,15 @@ const nextConfig: NextConfig = {
         ]
       : [],
   },
+  // Next's default Server Action body limit (1MB) is well under the
+  // business-media gallery upload limit (8MB) - without raising it, a
+  // large-but-otherwise-valid image never reaches uploadBusinessMedia's own
+  // size check at all; Next itself rejects it first with an unhandled 500.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
 };
 
 export default nextConfig;

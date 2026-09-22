@@ -597,13 +597,9 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                   clearLogo={clearBusinessLogo.bind(null, areaId, businessId)}
                   clearCover={clearBusinessCover.bind(null, areaId, businessId)}
                   addGalleryImage={addBusinessGalleryImage.bind(null, areaId, businessId)}
-                  removeGalleryImage={(mediaId) => removeBusinessGalleryImage.bind(null, areaId, businessId, mediaId)}
-                  updateGalleryImageAlt={(mediaId) =>
-                    updateBusinessGalleryImageAlt.bind(null, areaId, businessId, mediaId)
-                  }
-                  reorderGalleryImages={(orderedIds) =>
-                    reorderBusinessGalleryImages(areaId, businessId, orderedIds)
-                  }
+                  removeGalleryImage={removeBusinessGalleryImage.bind(null, areaId, businessId)}
+                  updateGalleryImageAlt={updateBusinessGalleryImageAlt.bind(null, areaId, businessId)}
+                  reorderGalleryImages={reorderBusinessGalleryImages.bind(null, areaId, businessId)}
                 />
               </div>
             </section>

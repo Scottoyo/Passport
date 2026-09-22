@@ -140,12 +140,12 @@ function GalleryItem({
   item: BusinessMedia;
   index: number;
   count: number;
-  removeAction: (mediaId: string) => FormAction;
-  updateAltAction: (mediaId: string) => FormAction;
+  removeAction: FormAction;
+  updateAltAction: FormAction;
   onMove: (index: number, direction: -1 | 1) => void;
 }) {
-  const [removeState, removeFormAction] = useActionState(removeAction(item.id), INITIAL_STATE);
-  const [altState, altFormAction] = useActionState(updateAltAction(item.id), INITIAL_STATE);
+  const [removeState, removeFormAction] = useActionState(removeAction, INITIAL_STATE);
+  const [altState, altFormAction] = useActionState(updateAltAction, INITIAL_STATE);
 
   return (
     <div className="flex gap-3 rounded-lg border border-border p-3">
@@ -157,6 +157,7 @@ function GalleryItem({
           onBlur={(e) => e.currentTarget.requestSubmit()}
           className="flex flex-col gap-1"
         >
+          <input type="hidden" name="media_id" value={item.id} />
           <label className="text-xs text-ink-muted" htmlFor={`alt-${item.id}`}>
             Alt text
           </label>
@@ -189,6 +190,7 @@ function GalleryItem({
             ↓
           </button>
           <form action={removeFormAction}>
+            <input type="hidden" name="media_id" value={item.id} />
             <SubmitButton variant="danger">Delete</SubmitButton>
           </form>
         </div>
@@ -219,8 +221,8 @@ export function BusinessMediaEditor({
   clearLogo: FormAction;
   clearCover: FormAction;
   addGalleryImage: FormAction;
-  removeGalleryImage: (mediaId: string) => FormAction;
-  updateGalleryImageAlt: (mediaId: string) => FormAction;
+  removeGalleryImage: FormAction;
+  updateGalleryImageAlt: FormAction;
   reorderGalleryImages: (orderedMediaIds: string[]) => Promise<MediaActionResult>;
 }) {
   const [galleryPreview, setGalleryPreview] = useState<string | null>(null);
