@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser, canManageArea } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
-import { getCategories } from "@/lib/queries";
+import { getCategories, getBusinessMedia } from "@/lib/queries";
 import type { Business, BusinessApprovalStatus, BusinessHoursDay, Offer, PassportArea, State } from "@/lib/types/domain";
 import { StatusBadge } from "@/components/status-badge";
 import { buttonClasses } from "@/lib/ui-classes";
 import { OfferForm } from "@/components/business/offer-form";
+import { BusinessMediaEditor } from "@/components/business/media-editor";
 import { addStaff, removeStaff } from "../../actions";
 import { setBusinessApproval, setBusinessFeatured } from "../../../../businesses/actions";
 import {
@@ -17,8 +18,12 @@ import {
   updateBusinessHours,
   uploadBusinessLogo,
   uploadBusinessCover,
+  clearBusinessLogo,
+  clearBusinessCover,
   addBusinessGalleryImage,
   removeBusinessGalleryImage,
+  updateBusinessGalleryImageAlt,
+  reorderBusinessGalleryImages,
   regenerateRedemptionCode,
   createOffer,
   updateOffer,
@@ -92,7 +97,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
     .maybeSingle<Business>();
   if (!business) notFound();
 
-  const [{ data: offers }, categoryList, { data: staff }, { data: owner }] = await Promise.all([
+  const [{ data: offers }, categoryList, { data: staff }, { data: owner }, media] = await Promise.all([
     supabase
       .from("offers")
       .select("*")
@@ -109,6 +114,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
     business.created_by
       ? supabase.from("profiles").select("email, full_name").eq("id", business.created_by).maybeSingle()
       : Promise.resolve({ data: null }),
+    getBusinessMedia(businessId),
   ]);
 
   let reassignAreas: (PassportArea & { stateName: string })[] = [];
@@ -338,13 +344,13 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                   <img src={business.hero_image_url} alt="Cover" className="h-20 w-32 rounded-lg object-cover" />
                 </div>
               )}
-              {business.gallery_image_urls.map((url) => (
-                <div key={url}>
+              {media.map((item) => (
+                <div key={item.id}>
                   <p className="mb-1 text-xs text-ink-muted">Gallery</p>
-                  <img src={url} alt="Gallery" className="h-20 w-20 rounded-lg object-cover" />
+                  <img src={item.url} alt={item.alt_text ?? "Gallery"} className="h-20 w-20 rounded-lg object-cover" />
                 </div>
               ))}
-              {!business.logo_url && !business.hero_image_url && business.gallery_image_urls.length === 0 && (
+              {!business.logo_url && !business.hero_image_url && media.length === 0 && (
                 <p className="text-sm text-ink-muted">No media uploaded yet.</p>
               )}
             </div>
@@ -580,65 +586,25 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
 
           {canBusinesses && (
             <section className="rounded-2xl border border-border bg-surface p-6">
-              <h2 className="font-semibold text-ink">Media</h2>
-
-              <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <p className="mb-2 text-sm font-medium text-ink">Logo</p>
-                  {business.logo_url && (
-                    <img src={business.logo_url} alt="Logo" className="mb-2 h-20 w-20 rounded-lg object-cover" />
-                  )}
-                  <form action={uploadBusinessLogo.bind(null, areaId, businessId)} className="flex items-center gap-2">
-                    <input type="file" name="logo" accept="image/*" required className="text-sm" />
-                    <button className={buttonClasses("outline", "sm")}>
-                      Upload
-                    </button>
-                  </form>
-                </div>
-                <div>
-                  <p className="mb-2 text-sm font-medium text-ink">Cover image</p>
-                  {business.hero_image_url && (
-                    <img
-                      src={business.hero_image_url}
-                      alt="Cover"
-                      className="mb-2 h-20 w-32 rounded-lg object-cover"
-                    />
-                  )}
-                  <form
-                    action={uploadBusinessCover.bind(null, areaId, businessId)}
-                    className="flex items-center gap-2"
-                  >
-                    <input type="file" name="cover" accept="image/*" required className="text-sm" />
-                    <button className={buttonClasses("outline", "sm")}>
-                      Upload
-                    </button>
-                  </form>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <p className="mb-2 text-sm font-medium text-ink">Gallery</p>
-                <div className="flex flex-wrap gap-3">
-                  {business.gallery_image_urls.map((url) => (
-                    <div key={url} className="relative">
-                      <img src={url} alt="Gallery" className="h-20 w-20 rounded-lg object-cover" />
-                      <form action={removeBusinessGalleryImage.bind(null, areaId, businessId, url)}>
-                        <button className="absolute -right-1 -top-1 rounded-full bg-red-600 px-1.5 text-xs font-bold text-white">
-                          &times;
-                        </button>
-                      </form>
-                    </div>
-                  ))}
-                </div>
-                <form
-                  action={addBusinessGalleryImage.bind(null, areaId, businessId)}
-                  className="mt-3 flex items-center gap-2"
-                >
-                  <input type="file" name="gallery" accept="image/*" required className="text-sm" />
-                  <button className={buttonClasses("outline", "sm")}>
-                    Add to gallery
-                  </button>
-                </form>
+              <h2 className="font-semibold text-ink">Business Images and Media</h2>
+              <div className="mt-4">
+                <BusinessMediaEditor
+                  logoUrl={business.logo_url}
+                  coverUrl={business.hero_image_url}
+                  media={media}
+                  uploadLogo={uploadBusinessLogo.bind(null, areaId, businessId)}
+                  uploadCover={uploadBusinessCover.bind(null, areaId, businessId)}
+                  clearLogo={clearBusinessLogo.bind(null, areaId, businessId)}
+                  clearCover={clearBusinessCover.bind(null, areaId, businessId)}
+                  addGalleryImage={addBusinessGalleryImage.bind(null, areaId, businessId)}
+                  removeGalleryImage={(mediaId) => removeBusinessGalleryImage.bind(null, areaId, businessId, mediaId)}
+                  updateGalleryImageAlt={(mediaId) =>
+                    updateBusinessGalleryImageAlt.bind(null, areaId, businessId, mediaId)
+                  }
+                  reorderGalleryImages={(orderedIds) =>
+                    reorderBusinessGalleryImages(areaId, businessId, orderedIds)
+                  }
+                />
               </div>
             </section>
           )}

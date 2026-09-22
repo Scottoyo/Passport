@@ -6,11 +6,14 @@ import {
   getBusinessBySlug,
   getOffersForBusiness,
   getActivePassportForArea,
+  getBusinessMedia,
 } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { OfferCard, type OfferCta } from "@/components/offer-card";
 import { ShareButton } from "@/components/share-button";
 import { FavoriteButton } from "@/components/favorite-button";
+import { BusinessPlaceholderIcon } from "@/components/business/business-placeholder-icon";
+import { GalleryLightbox } from "@/components/business/gallery-lightbox";
 import type { BusinessHoursDay } from "@/lib/types/domain";
 import { toggleFavorite } from "./actions";
 import { buttonClasses, cardClasses } from "@/lib/ui-classes";
@@ -59,6 +62,7 @@ export default async function BusinessPage({ params }: Props) {
   if (!business) notFound();
 
   const offers = await getOffersForBusiness(business.id);
+  const media = await getBusinessMedia(business.id);
 
   const supabase = await createClient();
   const {
@@ -109,14 +113,16 @@ export default async function BusinessPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
 
-      {business.hero_image_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={business.hero_image_url}
-          alt=""
-          className="mt-4 h-48 w-full rounded-2xl object-cover sm:h-64"
-        />
-      )}
+      <div className="mt-4 h-48 w-full overflow-hidden rounded-2xl bg-surface-elevated sm:h-64">
+        {business.hero_image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={business.hero_image_url} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-ink-muted/40">
+            <BusinessPlaceholderIcon className="h-16 w-16" />
+          </div>
+        )}
+      </div>
 
       <div className="mt-4 flex items-start gap-4">
         {business.logo_url ? (
@@ -128,9 +134,7 @@ export default async function BusinessPage({ params }: Props) {
           />
         ) : (
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-surface-elevated text-ink-muted">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8" aria-hidden>
-              <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <BusinessPlaceholderIcon className="h-8 w-8" />
           </div>
         )}
         <div>
@@ -203,15 +207,10 @@ export default async function BusinessPage({ params }: Props) {
             )}
           </section>
 
-          {business.gallery_image_urls.length > 0 && (
+          {media.length > 0 && (
             <section className="mt-8">
               <h2 className="text-xl font-semibold text-ink">Gallery</h2>
-              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {business.gallery_image_urls.map((url) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={url} src={url} alt="" className="h-32 w-full rounded-xl object-cover" />
-                ))}
-              </div>
+              <GalleryLightbox items={media} />
             </section>
           )}
         </div>

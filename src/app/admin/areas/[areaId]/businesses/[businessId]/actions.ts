@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, canManageArea } from "@/lib/permissions";
-import { uploadBusinessMedia } from "@/lib/storage";
+import { uploadBusinessMedia, deleteBusinessMedia, businessMediaPathFromUrl } from "@/lib/storage";
 import type { AreaCapability, BusinessHoursDay, ContentStatus, DiscountType } from "@/lib/types/domain";
+
+export type MediaActionResult = { ok: true } | { ok: false; error: string };
 
 // Passes for an area/state manager with the given capability (unchanged
 // behavior for the admin panel), OR for this specific business's owner/staff
@@ -181,68 +183,240 @@ export async function updateBusinessHours(areaId: string, businessId: string, fo
   revalidatePath(path(areaId, businessId));
 }
 
-export async function uploadBusinessLogo(areaId: string, businessId: string, formData: FormData) {
-  await requireCapability(areaId, businessId, "manage_businesses");
-  const file = formData.get("logo") as File | null;
-  if (!file || file.size === 0) throw new Error("Choose an image to upload.");
-
-  const url = await uploadBusinessMedia(businessId, "logo", file);
+// Logo/cover share this flow: upload the new file, save it on the business
+// row, and only clean up the OLD Storage object once that save succeeds -
+// and if the save fails, delete the just-uploaded new file instead of
+// leaving an orphan either way. Needed because upsert:true on the fixed
+// "{businessId}/{kind}.{ext}" path only overwrites in place when the
+// extension doesn't change; a different extension (e.g. .jpg -> .png)
+// would otherwise leave the old object behind forever.
+async function replaceBusinessImage(
+  businessId: string,
+  kind: "logo" | "cover",
+  field: "logo_url" | "hero_image_url",
+  file: File,
+  previousUrl: string | null
+) {
+  const { path: newPath, url } = await uploadBusinessMedia(businessId, kind, file);
   const supabase = await createClient();
-  const { error } = await supabase.from("businesses").update({ logo_url: url }).eq("id", businessId);
-  if (error) throw new Error(error.message);
-  revalidatePath(path(areaId, businessId));
+  const { error } = await supabase.from("businesses").update({ [field]: url }).eq("id", businessId);
+  if (error) {
+    await deleteBusinessMedia(newPath).catch(() => {});
+    throw new Error(error.message);
+  }
+  const oldPath = previousUrl ? businessMediaPathFromUrl(previousUrl) : null;
+  if (oldPath && oldPath !== newPath) {
+    await deleteBusinessMedia(oldPath).catch(() => {});
+  }
 }
 
-export async function uploadBusinessCover(areaId: string, businessId: string, formData: FormData) {
-  await requireCapability(areaId, businessId, "manage_businesses");
-  const file = formData.get("cover") as File | null;
-  if (!file || file.size === 0) throw new Error("Choose an image to upload.");
-
-  const url = await uploadBusinessMedia(businessId, "cover", file);
+async function clearBusinessImage(businessId: string, field: "logo_url" | "hero_image_url", previousUrl: string | null) {
   const supabase = await createClient();
-  const { error } = await supabase.from("businesses").update({ hero_image_url: url }).eq("id", businessId);
+  const { error } = await supabase.from("businesses").update({ [field]: null }).eq("id", businessId);
   if (error) throw new Error(error.message);
-  revalidatePath(path(areaId, businessId));
+  const oldPath = previousUrl ? businessMediaPathFromUrl(previousUrl) : null;
+  if (oldPath) await deleteBusinessMedia(oldPath).catch(() => {});
 }
 
-export async function addBusinessGalleryImage(areaId: string, businessId: string, formData: FormData) {
-  await requireCapability(areaId, businessId, "manage_businesses");
-  const file = formData.get("gallery") as File | null;
-  if (!file || file.size === 0) throw new Error("Choose an image to upload.");
-
-  const url = await uploadBusinessMedia(businessId, "gallery", file);
-  const supabase = await createClient();
-  const { data: business } = await supabase
-    .from("businesses")
-    .select("gallery_image_urls")
-    .eq("id", businessId)
-    .maybeSingle();
-  const current = (business?.gallery_image_urls as string[] | null) ?? [];
-
-  const { error } = await supabase
-    .from("businesses")
-    .update({ gallery_image_urls: [...current, url] })
-    .eq("id", businessId);
-  if (error) throw new Error(error.message);
-  revalidatePath(path(areaId, businessId));
+export async function uploadBusinessLogo(
+  areaId: string,
+  businessId: string,
+  _prevState: MediaActionResult | null,
+  formData: FormData
+): Promise<MediaActionResult> {
+  try {
+    await requireCapability(areaId, businessId, "manage_businesses");
+    const file = formData.get("logo") as File | null;
+    if (!file || file.size === 0) throw new Error("Choose an image to upload.");
+    const supabase = await createClient();
+    const { data: business } = await supabase.from("businesses").select("logo_url").eq("id", businessId).maybeSingle();
+    await replaceBusinessImage(businessId, "logo", "logo_url", file, business?.logo_url ?? null);
+    revalidatePath(path(areaId, businessId));
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Upload failed." };
+  }
 }
 
-export async function removeBusinessGalleryImage(areaId: string, businessId: string, imageUrl: string) {
-  await requireCapability(areaId, businessId, "manage_businesses");
-  const supabase = await createClient();
-  const { data: business } = await supabase
-    .from("businesses")
-    .select("gallery_image_urls")
-    .eq("id", businessId)
-    .maybeSingle();
-  const current = (business?.gallery_image_urls as string[] | null) ?? [];
+export async function uploadBusinessCover(
+  areaId: string,
+  businessId: string,
+  _prevState: MediaActionResult | null,
+  formData: FormData
+): Promise<MediaActionResult> {
+  try {
+    await requireCapability(areaId, businessId, "manage_businesses");
+    const file = formData.get("cover") as File | null;
+    if (!file || file.size === 0) throw new Error("Choose an image to upload.");
+    const supabase = await createClient();
+    const { data: business } = await supabase
+      .from("businesses")
+      .select("hero_image_url")
+      .eq("id", businessId)
+      .maybeSingle();
+    await replaceBusinessImage(businessId, "cover", "hero_image_url", file, business?.hero_image_url ?? null);
+    revalidatePath(path(areaId, businessId));
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Upload failed." };
+  }
+}
 
-  const { error } = await supabase
-    .from("businesses")
-    .update({ gallery_image_urls: current.filter((url) => url !== imageUrl) })
-    .eq("id", businessId);
-  if (error) throw new Error(error.message);
-  revalidatePath(path(areaId, businessId));
+export async function clearBusinessLogo(
+  areaId: string,
+  businessId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by useActionState's (state, payload) shape
+  _prevState: MediaActionResult | null,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by useActionState's (state, payload) shape
+  _formData: FormData
+): Promise<MediaActionResult> {
+  try {
+    await requireCapability(areaId, businessId, "manage_businesses");
+    const supabase = await createClient();
+    const { data: business } = await supabase.from("businesses").select("logo_url").eq("id", businessId).maybeSingle();
+    await clearBusinessImage(businessId, "logo_url", business?.logo_url ?? null);
+    revalidatePath(path(areaId, businessId));
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Remove failed." };
+  }
+}
+
+export async function clearBusinessCover(
+  areaId: string,
+  businessId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by useActionState's (state, payload) shape
+  _prevState: MediaActionResult | null,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by useActionState's (state, payload) shape
+  _formData: FormData
+): Promise<MediaActionResult> {
+  try {
+    await requireCapability(areaId, businessId, "manage_businesses");
+    const supabase = await createClient();
+    const { data: business } = await supabase
+      .from("businesses")
+      .select("hero_image_url")
+      .eq("id", businessId)
+      .maybeSingle();
+    await clearBusinessImage(businessId, "hero_image_url", business?.hero_image_url ?? null);
+    revalidatePath(path(areaId, businessId));
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Remove failed." };
+  }
+}
+
+export async function addBusinessGalleryImage(
+  areaId: string,
+  businessId: string,
+  _prevState: MediaActionResult | null,
+  formData: FormData
+): Promise<MediaActionResult> {
+  try {
+    await requireCapability(areaId, businessId, "manage_businesses");
+    const file = formData.get("gallery") as File | null;
+    if (!file || file.size === 0) throw new Error("Choose an image to upload.");
+    const altText = String(formData.get("alt_text") ?? "").trim();
+
+    const { path: storagePath, url } = await uploadBusinessMedia(businessId, "gallery", file);
+    const supabase = await createClient();
+
+    const { data: maxOrderRow } = await supabase
+      .from("business_media")
+      .select("display_order")
+      .eq("business_id", businessId)
+      .order("display_order", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const nextOrder = (maxOrderRow?.display_order ?? -1) + 1;
+
+    const { error } = await supabase.from("business_media").insert({
+      business_id: businessId,
+      storage_path: storagePath,
+      url,
+      alt_text: altText || null,
+      display_order: nextOrder,
+    });
+    if (error) {
+      await deleteBusinessMedia(storagePath).catch(() => {});
+      throw new Error(error.message);
+    }
+    revalidatePath(path(areaId, businessId));
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Upload failed." };
+  }
+}
+
+export async function removeBusinessGalleryImage(
+  areaId: string,
+  businessId: string,
+  mediaId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by useActionState's (state, payload) shape
+  _prevState: MediaActionResult | null,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by useActionState's (state, payload) shape
+  _formData: FormData
+): Promise<MediaActionResult> {
+  try {
+    await requireCapability(areaId, businessId, "manage_businesses");
+    const supabase = await createClient();
+    const { data: media } = await supabase
+      .from("business_media")
+      .select("storage_path")
+      .eq("id", mediaId)
+      .maybeSingle();
+
+    const { error } = await supabase.from("business_media").delete().eq("id", mediaId);
+    if (error) throw new Error(error.message);
+    if (media?.storage_path) await deleteBusinessMedia(media.storage_path).catch(() => {});
+    revalidatePath(path(areaId, businessId));
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Remove failed." };
+  }
+}
+
+export async function updateBusinessGalleryImageAlt(
+  areaId: string,
+  businessId: string,
+  mediaId: string,
+  _prevState: MediaActionResult | null,
+  formData: FormData
+): Promise<MediaActionResult> {
+  try {
+    await requireCapability(areaId, businessId, "manage_businesses");
+    const altText = String(formData.get("alt_text") ?? "").trim();
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("business_media")
+      .update({ alt_text: altText || null })
+      .eq("id", mediaId);
+    if (error) throw new Error(error.message);
+    revalidatePath(path(areaId, businessId));
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Save failed." };
+  }
+}
+
+export async function reorderBusinessGalleryImages(
+  areaId: string,
+  businessId: string,
+  orderedMediaIds: string[]
+): Promise<MediaActionResult> {
+  try {
+    await requireCapability(areaId, businessId, "manage_businesses");
+    const supabase = await createClient();
+    await Promise.all(
+      orderedMediaIds.map((id, index) =>
+        supabase.from("business_media").update({ display_order: index }).eq("id", id)
+      )
+    );
+    revalidatePath(path(areaId, businessId));
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Reorder failed." };
+  }
 }
 
 function generateRedemptionCode() {

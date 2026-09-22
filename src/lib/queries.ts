@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type {
   Business,
+  BusinessMedia,
   Category,
   NotificationPreferences,
   Offer,
@@ -144,6 +145,17 @@ export async function getOffersForBusiness(businessId: string) {
     .eq("business_id", businessId)
     .order("created_at", { ascending: false })
     .returns<Offer[]>();
+  return data ?? [];
+}
+
+export async function getBusinessMedia(businessId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("business_media")
+    .select("*")
+    .eq("business_id", businessId)
+    .order("display_order", { ascending: true })
+    .returns<BusinessMedia[]>();
   return data ?? [];
 }
 
