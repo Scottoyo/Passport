@@ -4,10 +4,12 @@
   --background: #fff7e8;
   --foreground: #172e3d;
 
-  /* Base surfaces - "Warm Cream" is the sitewide default page background;
-     individual sections still use bg-surface (white) for cards/content so
-     the whole page never reads as uniformly cream. */
-  --color-bg: #fff7e8;
+  /* Base surfaces - white is the sitewide default page background (every
+     branded tier - national, and each region with its own branding - has
+     since moved to an explicit white background too; this default keeps an
+     unbranded page, like a state's own bare page, visually uniform with
+     the rest of the site instead of reading as a leftover cream page). */
+  --color-bg: #ffffff;
   --color-surface: #ffffff;
   --color-surface-elevated: #fffbf2;
   --color-border: #e4d9c4;
