@@ -5,6 +5,7 @@ import {
   getCategories,
   getPrimaryOffersForBusinesses,
   getFavoritedBusinessIds,
+  getActivePassportForArea,
 } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { BusinessCard } from "@/components/business-card";
@@ -70,9 +71,15 @@ export async function DiscoverAreaContent({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const favoritedIds = user ? await getFavoritedBusinessIds(user.id) : new Set<string>();
+  const [favoritedIds, ownsAreaPassport] = await Promise.all([
+    user ? getFavoritedBusinessIds(user.id) : Promise.resolve(new Set<string>()),
+    user ? getActivePassportForArea(user.id, area.id).then(Boolean) : Promise.resolve(false),
+  ]);
 
   const resolvedPassportHref = passportHref ?? `/${state.slug}/${area.slug}/passport`;
+  // Someone who already owns this exact region's Passport doesn't need the
+  // upsell CTA repeated at them here - they'd just be buying it again.
+  const showPassportCtaNow = showPassportCta && !ownsAreaPassport;
   const themed = Boolean(area.brand_primary_color);
   const heroImage = getRegionHeroImage(area);
   const heroOverlay = area.brand_hero_overlay === "none" ? "none" : "scrim";
@@ -85,7 +92,7 @@ export async function DiscoverAreaContent({
             {heroOverlay === "scrim" && (
               <>
                 <h1 className="sr-only">Discover {area.name} Perks</h1>
-                {showPassportCta && (
+                {showPassportCtaNow && (
                   <Link href={resolvedPassportHref} className="inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated">
                     Get the {area.name} Passport
                   </Link>
@@ -96,7 +103,7 @@ export async function DiscoverAreaContent({
           {heroOverlay === "none" && (
             <>
               <h1 className="sr-only">Discover {area.name} Perks</h1>
-              {showPassportCta && (
+              {showPassportCtaNow && (
                 <div className="mt-4 text-center">
                   <Link href={resolvedPassportHref} className={buttonClasses("primary")}>
                     Get the {area.name} Passport
@@ -129,16 +136,18 @@ export async function DiscoverAreaContent({
                 </p>
               )}
 
-              <Link
-                href={resolvedPassportHref}
-                className={
-                  themed
-                    ? "mt-6 inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
-                    : `mt-6 ${buttonClasses("primary")}`
-                }
-              >
-                Get the {area.name} Passport
-              </Link>
+              {showPassportCtaNow && (
+                <Link
+                  href={resolvedPassportHref}
+                  className={
+                    themed
+                      ? "mt-6 inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
+                      : `mt-6 ${buttonClasses("primary")}`
+                  }
+                >
+                  Get the {area.name} Passport
+                </Link>
+              )}
             </>
           )}
         </section>
