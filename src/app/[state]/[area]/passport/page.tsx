@@ -54,21 +54,21 @@ export default async function AreaPassportPage({ params, searchParams }: Props) 
       </section>
 
       {/* Product / pricing */}
-      <section className="bg-[#FFF7E8]">
+      <section className="bg-bg">
         <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-20">
           {product ? (
             <div className="rounded-[24px] border border-dashed border-brand-primary/40 bg-white p-8 shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-wide text-brand-primary">
                 {area.name} Passport
               </p>
-              <h2 className="mt-1 text-2xl font-bold text-[#102F3B]">{product.name}</h2>
+              <h2 className="mt-1 text-2xl font-bold text-ink">{product.name}</h2>
               {product.description && (
-                <p className="mt-2 text-[#102F3B]/70">{product.description}</p>
+                <p className="mt-2 text-ink/70">{product.description}</p>
               )}
-              <p className="mt-4 text-4xl font-bold text-[#102F3B]">
+              <p className="mt-4 text-4xl font-bold text-ink">
                 ${(product.price_cents / 100).toFixed(2)}
               </p>
-              <p className="mt-1 text-sm text-[#102F3B]/60">Valid for {product.duration_days} days</p>
+              <p className="mt-1 text-sm text-ink/60">Valid for {product.duration_days} days</p>
               <div className="mt-6">
                 <PurchaseForm
                   passportProductId={product.id}
@@ -79,7 +79,7 @@ export default async function AreaPassportPage({ params, searchParams }: Props) 
               </div>
             </div>
           ) : (
-            <p className="text-center text-[#102F3B]/70">
+            <p className="text-center text-ink/70">
               {area.name} Passport pricing isn&apos;t published yet - check back soon.
             </p>
           )}

@@ -5,14 +5,15 @@ import { useRouter } from "next/navigation";
 import { createBusinessLead } from "@/app/admin/business-leads/new/actions";
 import { updateBusinessLead } from "@/app/admin/business-leads/[leadId]/actions";
 import type { BusinessLead, BusinessLeadDisposition, PassportArea, State } from "@/lib/types/domain";
+import { buttonClasses } from "@/lib/ui-classes";
 
 interface StateWithAreas {
   state: State;
   areas: PassportArea[];
 }
 
-const inputClass = "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm";
-const errorClass = "mt-1 text-xs text-red-600";
+const inputClass = "w-full rounded-lg border border-border px-3 py-2 text-sm";
+const errorClass = "mt-1 text-xs text-error";
 
 const DISPOSITIONS: { value: BusinessLeadDisposition; label: string }[] = [
   { value: "lead", label: "Lead" },
@@ -105,10 +106,10 @@ export function BusinessLeadForm({
   return (
     <form onSubmit={handleSubmit} onChange={markDirty} className="space-y-8">
       <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Location</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Location</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">State</span>
+            <span className="mb-1 block text-ink-muted">State</span>
             <select
               name="state_id"
               value={stateId}
@@ -128,7 +129,7 @@ export function BusinessLeadForm({
             {fieldErrors.state_id && <p className={errorClass}>{fieldErrors.state_id}</p>}
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Region / Passport Area</span>
+            <span className="mb-1 block text-ink-muted">Region / Passport Area</span>
             <select
               name="passport_area_id"
               value={areaId}
@@ -149,9 +150,9 @@ export function BusinessLeadForm({
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Business</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Business</h2>
         <label className="mt-4 block text-sm">
-          <span className="mb-1 block text-slate-600">Business name</span>
+          <span className="mb-1 block text-ink-muted">Business name</span>
           <input
             name="business_name"
             value={businessName}
@@ -163,18 +164,18 @@ export function BusinessLeadForm({
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Primary contact</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Primary contact</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">First name</span>
+            <span className="mb-1 block text-ink-muted">First name</span>
             <input name="contact_first_name" defaultValue={initialValues?.contact_first_name ?? ""} className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Last name</span>
+            <span className="mb-1 block text-ink-muted">Last name</span>
             <input name="contact_last_name" defaultValue={initialValues?.contact_last_name ?? ""} className={inputClass} />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Phone</span>
+            <span className="mb-1 block text-ink-muted">Phone</span>
             <input
               name="phone"
               type="tel"
@@ -184,7 +185,7 @@ export function BusinessLeadForm({
             />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Email</span>
+            <span className="mb-1 block text-ink-muted">Email</span>
             <input
               name="email"
               type="email"
@@ -198,9 +199,9 @@ export function BusinessLeadForm({
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Lead status</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Lead status</h2>
         <label className="mt-4 block max-w-xs text-sm">
-          <span className="mb-1 block text-slate-600">Disposition</span>
+          <span className="mb-1 block text-ink-muted">Disposition</span>
           <select name="disposition" defaultValue={initialValues?.disposition ?? "lead"} className={inputClass}>
             {DISPOSITIONS.map((d) => (
               <option key={d.value} value={d.value}>
@@ -212,17 +213,17 @@ export function BusinessLeadForm({
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Contact activity</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Contact activity</h2>
         <div className="mt-4 flex flex-wrap gap-6">
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <input type="checkbox" name="emailed" defaultChecked={initialValues?.emailed ?? false} />
             Emailed
           </label>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <input type="checkbox" name="called" defaultChecked={initialValues?.called ?? false} />
             Called
           </label>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <input type="checkbox" name="visited" defaultChecked={initialValues?.visited ?? false} />
             Visited
           </label>
@@ -231,7 +232,7 @@ export function BusinessLeadForm({
 
       {mode === "create" && (
         <section>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Initial note (optional)</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Initial note (optional)</h2>
           <textarea
             name="note"
             rows={3}
@@ -241,21 +242,13 @@ export function BusinessLeadForm({
         </section>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
 
       <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
-        >
+        <button type="submit" disabled={isPending} className={buttonClasses("primary")}>
           {isPending ? "Saving..." : mode === "create" ? "Add Lead" : "Save Changes"}
         </button>
-        <button
-          type="button"
-          onClick={handleCancel}
-          className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-slate-500"
-        >
+        <button type="button" onClick={handleCancel} className={buttonClasses("outline")}>
           Cancel
         </button>
       </div>

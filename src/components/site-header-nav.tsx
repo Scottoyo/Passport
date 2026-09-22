@@ -9,6 +9,7 @@ import { AdminNotificationBell, type AdminNotificationBellItem } from "@/compone
 import { MobileBottomNav, type MobileBottomNavTab } from "@/components/mobile-bottom-nav";
 import { MobileMenuButton } from "@/components/mobile-menu-button";
 import { parseRegionSlugsFromPath } from "@/lib/region-path";
+import { buttonClasses } from "@/lib/ui-classes";
 
 // This is a client component specifically so region-aware nav hrefs (Home,
 // Discover) are derived from usePathname() - always current on every
@@ -78,18 +79,18 @@ export function SiteHeaderNav({
   if (isAdmin) {
     return (
       <>
-        <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 sm:flex">
-          <Link href={homeHref} className="hover:text-slate-900">
+        <nav className="hidden items-center gap-6 text-sm font-medium text-ink-muted sm:flex">
+          <Link href={homeHref} className="hover:text-ink">
             Home
           </Link>
-          <Link href="/admin" className="rounded-full bg-slate-900 px-4 py-1.5 text-white hover:bg-slate-700">
+          <Link href="/admin" className={buttonClasses("primary", "sm")}>
             Admin
           </Link>
         </nav>
         <div className="flex items-center gap-3">
           <AdminNotificationBell events={adminNotifications} lastReadAt={adminLastReadAt} />
           <form action={signOut}>
-            <button className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900">
+            <button className="flex items-center gap-1.5 text-sm font-medium text-ink-muted hover:text-ink">
               <SignOutIcon />
               Sign Out
             </button>
@@ -102,22 +103,22 @@ export function SiteHeaderNav({
   if (isCustomer) {
     return (
       <>
-        <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 sm:flex">
+        <nav className="hidden items-center gap-6 text-sm font-medium text-ink-muted sm:flex">
           {regionSlugs ? (
             <>
-              <Link href={homeHref} className="hover:text-slate-900">
+              <Link href={homeHref} className="hover:text-ink">
                 Home
               </Link>
-              <Link href={discoverHref} className="hover:text-slate-900">
+              <Link href={discoverHref} className="hover:text-ink">
                 Discover
               </Link>
             </>
           ) : (
             <>
-              <Link href="/#states" className="hover:text-slate-900">
+              <Link href="/#states" className="hover:text-ink">
                 Explore States
               </Link>
-              <Link href={headerDiscoverHref} className="hover:text-slate-900">
+              <Link href={headerDiscoverHref} className="hover:text-ink">
                 Discover
               </Link>
             </>
@@ -125,14 +126,11 @@ export function SiteHeaderNav({
         </nav>
         <div className="flex items-center gap-3 text-sm font-medium">
           <NotificationBell events={notificationEvents} lastReadAt={lastReadAt} />
-          <Link
-            href="/account"
-            className="hidden rounded-full bg-brand-primary px-4 py-2 text-white hover:bg-brand-primary-dark sm:inline-block"
-          >
+          <Link href="/account" className={`hidden sm:inline-flex ${buttonClasses("primary")}`}>
             {ownsPassport ? "My Passport" : "My Profile"}
           </Link>
           <form action={signOut} className="hidden sm:block">
-            <button className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900">
+            <button className="flex items-center gap-1.5 text-ink-muted hover:text-ink">
               <SignOutIcon />
               Log Out
             </button>
@@ -157,29 +155,26 @@ export function SiteHeaderNav({
 
   return (
     <>
-      <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 lg:flex">
-        <Link href={homeHref} className="hover:text-slate-900">
+      <nav className="hidden items-center gap-6 text-sm font-medium text-ink-muted lg:flex">
+        <Link href={homeHref} className="hover:text-ink">
           Home
         </Link>
-        <Link href={discoverHref} className="hover:text-slate-900">
+        <Link href={discoverHref} className="hover:text-ink">
           Discover
         </Link>
-        <Link href="/faq" className="hover:text-slate-900">
+        <Link href="/faq" className="hover:text-ink">
           FAQ
         </Link>
       </nav>
       <div className="hidden flex-wrap items-center justify-end gap-3 text-sm font-medium lg:flex">
-        <Link href="/passport" className="rounded-full bg-brand-primary px-4 py-2 text-white hover:bg-brand-primary-dark">
+        <Link href="/passport" className={buttonClasses("primary")}>
           Get Your Passport
         </Link>
-        <Link
-          href="/create-profile"
-          className="rounded-full border border-slate-300 px-4 py-2 text-slate-700 hover:border-slate-500"
-        >
+        <Link href="/create-profile" className={buttonClasses("outline")}>
           Create a Profile
         </Link>
-        <RegisterBusinessLink className="rounded-full border border-slate-300 px-4 py-2 text-slate-700 hover:border-slate-500" />
-        <Link href="/sign-in" className="text-slate-600 hover:text-slate-900">
+        <RegisterBusinessLink className={buttonClasses("outline")} />
+        <Link href="/sign-in" className="text-ink-muted hover:text-ink">
           Login
         </Link>
       </div>

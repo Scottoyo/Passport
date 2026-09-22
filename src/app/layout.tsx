@@ -51,7 +51,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${fraunces.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body
-        className="min-h-full flex flex-col bg-white text-slate-900"
+        className="min-h-full flex flex-col bg-bg text-ink"
         style={brandStyle}
         data-themed={brandArea?.brand_primary_color ? "true" : undefined}
       >

@@ -11,15 +11,15 @@ export default async function ProfilesWithoutPassportsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Profiles without Passports</h1>
-      <p className="mt-1 text-slate-600">
+      <h1 className="text-2xl font-bold text-ink">Profiles without Passports</h1>
+      <p className="mt-1 text-ink-muted">
         Signed-in accounts that have never purchased a Passport. No state
         filter here - profiles aren&apos;t tied to a state.
       </p>
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
-        <table className="min-w-full divide-y divide-slate-100 text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-border bg-surface">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-elevated text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Contact</th>
@@ -29,34 +29,34 @@ export default async function ProfilesWithoutPassportsPage() {
               <th className="px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border">
             {profiles.map((p) => (
               <tr key={p.id}>
                 <td className="px-4 py-3">
                   <Link
                     href={`/admin/passport-holders/${p.id}`}
-                    className="font-medium text-slate-900 hover:underline"
+                    className="font-medium text-ink hover:underline"
                   >
                     {p.full_name || p.email || "Unnamed"}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-slate-500">
+                <td className="px-4 py-3 text-ink-muted">
                   <p>{p.email ?? "-"}</p>
                   <p>{p.phone ?? ""}</p>
                 </td>
-                <td className="px-4 py-3 text-slate-500">{p.age_range ?? "-"}</td>
-                <td className="px-4 py-3 text-slate-500">{new Date(p.created_at).toLocaleDateString()}</td>
+                <td className="px-4 py-3 text-ink-muted">{p.age_range ?? "-"}</td>
+                <td className="px-4 py-3 text-ink-muted">{new Date(p.created_at).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
                   {p.deleted_at ? (
-                    <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">
+                    <span className="rounded-full bg-error-bg px-2.5 py-0.5 text-xs font-semibold text-error">
                       Deleted
                     </span>
                   ) : p.suspended_at ? (
-                    <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+                    <span className="rounded-full bg-warning-bg px-2.5 py-0.5 text-xs font-semibold text-warning">
                       Suspended
                     </span>
                   ) : (
-                    <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800">
+                    <span className="rounded-full bg-success-bg px-2.5 py-0.5 text-xs font-semibold text-success">
                       Active
                     </span>
                   )}
@@ -64,7 +64,7 @@ export default async function ProfilesWithoutPassportsPage() {
                 <td className="px-4 py-3 text-right">
                   <Link
                     href={`/admin/passport-holders/${p.id}`}
-                    className="font-semibold text-slate-700 hover:underline"
+                    className="font-semibold text-ink hover:underline"
                   >
                     View &rarr;
                   </Link>
@@ -73,7 +73,7 @@ export default async function ProfilesWithoutPassportsPage() {
             ))}
             {profiles.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-4 text-sm text-slate-500">
+                <td colSpan={6} className="px-4 py-4 text-sm text-ink-muted">
                   Everyone who&apos;s signed in owns a Passport.
                 </td>
               </tr>

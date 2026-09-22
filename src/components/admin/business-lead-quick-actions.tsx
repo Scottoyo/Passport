@@ -27,7 +27,7 @@ export function LeadDispositionSelect({
         name="disposition"
         defaultValue={current}
         onChange={(e) => e.currentTarget.form?.requestSubmit()}
-        className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold"
+        className="rounded-lg border border-border px-3 py-2 text-sm font-semibold"
       >
         {DISPOSITIONS.map((d) => (
           <option key={d.value} value={d.value}>
@@ -52,7 +52,7 @@ export function LeadActivityToggle({
 }) {
   return (
     <form action={setLeadActivity.bind(null, leadId, field)}>
-      <label className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="flex items-center gap-2 text-sm text-ink">
         <input
           type="checkbox"
           name={field}

@@ -6,12 +6,12 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="border-b border-slate-200 bg-slate-50">
+      <section className="bg-brand-primary">
         <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
-          <h1 className="font-display text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-            A Passport for every region you explore.
+          <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">
+            A <span className="text-accent">Passport</span> for every region you explore.
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-white/85">
             Each region has its own Passport - one purchase unlocks
             exclusive offers at participating restaurants, attractions,
             shops, and experiences across that region.
@@ -19,7 +19,7 @@ export default async function HomePage() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <a
               href="#states"
-              className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+              className="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-primary transition-colors hover:bg-surface-elevated"
             >
               Find your region
             </a>
@@ -28,7 +28,7 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <h2 className="text-center font-display text-2xl font-bold text-slate-900">Why get a Passport</h2>
+        <h2 className="text-center font-display text-2xl font-bold text-ink">Why get a Passport</h2>
         <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <Benefit
             title="Deep local savings"
@@ -49,7 +49,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-t border-slate-200 bg-slate-50">
+      <section className="border-t border-border bg-surface-elevated">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <div className="grid gap-10 sm:grid-cols-3">
             <HowItWorksStep
@@ -81,8 +81,8 @@ export default async function HomePage() {
 function Benefit({ title, body }: { title: string; body: string }) {
   return (
     <div>
-      <h3 className="font-semibold text-slate-900">{title}</h3>
-      <p className="mt-2 text-sm text-slate-600">{body}</p>
+      <h3 className="font-semibold text-ink">{title}</h3>
+      <p className="mt-2 text-sm text-ink-muted">{body}</p>
     </div>
   );
 }
@@ -98,11 +98,11 @@ function HowItWorksStep({
 }) {
   return (
     <div>
-      <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
+      <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary text-sm font-semibold text-white">
         {step}
       </div>
-      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-      <p className="mt-1 text-sm text-slate-600">{body}</p>
+      <h3 className="text-lg font-semibold text-ink">{title}</h3>
+      <p className="mt-1 text-sm text-ink-muted">{body}</p>
     </div>
   );
 }

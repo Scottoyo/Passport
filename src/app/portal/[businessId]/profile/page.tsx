@@ -13,6 +13,7 @@ import {
   addBusinessGalleryImage,
   removeBusinessGalleryImage,
 } from "@/app/admin/areas/[areaId]/businesses/[businessId]/actions";
+import { buttonClasses } from "@/lib/ui-classes";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -61,30 +62,30 @@ export default async function PortalProfilePage({ params }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900">Profile</h2>
-        <p className="mt-1 text-slate-600">
+        <h2 className="text-2xl font-bold text-ink">Profile</h2>
+        <p className="mt-1 text-ink-muted">
           Update and manage your business information displayed on the passport portal.
         </p>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 p-6">
-        <h3 className="font-semibold text-slate-900">Basic information</h3>
+      <section className="rounded-2xl border border-border bg-surface p-6">
+        <h3 className="font-semibold text-ink">Basic information</h3>
         <form action={updateBusinessBasicInfo.bind(null, areaId, businessId)} className="mt-4 space-y-3">
           <label className="block text-sm">
-            <span className="mb-1 block text-slate-600">Business name</span>
+            <span className="mb-1 block text-ink-muted">Business name</span>
             <input
               name="name"
               defaultValue={business.name}
               required
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm"
             />
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block text-slate-600">Category</span>
+            <span className="mb-1 block text-ink-muted">Category</span>
             <select
               name="category_id"
               defaultValue={business.category_id ?? ""}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm"
             >
               <option value="">None</option>
               {categories.map((c) => (
@@ -95,131 +96,131 @@ export default async function PortalProfilePage({ params }: Props) {
             </select>
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block text-slate-600">Short description</span>
+            <span className="mb-1 block text-ink-muted">Short description</span>
             <input
               name="short_description"
               defaultValue={business.short_description ?? ""}
               placeholder="One line for cards and search results"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm"
             />
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block text-slate-600">Full description</span>
+            <span className="mb-1 block text-ink-muted">Full description</span>
             <textarea
               name="description"
               defaultValue={business.description ?? ""}
               rows={4}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm"
             />
           </label>
-          <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+          <button className={buttonClasses("primary")}>
             Save
           </button>
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 p-6">
-        <h3 className="font-semibold text-slate-900">Address &amp; contact</h3>
+      <section className="rounded-2xl border border-border bg-surface p-6">
+        <h3 className="font-semibold text-ink">Address &amp; contact</h3>
         <form action={updateBusinessLocationContact.bind(null, areaId, businessId)} className="mt-4 space-y-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block text-sm sm:col-span-2">
-              <span className="mb-1 block text-slate-600">Street address</span>
+              <span className="mb-1 block text-ink-muted">Street address</span>
               <input
                 name="address_line1"
                 defaultValue={business.address_line1 ?? ""}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
             <label className="block text-sm sm:col-span-2">
-              <span className="mb-1 block text-slate-600">Address line 2</span>
+              <span className="mb-1 block text-ink-muted">Address line 2</span>
               <input
                 name="address_line2"
                 defaultValue={business.address_line2 ?? ""}
                 placeholder="Suite, unit, or building"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block text-slate-600">City</span>
+              <span className="mb-1 block text-ink-muted">City</span>
               <input
                 name="city"
                 defaultValue={business.city ?? ""}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block text-slate-600">State</span>
+              <span className="mb-1 block text-ink-muted">State</span>
               <input
                 name="state_code"
                 defaultValue={business.state_code ?? ""}
                 maxLength={2}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block text-slate-600">ZIP code</span>
+              <span className="mb-1 block text-ink-muted">ZIP code</span>
               <input
                 name="postal_code"
                 defaultValue={business.postal_code ?? ""}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block text-slate-600">Phone number</span>
+              <span className="mb-1 block text-ink-muted">Phone number</span>
               <input
                 name="phone"
                 defaultValue={business.phone ?? ""}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block text-slate-600">Email address</span>
+              <span className="mb-1 block text-ink-muted">Email address</span>
               <input
                 name="email"
                 type="email"
                 defaultValue={business.email ?? ""}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
             <label className="block text-sm sm:col-span-2">
-              <span className="mb-1 block text-slate-600">Website URL</span>
+              <span className="mb-1 block text-ink-muted">Website URL</span>
               <input
                 name="website_url"
                 defaultValue={business.website_url ?? ""}
                 placeholder="example.com"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
           </div>
-          <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+          <button className={buttonClasses("primary")}>
             Save
           </button>
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 p-6">
-        <h3 className="font-semibold text-slate-900">Social links</h3>
+      <section className="rounded-2xl border border-border bg-surface p-6">
+        <h3 className="font-semibold text-ink">Social links</h3>
         <form action={updateBusinessSocialLinks.bind(null, areaId, businessId)} className="mt-4 space-y-3">
           {SOCIAL_FIELDS.map((f) => (
             <label key={f.key} className="block text-sm">
-              <span className="mb-1 block text-slate-600">{f.label}</span>
+              <span className="mb-1 block text-ink-muted">{f.label}</span>
               <input
                 name={f.key}
                 defaultValue={(business[f.key] as string | null) ?? ""}
                 placeholder="https://"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
           ))}
-          <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+          <button className={buttonClasses("primary")}>
             Save
           </button>
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 p-6">
-        <h3 className="font-semibold text-slate-900">Business hours</h3>
-        <p className="mt-1 text-sm text-slate-500">Set your opening and closing times for each day of the week.</p>
+      <section className="rounded-2xl border border-border bg-surface p-6">
+        <h3 className="font-semibold text-ink">Business hours</h3>
+        <p className="mt-1 text-sm text-ink-muted">Set your opening and closing times for each day of the week.</p>
         <form action={updateBusinessHours.bind(null, areaId, businessId)} className="mt-4 space-y-3">
           {DAY_ORDER.map((day) => {
             const h = hoursByDay.get(day);
@@ -233,19 +234,19 @@ export default async function PortalProfilePage({ params }: Props) {
                   type="time"
                   name={`opens_at_${day}`}
                   defaultValue={h?.opens_at ?? ""}
-                  className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
+                  className="rounded-lg border border-border px-2 py-1 text-sm"
                 />
-                <span className="text-slate-400">to</span>
+                <span className="text-ink-muted">to</span>
                 <input
                   type="time"
                   name={`closes_at_${day}`}
                   defaultValue={h?.closes_at ?? ""}
-                  className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
+                  className="rounded-lg border border-border px-2 py-1 text-sm"
                 />
               </div>
             );
           })}
-          <div className="flex flex-wrap gap-4 border-t border-slate-100 pt-3">
+          <div className="flex flex-wrap gap-4 border-t border-border pt-3">
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="weather_permitting" defaultChecked={business.weather_permitting} />
               Weather permitting
@@ -255,39 +256,39 @@ export default async function PortalProfilePage({ params }: Props) {
               Call for appointment
             </label>
           </div>
-          <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+          <button className={buttonClasses("primary")}>
             Save hours
           </button>
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 p-6">
-        <h3 className="font-semibold text-slate-900">Business media</h3>
-        <p className="mt-1 text-sm text-slate-500">Manage your business logo, cover image, and photo gallery.</p>
+      <section className="rounded-2xl border border-border bg-surface p-6">
+        <h3 className="font-semibold text-ink">Business media</h3>
+        <p className="mt-1 text-sm text-ink-muted">Manage your business logo, cover image, and photo gallery.</p>
 
         <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">Business logo</p>
+            <p className="mb-2 text-sm font-medium text-ink">Business logo</p>
             {business.logo_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={business.logo_url} alt="Logo" className="mb-2 h-20 w-20 rounded-lg object-cover" />
             )}
             <form action={uploadBusinessLogo.bind(null, areaId, businessId)} className="flex items-center gap-2">
               <input type="file" name="logo" accept="image/*" required className="text-sm" />
-              <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+              <button className={buttonClasses("outline", "sm")}>
                 Upload
               </button>
             </form>
           </div>
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">Cover image</p>
+            <p className="mb-2 text-sm font-medium text-ink">Cover image</p>
             {business.hero_image_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={business.hero_image_url} alt="Cover" className="mb-2 h-20 w-32 rounded-lg object-cover" />
             )}
             <form action={uploadBusinessCover.bind(null, areaId, businessId)} className="flex items-center gap-2">
               <input type="file" name="cover" accept="image/*" required className="text-sm" />
-              <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+              <button className={buttonClasses("outline", "sm")}>
                 Upload
               </button>
             </form>
@@ -295,21 +296,21 @@ export default async function PortalProfilePage({ params }: Props) {
         </div>
 
         <div className="mt-6">
-          <p className="mb-2 text-sm font-medium text-slate-700">Gallery images</p>
+          <p className="mb-2 text-sm font-medium text-ink">Gallery images</p>
           <div className="flex flex-wrap gap-3">
             {business.gallery_image_urls.map((url) => (
               <div key={url} className="relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt="Gallery" className="h-20 w-20 rounded-lg object-cover" />
                 <form action={removeBusinessGalleryImage.bind(null, areaId, businessId, url)}>
-                  <button className="absolute -right-1 -top-1 rounded-full bg-red-600 px-1.5 text-xs font-bold text-white">
+                  <button className="absolute -right-1 -top-1 rounded-full bg-error px-1.5 text-xs font-bold text-white">
                     &times;
                   </button>
                 </form>
               </div>
             ))}
             {business.gallery_image_urls.length === 0 && (
-              <p className="text-sm text-slate-500">No gallery images added yet.</p>
+              <p className="text-sm text-ink-muted">No gallery images added yet.</p>
             )}
           </div>
           <form
@@ -317,7 +318,7 @@ export default async function PortalProfilePage({ params }: Props) {
             className="mt-3 flex items-center gap-2"
           >
             <input type="file" name="gallery" accept="image/*" required className="text-sm" />
-            <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+            <button className={buttonClasses("outline", "sm")}>
               Add images
             </button>
           </form>

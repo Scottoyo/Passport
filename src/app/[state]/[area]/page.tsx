@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { BusinessCard } from "@/components/business-card";
 import { RegionHeroBanner, getRegionHeroImage } from "@/components/region-hero-banner";
 import { toggleFavorite } from "@/app/[state]/[area]/businesses/[business]/actions";
+import { buttonClasses } from "@/lib/ui-classes";
 
 interface Props {
   params: Promise<{ state: string; area: string }>;
@@ -52,40 +53,40 @@ export default async function AreaHomePage({ params }: Props) {
           <div className="flex flex-wrap items-center gap-4">
             <Link
               href={`/${state.slug}/${area.slug}/passport`}
-              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
+              className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
             >
               Get the {area.name} Passport
             </Link>
             <Link
               href={`/${state.slug}/${area.slug}/discover`}
-              className="rounded-full border border-white/60 px-6 py-3 text-sm font-semibold text-white hover:border-white"
+              className="rounded-lg border border-white/60 px-6 py-3 text-sm font-semibold text-white hover:border-white"
             >
               Browse businesses
             </Link>
           </div>
         </RegionHeroBanner>
       ) : (
-        <section className={themed ? "bg-brand-primary" : "border-b border-slate-200 bg-slate-50"}>
+        <section className={themed ? "bg-brand-primary" : "border-b border-border bg-surface-elevated"}>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <p
               className={`text-sm font-semibold uppercase tracking-wide ${
-                themed ? "text-white/80" : "text-slate-500"
+                themed ? "text-white/80" : "text-ink-muted"
               }`}
             >
               {area.name} Passport
             </p>
             <h1
               className={`mt-1 font-display text-3xl font-bold tracking-tight sm:text-4xl ${
-                themed ? "text-white" : "text-slate-900"
+                themed ? "text-white" : "text-ink"
               }`}
             >
               The {area.name} Passport
             </h1>
-            <p className={`mt-3 max-w-2xl text-lg ${themed ? "text-white/90" : "text-slate-600"}`}>
+            <p className={`mt-3 max-w-2xl text-lg ${themed ? "text-white/90" : "text-ink-muted"}`}>
               {area.tagline || `Save at the best local spots in ${area.name} with your Passport.`}
             </p>
             {area.description && (
-              <p className={`mt-2 max-w-2xl ${themed ? "text-white/90" : "text-slate-600"}`}>
+              <p className={`mt-2 max-w-2xl ${themed ? "text-white/90" : "text-ink-muted"}`}>
                 {area.description}
               </p>
             )}
@@ -94,8 +95,8 @@ export default async function AreaHomePage({ params }: Props) {
                 href={`/${state.slug}/${area.slug}/passport`}
                 className={
                   themed
-                    ? "rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
-                    : "rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+                    ? "rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
+                    : buttonClasses("primary")
                 }
               >
                 Get the {area.name} Passport
@@ -104,8 +105,8 @@ export default async function AreaHomePage({ params }: Props) {
                 href={`/${state.slug}/${area.slug}/discover`}
                 className={
                   themed
-                    ? "rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:border-white"
-                    : "rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-slate-500"
+                    ? "rounded-lg border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:border-white"
+                    : buttonClasses("outline")
                 }
               >
                 Browse businesses
@@ -116,7 +117,7 @@ export default async function AreaHomePage({ params }: Props) {
       )}
 
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <h2 className="text-center font-display text-2xl font-bold text-slate-900">
+        <h2 className="text-center font-display text-2xl font-bold text-ink">
           Why get the {area.name} Passport
         </h2>
         <div className="mt-10 grid gap-8 sm:grid-cols-3">
@@ -136,18 +137,11 @@ export default async function AreaHomePage({ params }: Props) {
       </section>
 
       {featuredBusinesses.length > 0 && (
-        <section className={themed ? "border-t border-slate-200 bg-brand-tint" : "border-t border-slate-200 bg-slate-50"}>
+        <section className={themed ? "border-t border-border bg-brand-tint" : "border-t border-border bg-surface-elevated"}>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <h2 className="font-display text-2xl font-bold text-slate-900">Featured Businesses</h2>
-              <Link
-                href={`/${state.slug}/${area.slug}/discover`}
-                className={
-                  themed
-                    ? "text-sm font-semibold text-brand-primary hover:text-brand-primary-dark"
-                    : "text-sm font-semibold text-slate-700 hover:text-slate-900"
-                }
-              >
+              <h2 className="font-display text-2xl font-bold text-ink">Featured Businesses</h2>
+              <Link href={`/${state.slug}/${area.slug}/discover`} className="text-sm font-semibold text-brand-primary hover:text-brand-primary-dark">
                 View all businesses &rarr;
               </Link>
             </div>
@@ -158,7 +152,6 @@ export default async function AreaHomePage({ params }: Props) {
                   business={business}
                   href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
                   offer={primaryOffers.get(business.id) ?? null}
-                  themed={themed}
                   favorite={{
                     isSignedIn: Boolean(user),
                     isFavorited: favoritedIds.has(business.id),
@@ -172,10 +165,10 @@ export default async function AreaHomePage({ params }: Props) {
         </section>
       )}
 
-      <section className="border-t border-slate-200">
+      <section className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-10 text-center sm:px-6">
-          <h2 className="text-lg font-semibold text-slate-900">Own a business in {area.name}?</h2>
-          <p className="max-w-xl text-sm text-slate-600">
+          <h2 className="text-lg font-semibold text-ink">Own a business in {area.name}?</h2>
+          <p className="max-w-xl text-sm text-ink-muted">
             It&apos;s free to join the {area.name} Passport - no monthly fees - and put your
             business in front of locals and visitors actively looking for new places to go.
           </p>
@@ -194,8 +187,8 @@ export default async function AreaHomePage({ params }: Props) {
 function Benefit({ title, body }: { title: string; body: string }) {
   return (
     <div>
-      <h3 className="font-semibold text-slate-900">{title}</h3>
-      <p className="mt-2 text-sm text-slate-600">{body}</p>
+      <h3 className="font-semibold text-ink">{title}</h3>
+      <p className="mt-2 text-sm text-ink-muted">{body}</p>
     </div>
   );
 }

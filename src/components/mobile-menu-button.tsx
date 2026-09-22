@@ -36,7 +36,7 @@ export function MobileMenuButton({
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open menu"
-        className={`flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 ${hiddenAt}`}
+        className={`flex h-9 w-9 items-center justify-center rounded-full border border-border text-ink-muted ${hiddenAt}`}
       >
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5" aria-hidden>
           <path d="M3 6h14M3 10h14M3 14h14" strokeLinecap="round" strokeLinejoin="round" />
@@ -44,13 +44,13 @@ export function MobileMenuButton({
       </button>
 
       {open && (
-        <div className={`fixed inset-0 z-50 bg-white ${hiddenAt}`}>
+        <div className={`fixed inset-0 z-50 bg-surface ${hiddenAt}`}>
           <div className="flex items-center justify-end px-4 py-4">
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close menu"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-ink-muted"
             >
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5" aria-hidden>
                 <path d="M5 5l10 10M15 5 5 15" strokeLinecap="round" strokeLinejoin="round" />
@@ -67,7 +67,7 @@ export function MobileMenuButton({
               >
                 {item.label}
                 {item.badge ? (
-                  <span className="ml-2 rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
+                  <span className="ml-2 rounded-full bg-error px-2 py-0.5 text-xs font-semibold text-white">
                     {item.badge}
                   </span>
                 ) : null}
@@ -98,10 +98,10 @@ export function MobileMenuButton({
 
 function itemClassName(variant: MobileMenuItem["variant"] = "outline") {
   if (variant === "solid") {
-    return "rounded-full bg-brand-primary px-6 py-3 text-center font-semibold text-white";
+    return "rounded-lg bg-brand-primary px-6 py-3 text-center font-semibold text-white";
   }
   if (variant === "text") {
-    return "px-6 py-3 text-center font-medium text-slate-600";
+    return "px-6 py-3 text-center font-medium text-ink-muted";
   }
-  return "rounded-full border border-slate-300 px-6 py-3 text-center font-medium text-slate-700";
+  return "rounded-lg border border-border px-6 py-3 text-center font-medium text-ink";
 }

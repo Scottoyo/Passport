@@ -29,16 +29,16 @@ export default async function AdminDashboardPage() {
 
     return (
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">
+        <h1 className="text-2xl font-bold text-ink">
           Admin Dashboard
           {state && (
-            <span className="font-normal text-slate-500">
+            <span className="font-normal text-ink-muted">
               {" "}
               - {narrowedToArea ? `${narrowedToArea.name}, ${state.name}` : state.name}
             </span>
           )}
         </h1>
-        <p className="mt-1 text-slate-600">
+        <p className="mt-1 text-ink-muted">
           System metrics, redemption performance, and administrative health
           indicators.
         </p>
@@ -127,10 +127,10 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">
-        {dashboardLabel} <span className="font-normal text-slate-500">- {heading}</span>
+      <h1 className="text-2xl font-bold text-ink">
+        {dashboardLabel} <span className="font-normal text-ink-muted">- {heading}</span>
       </h1>
-      <p className="mt-1 text-slate-600">{dashboardSub}</p>
+      <p className="mt-1 text-ink-muted">{dashboardSub}</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Total businesses" value={metrics.totalBusinesses} sub="Platform partners registered" />
@@ -163,20 +163,20 @@ export default async function AdminDashboardPage() {
 
       <Leaderboards leaderboards={leaderboards} />
 
-      <h2 className="mt-10 text-lg font-semibold text-slate-900">Your regions</h2>
+      <h2 className="mt-10 text-lg font-semibold text-ink">Your regions</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {(areas ?? []).map((area) => (
           <Link
             key={area.id}
             href={`/admin/areas/${area.id}`}
-            className="rounded-2xl border border-slate-200 p-6 hover:border-slate-400"
+            className="rounded-2xl border border-border bg-surface p-6 hover:border-brand-primary"
           >
-            <h3 className="font-semibold text-slate-900">{area.name}</h3>
-            <p className="mt-1 text-sm text-slate-500 capitalize">{area.status}</p>
+            <h3 className="font-semibold text-ink">{area.name}</h3>
+            <p className="mt-1 text-sm text-ink-muted capitalize">{area.status}</p>
           </Link>
         ))}
         {(areas ?? []).length === 0 && (
-          <p className="text-sm text-slate-500">No regions assigned yet.</p>
+          <p className="text-sm text-ink-muted">No regions assigned yet.</p>
         )}
       </div>
     </div>
@@ -196,13 +196,13 @@ function Stat({
   highlight?: "amber";
   href?: string;
 }) {
-  const style = highlight === "amber" ? "border-amber-200 bg-amber-50" : "border-slate-200";
-  const valueStyle = highlight === "amber" ? "text-amber-700" : "text-slate-900";
+  const style = highlight === "amber" ? "border-amber-200 bg-amber-50" : "border-border";
+  const valueStyle = highlight === "amber" ? "text-amber-700" : "text-ink";
 
   return (
     <div className={`rounded-2xl border p-6 ${style}`}>
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{label}</p>
         {href && (
           <Link
             href={href}
@@ -213,7 +213,7 @@ function Stat({
         )}
       </div>
       <p className={`mt-2 text-2xl font-bold ${valueStyle}`}>{value}</p>
-      <p className="mt-1 text-sm text-slate-500">{sub}</p>
+      <p className="mt-1 text-sm text-ink-muted">{sub}</p>
     </div>
   );
 }
@@ -225,15 +225,15 @@ function Leaderboards({ leaderboards }: { leaderboards: DashboardLeaderboards })
         {leaderboards.topBusinesses.map((b, i) => (
           <li key={b.id} className="flex items-center justify-between gap-4 px-6 py-3">
             <div>
-              <p className="text-sm font-medium text-slate-900">
+              <p className="text-sm font-medium text-ink">
                 #{i + 1} {b.name}
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-ink-muted">
                 {b.areaName ?? "Unknown area"} &middot; {b.activeOfferCount} active offer
                 {b.activeOfferCount === 1 ? "" : "s"}
               </p>
             </div>
-            <p className="text-sm font-semibold text-slate-900">{b.redemptions}</p>
+            <p className="text-sm font-semibold text-ink">{b.redemptions}</p>
           </li>
         ))}
       </LeaderboardCard>
@@ -242,8 +242,8 @@ function Leaderboards({ leaderboards }: { leaderboards: DashboardLeaderboards })
         {leaderboards.businessesNoRedemptions.map((b) => (
           <li key={b.id} className="flex items-center justify-between gap-4 px-6 py-3">
             <div>
-              <p className="text-sm font-medium text-slate-900">{b.name}</p>
-              <p className="text-xs text-slate-500">{b.areaName ?? "Unknown area"}</p>
+              <p className="text-sm font-medium text-ink">{b.name}</p>
+              <p className="text-xs text-ink-muted">{b.areaName ?? "Unknown area"}</p>
             </div>
             <BusinessInfoModalButton business={b} />
           </li>
@@ -254,12 +254,12 @@ function Leaderboards({ leaderboards }: { leaderboards: DashboardLeaderboards })
         {leaderboards.topOffers.map((o, i) => (
           <li key={o.id} className="flex items-center justify-between gap-4 px-6 py-3">
             <div>
-              <p className="text-sm font-medium text-slate-900">
+              <p className="text-sm font-medium text-ink">
                 #{i + 1} {o.title}
               </p>
-              <p className="text-xs text-slate-500">{o.businessName}</p>
+              <p className="text-xs text-ink-muted">{o.businessName}</p>
             </div>
-            <p className="text-sm font-semibold text-slate-900">{o.redemptions}</p>
+            <p className="text-sm font-semibold text-ink">{o.redemptions}</p>
           </li>
         ))}
       </LeaderboardCard>
@@ -267,8 +267,8 @@ function Leaderboards({ leaderboards }: { leaderboards: DashboardLeaderboards })
       <LeaderboardCard title="Active offers with no redemptions" description="Perks that may need more marketing attention.">
         {leaderboards.offersNoRedemptions.map((o) => (
           <li key={o.id} className="flex items-center justify-between gap-4 px-6 py-3">
-            <p className="text-sm font-medium text-slate-900">{o.title}</p>
-            <p className="text-xs text-slate-500">{o.businessName}</p>
+            <p className="text-sm font-medium text-ink">{o.title}</p>
+            <p className="text-xs text-ink-muted">{o.businessName}</p>
           </li>
         ))}
       </LeaderboardCard>
@@ -277,12 +277,12 @@ function Leaderboards({ leaderboards }: { leaderboards: DashboardLeaderboards })
         {leaderboards.topPassportHolders.map((h, i) => (
           <li key={`${h.profileId}-${i}`} className="flex items-center justify-between gap-4 px-6 py-3">
             <div>
-              <p className="text-sm font-medium text-slate-900">
+              <p className="text-sm font-medium text-ink">
                 #{i + 1} {h.holderName}
               </p>
-              <p className="text-xs text-slate-500">{h.passportNumber}</p>
+              <p className="text-xs text-ink-muted">{h.passportNumber}</p>
             </div>
-            <p className="text-sm font-semibold text-slate-900">{h.redemptions}</p>
+            <p className="text-sm font-semibold text-ink">{h.redemptions}</p>
           </li>
         ))}
       </LeaderboardCard>
@@ -291,14 +291,14 @@ function Leaderboards({ leaderboards }: { leaderboards: DashboardLeaderboards })
         {leaderboards.topGeographicAreas.map((a, i) => (
           <li key={a.subareaId} className="flex items-center justify-between gap-4 px-6 py-3">
             <div>
-              <p className="text-sm font-medium text-slate-900">
+              <p className="text-sm font-medium text-ink">
                 #{i + 1} {a.name}
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-ink-muted">
                 {a.businessCount} business{a.businessCount === 1 ? "" : "es"}
               </p>
             </div>
-            <p className="text-sm font-semibold text-slate-900">{a.redemptions}</p>
+            <p className="text-sm font-semibold text-ink">{a.redemptions}</p>
           </li>
         ))}
       </LeaderboardCard>
@@ -318,11 +318,11 @@ function LeaderboardCard({
   const isEmpty = Array.isArray(children) ? children.length === 0 : !children;
   return (
     <div>
-      <h3 className="font-semibold text-slate-900">{title}</h3>
-      <p className="mt-1 text-sm text-slate-500">{description}</p>
-      <ul className="mt-3 divide-y divide-slate-100 rounded-2xl border border-slate-200">
+      <h3 className="font-semibold text-ink">{title}</h3>
+      <p className="mt-1 text-sm text-ink-muted">{description}</p>
+      <ul className="mt-3 divide-y divide-border rounded-2xl border border-border bg-surface">
         {isEmpty ? (
-          <li className="px-6 py-4 text-sm text-slate-500">No data yet.</li>
+          <li className="px-6 py-4 text-sm text-ink-muted">No data yet.</li>
         ) : (
           children
         )}

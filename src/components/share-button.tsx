@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buttonClasses } from "@/lib/ui-classes";
 
 export function ShareButton({ path, title }: { path: string; title: string }) {
   const [copied, setCopied] = useState(false);
@@ -28,7 +29,7 @@ export function ShareButton({ path, title }: { path: string; title: string }) {
     <button
       type="button"
       onClick={handleShare}
-      className="rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
+      className={buttonClasses("outline", "sm")}
     >
       {copied ? "Link copied!" : "Share"}
     </button>

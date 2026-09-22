@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buttonClasses } from "@/lib/ui-classes";
 
 export function SharePassportButton({ path }: { path: string }) {
   const [copied, setCopied] = useState(false);
@@ -28,7 +29,7 @@ export function SharePassportButton({ path }: { path: string }) {
     <button
       type="button"
       onClick={handleShare}
-      className="w-full rounded-full bg-brand-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+      className={`w-full ${buttonClasses("primary")}`}
     >
       {copied ? "Link copied!" : "Share My Passport"}
     </button>

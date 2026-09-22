@@ -78,8 +78,8 @@ export default async function MarketingRequestsAdminPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Marketing</h1>
-      <p className="mt-1 text-slate-600">
+      <h1 className="text-2xl font-bold text-ink">Marketing</h1>
+      <p className="mt-1 text-ink-muted">
         Requests submitted by businesses, managers, and franchisees across every Passport Area.
       </p>
 
@@ -102,9 +102,9 @@ export default async function MarketingRequestsAdminPage() {
         />
       )}
 
-      <section className="mt-10 rounded-2xl border border-dashed border-slate-300 p-6">
-        <h2 className="font-semibold text-slate-900">Marketing Products</h2>
-        <p className="mt-1 text-sm text-slate-500">Coming soon.</p>
+      <section className="mt-10 rounded-2xl border border-dashed border-border p-6">
+        <h2 className="font-semibold text-ink">Marketing Products</h2>
+        <p className="mt-1 text-sm text-ink-muted">Coming soon.</p>
       </section>
     </div>
   );
@@ -146,8 +146,8 @@ function ServiceSection({
   return (
     <section className="mt-8">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold text-slate-900">{service.label}</h2>
-        {service.price && <span className="text-sm font-semibold text-slate-500">{service.price}</span>}
+        <h2 className="text-lg font-semibold text-ink">{service.label}</h2>
+        {service.price && <span className="text-sm font-semibold text-ink-muted">{service.price}</span>}
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -164,9 +164,9 @@ function ServiceSection({
 
 function StatChip({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
   return (
-    <div className={`rounded-xl border p-3 ${highlight && value > 0 ? "border-green-200 bg-green-50" : "border-slate-200"}`}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-1 text-xl font-bold ${highlight && value > 0 ? "text-green-700" : "text-slate-900"}`}>{value}</p>
+    <div className={`rounded-xl border p-3 ${highlight && value > 0 ? "border-success bg-success-bg" : "border-border"}`}>
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{label}</p>
+      <p className={`mt-1 text-xl font-bold ${highlight && value > 0 ? "text-success" : "text-ink"}`}>{value}</p>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { getAllStatesForAdmin } from "@/lib/admin-scope";
 import { PromoCodeScopeSelect, type ScopeStateOption } from "@/components/admin/promo-code-scope-select";
 import type { PromoCode, PassportArea, State } from "@/lib/types/domain";
 import { createPromoCode, setPromoCodeStatus, deletePromoCode } from "./actions";
+import { buttonClasses } from "@/lib/ui-classes";
 
 export default async function PromoCodesAdminPage() {
   const currentUser = await getCurrentUser();
@@ -87,33 +88,33 @@ export default async function PromoCodesAdminPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Promo codes</h1>
-      <p className="mt-1 text-slate-600">
+      <h1 className="text-2xl font-bold text-ink">Promo codes</h1>
+      <p className="mt-1 text-ink-muted">
         Discount codes applied at Passport checkout. National admins can create nationwide, state, or
         region codes; state managers within their state; region managers within their region.
       </p>
 
-      <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-        <h2 className="font-semibold text-slate-900">Create a promo code</h2>
+      <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+        <h2 className="font-semibold text-ink">Create a promo code</h2>
         <form action={createPromoCode} className="mt-4 flex flex-wrap items-end gap-3">
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Code</span>
+            <span className="mb-1 block text-ink-muted">Code</span>
             <input
               name="code"
               required
               placeholder="SUMMER25"
-              className="w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-40 rounded-lg border border-border px-3 py-2 text-sm"
             />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Discount type</span>
-            <select name="discount_type" className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <span className="mb-1 block text-ink-muted">Discount type</span>
+            <select name="discount_type" className="rounded-lg border border-border px-3 py-2 text-sm">
               <option value="percent_off">Percent off</option>
               <option value="amount_off">Amount off (USD)</option>
             </select>
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Value</span>
+            <span className="mb-1 block text-ink-muted">Value</span>
             <input
               name="discount_value"
               type="number"
@@ -121,34 +122,34 @@ export default async function PromoCodesAdminPage() {
               min="0"
               required
               placeholder="25"
-              className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-24 rounded-lg border border-border px-3 py-2 text-sm"
             />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Max uses</span>
+            <span className="mb-1 block text-ink-muted">Max uses</span>
             <input
               name="max_uses"
               type="number"
               min="1"
               placeholder="Unlimited"
-              className="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-28 rounded-lg border border-border px-3 py-2 text-sm"
             />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-slate-600">Expires</span>
-            <input name="expires_at" type="date" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <span className="mb-1 block text-ink-muted">Expires</span>
+            <input name="expires_at" type="date" className="rounded-lg border border-border px-3 py-2 text-sm" />
           </label>
           {fixedAreaLabel ? (
             <>
               <input type="hidden" name="scope" value={`area:${fixedAreaId ?? ""}`} />
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-ink-muted">
                 Scope: <span className="font-semibold">{fixedAreaLabel}</span>
               </p>
             </>
           ) : multiRegionOptions ? (
             <label className="text-sm">
-              <span className="mb-1 block text-slate-600">Region</span>
-              <select name="scope" className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <span className="mb-1 block text-ink-muted">Region</span>
+              <select name="scope" className="rounded-lg border border-border px-3 py-2 text-sm">
                 {multiRegionOptions.map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}
@@ -159,18 +160,18 @@ export default async function PromoCodesAdminPage() {
           ) : (
             <PromoCodeScopeSelect states={scopeStates} allowNational={isNationalAdmin} />
           )}
-          <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+          <button className={buttonClasses("primary")}>
             Create code
           </button>
         </form>
       </section>
 
       <section className="mt-8">
-        <h2 className="font-semibold text-slate-900">Existing codes</h2>
-        <div className="mt-3 overflow-x-auto rounded-2xl border border-slate-200">
+        <h2 className="font-semibold text-ink">Existing codes</h2>
+        <div className="mt-3 overflow-x-auto rounded-2xl border border-border bg-surface">
           <table className="w-full min-w-[760px] text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <tr className="border-b border-border bg-surface-elevated text-xs font-semibold uppercase tracking-wide text-ink-muted">
                 <th className="px-4 py-3">Code</th>
                 <th className="px-4 py-3">Discount</th>
                 <th className="px-4 py-3">Scope</th>
@@ -180,7 +181,7 @@ export default async function PromoCodesAdminPage() {
                 <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-border">
               {allCodes.map((c) => {
                 const scopeLabel = c.scope_area_id
                   ? (areaNameById.get(c.scope_area_id) ?? "Unknown region")
@@ -191,34 +192,34 @@ export default async function PromoCodesAdminPage() {
                   c.discount_type === "percent_off" ? `${c.discount_value}% off` : `$${(c.discount_value / 100).toFixed(2)} off`;
                 return (
                   <tr key={c.id}>
-                    <td className="px-4 py-3 font-mono font-semibold text-slate-900">{c.code}</td>
-                    <td className="px-4 py-3 text-slate-600">{discountLabel}</td>
-                    <td className="px-4 py-3 text-slate-600">{scopeLabel}</td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 font-mono font-semibold text-ink">{c.code}</td>
+                    <td className="px-4 py-3 text-ink-muted">{discountLabel}</td>
+                    <td className="px-4 py-3 text-ink-muted">{scopeLabel}</td>
+                    <td className="px-4 py-3 text-ink-muted">
                       {c.times_used}
                       {c.max_uses ? ` / ${c.max_uses}` : ""}
                     </td>
                     <td className="px-4 py-3">
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          c.status === "active" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"
+                          c.status === "active" ? "bg-success-bg text-success" : "bg-surface-elevated text-ink-muted"
                         }`}
                       >
                         {c.status === "active" ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-slate-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-ink-muted">
                       {c.expires_at ? new Date(c.expires_at).toLocaleDateString() : "-"}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
                         <form action={setPromoCodeStatus.bind(null, c.id, c.status === "active" ? "inactive" : "active")}>
-                          <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                          <button className={buttonClasses("outline", "sm")}>
                             {c.status === "active" ? "Deactivate" : "Activate"}
                           </button>
                         </form>
                         <form action={deletePromoCode.bind(null, c.id)}>
-                          <button className="rounded-full border border-red-200 px-3 py-1 text-xs font-semibold text-red-600 hover:border-red-400">
+                          <button className={buttonClasses("danger", "sm")}>
                             Delete
                           </button>
                         </form>
@@ -229,7 +230,7 @@ export default async function PromoCodesAdminPage() {
               })}
               {allCodes.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-slate-500">
+                  <td colSpan={7} className="px-4 py-6 text-center text-ink-muted">
                     No promo codes yet.
                   </td>
                 </tr>

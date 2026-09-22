@@ -26,18 +26,18 @@ export function Overlay({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 py-10"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/50 p-4 py-10"
       onClick={() => router.push(closeHref)}
     >
       <div
-        className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl"
+        className="w-full max-w-2xl rounded-2xl bg-surface p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-end">
           <button
             onClick={() => router.push(closeHref)}
             aria-label="Close"
-            className="text-xl leading-none text-slate-400 hover:text-slate-600"
+            className="text-xl leading-none text-ink-muted hover:text-ink"
           >
             &times;
           </button>

@@ -5,6 +5,7 @@ import { getMyPassports } from "@/lib/queries";
 import type { PassportArea, PassportProduct, Profile } from "@/lib/types/domain";
 import { updateMyPassportDates, uploadMyPassportPhoto } from "../actions";
 import { SharePassportButton } from "@/components/share-passport-button";
+import { buttonClasses } from "@/lib/ui-classes";
 
 function toDateInputValue(iso: string | null) {
   if (!iso) return "";
@@ -25,11 +26,11 @@ export default async function MyPassportPage() {
 
   if (passports.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-200 p-8 text-center">
-        <p className="text-slate-600">You don&apos;t have a Passport yet.</p>
+      <div className="rounded-2xl border border-border bg-surface p-8 text-center">
+        <p className="text-ink-muted">You don&apos;t have a Passport yet.</p>
         <Link
           href="/passport"
-          className="mt-4 inline-block rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+          className={`mt-4 inline-block ${buttonClasses("primary")}`}
         >
           Get Your Passport
         </Link>
@@ -65,10 +66,10 @@ export default async function MyPassportPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">My Digital Passport</h1>
+      <h1 className="text-2xl font-bold text-ink">My Digital Passport</h1>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-200 p-6">
+        <section className="rounded-2xl border border-border bg-surface p-6">
           {primary.photo_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -79,7 +80,7 @@ export default async function MyPassportPage() {
           )}
           <form action={uploadMyPassportPhoto.bind(null, primary.id)} className="flex items-center gap-2">
             <input type="file" name="photo" accept="image/*" required className="text-sm" />
-            <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+            <button className={buttonClasses("outline", "sm")}>
               {primary.photo_url ? "Replace Photo" : "Upload Photo"}
             </button>
           </form>
@@ -91,71 +92,71 @@ export default async function MyPassportPage() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900">Passport Details</h2>
+        <section className="rounded-2xl border border-border bg-surface p-6">
+          <h2 className="font-semibold text-ink">Passport Details</h2>
           <dl className="mt-3 space-y-2 text-sm">
             <div className="flex justify-between">
-              <dt className="text-slate-500">Product</dt>
-              <dd className="text-slate-900">{productById.get(primary.passport_product_id)?.name ?? "-"}</dd>
+              <dt className="text-ink-muted">Product</dt>
+              <dd className="text-ink">{productById.get(primary.passport_product_id)?.name ?? "-"}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-slate-500">Status</dt>
-              <dd className="text-slate-900 capitalize">{primary.status}</dd>
+              <dt className="text-ink-muted">Status</dt>
+              <dd className="text-ink capitalize">{primary.status}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-slate-500">Passport holder</dt>
-              <dd className="text-slate-900">{profile?.full_name || user.email}</dd>
+              <dt className="text-ink-muted">Passport holder</dt>
+              <dd className="text-ink">{profile?.full_name || user.email}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-slate-500">Passport number</dt>
-              <dd className="text-slate-900">{primary.passport_number}</dd>
+              <dt className="text-ink-muted">Passport number</dt>
+              <dd className="text-ink">{primary.passport_number}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-slate-500">Purchased</dt>
-              <dd className="text-slate-900">{new Date(primary.purchased_at).toLocaleDateString()}</dd>
+              <dt className="text-ink-muted">Purchased</dt>
+              <dd className="text-ink">{new Date(primary.purchased_at).toLocaleDateString()}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-slate-500">Expires</dt>
-              <dd className="text-slate-900">{new Date(primary.expires_at).toLocaleDateString()}</dd>
+              <dt className="text-ink-muted">Expires</dt>
+              <dd className="text-ink">{new Date(primary.expires_at).toLocaleDateString()}</dd>
             </div>
           </dl>
 
           <form
             action={updateMyPassportDates.bind(null, primary.id)}
-            className="mt-4 space-y-3 border-t border-slate-100 pt-4"
+            className="mt-4 space-y-3 border-t border-border pt-4"
           >
-            <p className="text-sm font-medium text-slate-900">Vacation dates</p>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm font-medium text-ink">Vacation dates</p>
+            <p className="text-xs text-ink-muted">
               Let us know when you&apos;ll be visiting so we can personalize your Passport experience.
             </p>
             <div className="flex gap-3">
               <label className="text-sm">
-                <span className="mb-1 block text-slate-600">Start date</span>
+                <span className="mb-1 block text-ink-muted">Start date</span>
                 <input
                   type="date"
                   name="travel_start_date"
                   defaultValue={toDateInputValue(primary.travel_start_date)}
-                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="rounded-lg border border-border px-3 py-2 text-sm"
                 />
               </label>
               <label className="text-sm">
-                <span className="mb-1 block text-slate-600">End date</span>
+                <span className="mb-1 block text-ink-muted">End date</span>
                 <input
                   type="date"
                   name="travel_end_date"
                   defaultValue={toDateInputValue(primary.travel_end_date)}
-                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="rounded-lg border border-border px-3 py-2 text-sm"
                 />
               </label>
             </div>
-            <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+            <button className={buttonClasses("primary")}>
               Save Vacation Dates
             </button>
           </form>
 
-          <div className="mt-4 border-t border-slate-100 pt-4 text-sm text-slate-600">
-            <p className="font-medium text-slate-900">How to use</p>
-            <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-slate-500">
+          <div className="mt-4 border-t border-border pt-4 text-sm text-ink-muted">
+            <p className="font-medium text-ink">How to use</p>
+            <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-ink-muted">
               <li>Browse businesses and view their active Passport offer.</li>
               <li>Open a business and click Redeem when you&apos;re there in person.</li>
               <li>Hand your device to staff - they enter their business&apos;s private code.</li>
@@ -169,7 +170,7 @@ export default async function MyPassportPage() {
           {primaryArea && primaryStateSlug && (
             <Link
               href={`/${primaryStateSlug}/${primaryArea.slug}`}
-              className="mt-4 block rounded-full border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700 hover:border-slate-500"
+              className={`mt-4 block text-center ${buttonClasses("outline")}`}
             >
               Explore Available Promotions
             </Link>
@@ -177,9 +178,9 @@ export default async function MyPassportPage() {
         </section>
       </div>
 
-      <section className="mt-6 rounded-2xl border border-slate-200 p-6">
-        <h2 className="font-semibold text-slate-900">Passport History</h2>
-        <ul className="mt-3 divide-y divide-slate-100">
+      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
+        <h2 className="font-semibold text-ink">Passport History</h2>
+        <ul className="mt-3 divide-y divide-border">
           {passports.map((p, i) => {
             const area = areaById.get(p.passport_area_id);
             const product = productById.get(p.passport_product_id);
@@ -187,22 +188,22 @@ export default async function MyPassportPage() {
               <li key={p.id} className="flex items-center justify-between py-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-900">Term {passports.length - i}</span>
+                    <span className="text-sm font-medium text-ink">Term {passports.length - i}</span>
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        p.status === "active" ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-600"
+                        p.status === "active" ? "bg-success-bg text-success" : "bg-surface-elevated text-ink-muted"
                       }`}
                     >
                       {p.status}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-ink-muted">
                     {product?.name ?? "Passport"} &middot; {area?.name ?? "Unknown region"} &middot;{" "}
                     {new Date(p.purchased_at).toLocaleDateString()} &ndash;{" "}
                     {new Date(p.expires_at).toLocaleDateString()}
                   </p>
                 </div>
-                <span className="text-sm text-slate-500">
+                <span className="text-sm text-ink-muted">
                   {product ? `$${(product.price_cents / 100).toFixed(2)}` : "-"}
                 </span>
               </li>

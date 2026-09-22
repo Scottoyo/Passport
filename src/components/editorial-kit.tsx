@@ -27,8 +27,8 @@ export function StampStat({ title, children }: { title: string; children: React.
           <circle cx="12" cy="12" r="9" />
         </svg>
       </div>
-      <h3 className="mt-4 text-lg font-semibold text-[#102F3B]">{title}</h3>
-      <p className="mt-2 text-sm text-[#102F3B]/70">{children}</p>
+      <h3 className="mt-4 text-lg font-semibold text-ink">{title}</h3>
+      <p className="mt-2 text-sm text-ink-muted">{children}</p>
     </div>
   );
 }
@@ -42,8 +42,8 @@ export function RouteStep({ step, title, children }: { step: string; title: stri
       <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary text-sm font-bold text-white">
         {step}
       </div>
-      <h3 className="text-lg font-semibold text-[#102F3B]">{title}</h3>
-      <p className="mt-1 text-sm text-[#102F3B]/70">{children}</p>
+      <h3 className="text-lg font-semibold text-ink">{title}</h3>
+      <p className="mt-1 text-sm text-ink-muted">{children}</p>
     </div>
   );
 }

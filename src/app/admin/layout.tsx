@@ -32,8 +32,8 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   if (!currentUser.isNationalAdmin && areas.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center sm:px-6">
-        <h1 className="text-2xl font-bold text-slate-900">No admin access</h1>
-        <p className="mt-2 text-slate-600">
+        <h1 className="text-2xl font-bold text-ink">No admin access</h1>
+        <p className="mt-2 text-ink-muted">
           {currentUser.email} isn&apos;t a national admin and isn&apos;t
           assigned to manage any Passport Area. Ask a national admin to grant
           access.
@@ -61,8 +61,8 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   return (
     <div className="mx-auto max-w-[1800px] px-4 py-10 sm:px-6">
       {currentUser.isNationalAdmin && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <p className="text-sm text-slate-600">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface-elevated px-4 py-3">
+          <p className="text-sm text-ink-muted">
             This selector applies across every admin section - Businesses,
             Categories, Featured Offers, Passport Holders, and the rest -
             until you change it.
@@ -84,8 +84,8 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         </div>
       )}
       {!currentUser.isNationalAdmin && areas.length > 1 && (
-        <div className="mb-6 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <p className="text-sm text-slate-600">
+        <div className="mb-6 flex items-center justify-between rounded-2xl border border-border bg-surface-elevated px-4 py-3">
+          <p className="text-sm text-ink-muted">
             This selector applies across every admin section until you change it.
           </p>
           <RegionScopeSelector key={scopeArea?.id ?? "all"} areas={areas} current={scopeArea} />
@@ -94,51 +94,51 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       <div className="flex flex-col gap-6 md:flex-row md:gap-8">
       <aside className="md:w-56 md:shrink-0">
         <nav className="space-y-1 text-sm">
-          <Link href="/admin" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+          <Link href="/admin" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
             Dashboard
           </Link>
           {currentUser.isNationalAdmin && (
             <>
-              <Link href="/admin/passport-holders" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/passport-holders" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Passport holders
               </Link>
-              <Link href="/admin/profiles-without-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/profiles-without-passports" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Profiles without passports
               </Link>
-              <Link href="/admin/expired-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/expired-passports" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Expired passports
               </Link>
-              <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Businesses
               </Link>
-              <Link href="/admin/business-leads" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/business-leads" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Business Leads CRM
               </Link>
-              <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Featured offers
               </Link>
-              <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Categories
               </Link>
-              <Link href="/admin/passport-products" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/passport-products" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Passport products
               </Link>
-              <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Marketing
               </Link>
-              <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Notifications
               </Link>
-              <Link href="/admin/promo-codes" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/promo-codes" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Promo codes
               </Link>
-              <Link href="/admin/referrals" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/referrals" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Referral program
               </Link>
-              <Link href="/admin/business-sales" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/business-sales" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Business passport sales
               </Link>
-              <Link href="/admin/locations" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+              <Link href="/admin/locations" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 States &amp; Regions
               </Link>
             </>
@@ -146,55 +146,55 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           {!currentUser.isNationalAdmin &&
             (currentUser.stateAssignments.length > 0 || currentUser.areaAssignments.length > 0) && (
               <>
-                <Link href="/admin/passport-holders" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                <Link href="/admin/passport-holders" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                   Passport holders
                 </Link>
-                <Link href="/admin/expired-passports" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                <Link href="/admin/expired-passports" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                   Expired passports
                 </Link>
-                <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                <Link href="/admin/businesses" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                   Businesses
                 </Link>
                 {hasAnyCapability(currentUser, "manage_leads") && (
-                  <Link href="/admin/business-leads" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                  <Link href="/admin/business-leads" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                     Business Leads CRM
                   </Link>
                 )}
-                <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                <Link href="/admin/featured-offers" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                   Featured offers
                 </Link>
                 {currentUser.stateAssignments.length > 0 && (
-                  <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                  <Link href="/admin/categories" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                     Categories
                   </Link>
                 )}
-                <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                <Link href="/admin/marketing-requests" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                   Marketing
                 </Link>
-                <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                   Notifications
                 </Link>
-                <Link href="/admin/promo-codes" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                <Link href="/admin/promo-codes" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                   Promo codes
                 </Link>
-                <Link href="/admin/referrals" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                <Link href="/admin/referrals" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                   Referral program
                 </Link>
-                <Link href="/admin/business-sales" className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">
+                <Link href="/admin/business-sales" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                   Business passport sales
                 </Link>
               </>
             )}
           {areas.length > 0 && (
             <>
-              <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <p className="px-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
                 Regions
               </p>
               {areas.map((area) => (
                 <Link
                   key={area.id}
                   href={`/admin/areas/${area.id}`}
-                  className="block rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100"
+                  className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated"
                 >
                   {area.name}
                 </Link>

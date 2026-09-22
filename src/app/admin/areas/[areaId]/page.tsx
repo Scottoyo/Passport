@@ -4,6 +4,7 @@ import { getCurrentUser, canManageArea, isStateManager } from "@/lib/permissions
 import { createClient } from "@/lib/supabase/server";
 import type { Business, BusinessApprovalStatus, MarketingRequest, PassportArea, Subarea } from "@/lib/types/domain";
 import { StatusBadge } from "@/components/status-badge";
+import { buttonClasses } from "@/lib/ui-classes";
 import {
   createSubarea,
   setSubareaStatus,
@@ -20,9 +21,9 @@ import {
 import { setBusinessApproval, setBusinessFeatured } from "../../businesses/actions";
 
 const APPROVAL_STYLES: Record<BusinessApprovalStatus, string> = {
-  pending_review: "bg-amber-100 text-amber-800",
-  approved: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-700",
+  pending_review: "bg-warning-bg text-warning",
+  approved: "bg-success-bg text-success",
+  rejected: "bg-error-bg text-error",
 };
 
 const APPROVAL_LABELS: Record<BusinessApprovalStatus, string> = {
@@ -117,57 +118,57 @@ export default async function AreaWorkspacePage({ params }: Props) {
   return (
     <div>
       <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold text-slate-900">{area.name}</h1>
+        <h1 className="text-2xl font-bold text-ink">{area.name}</h1>
         <StatusBadge status={area.status} />
       </div>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-ink-muted">
         State/area lifecycle (launch/pause) is managed by national admins under
         States &amp; Regions.
       </p>
 
       {isNationalAdmin && (
-        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900">Branding</h2>
-          <p className="mt-1 text-sm text-slate-500">
+        <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+          <h2 className="font-semibold text-ink">Branding</h2>
+          <p className="mt-1 text-sm text-ink-muted">
             Sets this region&apos;s primary/secondary colors across its public pages and, for its passport
             holders, their account pages too. Leave unset to use the app&apos;s default look.
           </p>
           <form action={updateAreaBranding.bind(null, areaId)} className="mt-4 flex flex-wrap items-end gap-4">
             <label className="text-sm">
-              <span className="mb-1 block text-slate-600">Primary color</span>
+              <span className="mb-1 block text-ink-muted">Primary color</span>
               <input
                 name="brand_primary_color"
                 type="color"
                 defaultValue={area.brand_primary_color ?? "#0f172a"}
-                className="h-10 w-16 rounded-lg border border-slate-300"
+                className="h-10 w-16 rounded-lg border border-border"
               />
             </label>
             <label className="text-sm">
-              <span className="mb-1 block text-slate-600">Secondary color</span>
+              <span className="mb-1 block text-ink-muted">Secondary color</span>
               <input
                 name="brand_secondary_color"
                 type="color"
                 defaultValue={area.brand_secondary_color ?? "#1e293b"}
-                className="h-10 w-16 rounded-lg border border-slate-300"
+                className="h-10 w-16 rounded-lg border border-border"
               />
             </label>
             <label className="text-sm">
-              <span className="mb-1 block text-slate-600">Logo URL (optional)</span>
+              <span className="mb-1 block text-ink-muted">Logo URL (optional)</span>
               <input
                 name="brand_logo_url"
                 type="url"
                 defaultValue={area.brand_logo_url ?? ""}
                 placeholder="https://..."
-                className="w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-64 rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
-            <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+            <button className={buttonClasses("primary")}>
               Save branding
             </button>
           </form>
           {(area.brand_primary_color || area.brand_secondary_color || area.brand_logo_url) && (
             <form action={resetAreaBranding.bind(null, areaId)} className="mt-3">
-              <button className="text-xs font-semibold text-red-600 hover:text-red-700">
+              <button className="text-xs font-semibold text-error hover:text-red-700">
                 Reset to default
               </button>
             </form>
@@ -176,12 +177,12 @@ export default async function AreaWorkspacePage({ params }: Props) {
       )}
 
       {canSubareas && (
-        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900">Subareas</h2>
-          <ul className="mt-3 divide-y divide-slate-100">
+        <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+          <h2 className="font-semibold text-ink">Subareas</h2>
+          <ul className="mt-3 divide-y divide-border">
             {(subareas ?? []).map((subarea) => (
               <li key={subarea.id} className="flex items-center justify-between py-2">
-                <span className="text-sm font-medium text-slate-800">{subarea.name}</span>
+                <span className="text-sm font-medium text-ink">{subarea.name}</span>
                 <div className="flex items-center gap-3">
                   <StatusBadge status={subarea.status} />
                   {subarea.status !== "active" ? (
@@ -201,15 +202,15 @@ export default async function AreaWorkspacePage({ params }: Props) {
               </li>
             ))}
             {(subareas ?? []).length === 0 && (
-              <li className="py-2 text-sm text-slate-500">No subareas yet.</li>
+              <li className="py-2 text-sm text-ink-muted">No subareas yet.</li>
             )}
           </ul>
           <form action={createSubarea.bind(null, areaId)} className="mt-4 flex items-end gap-3">
             <label className="text-sm">
-              <span className="mb-1 block text-slate-600">Subarea name</span>
-              <input name="name" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <span className="mb-1 block text-ink-muted">Subarea name</span>
+              <input name="name" required className="rounded-lg border border-border px-3 py-2 text-sm" />
             </label>
-            <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
+            <button className={buttonClasses("outline")}>
               Add subarea
             </button>
           </form>
@@ -217,15 +218,15 @@ export default async function AreaWorkspacePage({ params }: Props) {
       )}
 
       {(canBusinesses || canView) && (
-        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900">Businesses</h2>
-          <ul className="mt-3 divide-y divide-slate-100">
+        <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+          <h2 className="font-semibold text-ink">Businesses</h2>
+          <ul className="mt-3 divide-y divide-border">
             {(businesses ?? []).map((business) => (
               <li key={business.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <div>
                   <Link
                     href={`/admin/areas/${areaId}/businesses/${business.id}`}
-                    className="text-sm font-medium text-slate-800 hover:underline"
+                    className="text-sm font-medium text-ink hover:underline"
                   >
                     {business.name}
                   </Link>
@@ -253,14 +254,14 @@ export default async function AreaWorkspacePage({ params }: Props) {
                   )}
                   {canBusinesses && business.approval_status === "rejected" && (
                     <form action={setBusinessApproval.bind(null, business.id, "approved")}>
-                      <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                      <button className={buttonClasses("outline", "sm")}>
                         Approve anyway
                       </button>
                     </form>
                   )}
                   {canBusinesses && business.approval_status === "approved" && (
                     <form action={setBusinessFeatured.bind(null, business.id, !business.featured)}>
-                      <button className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                      <button className={buttonClasses("outline", "sm")}>
                         {business.featured ? "Unfeature" : "Feature"}
                       </button>
                     </form>
@@ -283,23 +284,23 @@ export default async function AreaWorkspacePage({ params }: Props) {
               </li>
             ))}
             {(businesses ?? []).length === 0 && (
-              <li className="py-2 text-sm text-slate-500">No businesses yet.</li>
+              <li className="py-2 text-sm text-ink-muted">No businesses yet.</li>
             )}
           </ul>
           {canBusinesses && (
             <form action={createBusiness.bind(null, areaId)} className="mt-4 flex flex-wrap items-end gap-3">
               <label className="text-sm">
-                <span className="mb-1 block text-slate-600">Business name</span>
-                <input name="name" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <span className="mb-1 block text-ink-muted">Business name</span>
+                <input name="name" required className="rounded-lg border border-border px-3 py-2 text-sm" />
               </label>
               <label className="text-sm">
-                <span className="mb-1 block text-slate-600">City</span>
-                <input name="city" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <span className="mb-1 block text-ink-muted">City</span>
+                <input name="city" className="rounded-lg border border-border px-3 py-2 text-sm" />
               </label>
               {(subareas ?? []).length > 0 && (
                 <label className="text-sm">
-                  <span className="mb-1 block text-slate-600">Subarea</span>
-                  <select name="subarea_id" className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                  <span className="mb-1 block text-ink-muted">Subarea</span>
+                  <select name="subarea_id" className="rounded-lg border border-border px-3 py-2 text-sm">
                     <option value="">None</option>
                     {(subareas ?? []).map((s) => (
                       <option key={s.id} value={s.id}>
@@ -309,7 +310,7 @@ export default async function AreaWorkspacePage({ params }: Props) {
                   </select>
                 </label>
               )}
-              <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
+              <button className={buttonClasses("outline")}>
                 Add business
               </button>
             </form>
@@ -318,41 +319,41 @@ export default async function AreaWorkspacePage({ params }: Props) {
       )}
 
       {canStaff && (
-        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900">Local staff</h2>
-          <p className="mt-1 text-sm text-slate-500">
+        <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+          <h2 className="font-semibold text-ink">Local staff</h2>
+          <p className="mt-1 text-sm text-ink-muted">
             Staff can check in Passport holders and log redemptions at
             businesses in this area. They must have already signed in once.
           </p>
-          <ul className="mt-3 divide-y divide-slate-100">
+          <ul className="mt-3 divide-y divide-border">
             {((staff ?? []) as unknown as { id: string; profiles: { email: string } | null }[]).map((s) => (
               <li key={s.id} className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-800">{s.profiles?.email ?? "Unknown"}</span>
+                <span className="text-sm text-ink">{s.profiles?.email ?? "Unknown"}</span>
                 <form action={removeStaff.bind(null, areaId, s.id)}>
-                  <button className="text-xs font-semibold text-red-600 hover:text-red-700">
+                  <button className="text-xs font-semibold text-error hover:text-red-700">
                     Remove
                   </button>
                 </form>
               </li>
             ))}
             {(staff ?? []).length === 0 && (
-              <li className="py-2 text-sm text-slate-500">No staff added yet.</li>
+              <li className="py-2 text-sm text-ink-muted">No staff added yet.</li>
             )}
           </ul>
           <form action={addStaff.bind(null, areaId)} className="mt-4 flex flex-wrap items-end gap-3">
             <label className="text-sm">
-              <span className="mb-1 block text-slate-600">Staff email</span>
+              <span className="mb-1 block text-ink-muted">Staff email</span>
               <input
                 name="email"
                 type="email"
                 required
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
             {(businesses ?? []).length > 0 && (
               <label className="text-sm">
-                <span className="mb-1 block text-slate-600">Business (optional)</span>
-                <select name="business_id" className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                <span className="mb-1 block text-ink-muted">Business (optional)</span>
+                <select name="business_id" className="rounded-lg border border-border px-3 py-2 text-sm">
                   <option value="">Whole area</option>
                   {(businesses ?? []).map((b) => (
                     <option key={b.id} value={b.id}>
@@ -362,7 +363,7 @@ export default async function AreaWorkspacePage({ params }: Props) {
                 </select>
               </label>
             )}
-            <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
+            <button className={buttonClasses("outline")}>
               Add staff
             </button>
           </form>
@@ -370,9 +371,9 @@ export default async function AreaWorkspacePage({ params }: Props) {
       )}
 
       {canManageUsers && (
-        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900">Managers &amp; franchisees</h2>
-          <p className="mt-1 text-sm text-slate-500">
+        <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+          <h2 className="font-semibold text-ink">Managers &amp; franchisees</h2>
+          <p className="mt-1 text-sm text-ink-muted">
             Assign who can manage this area and exactly what they can do
             here. National admins always retain full access regardless of
             what&apos;s granted below.
@@ -392,16 +393,16 @@ export default async function AreaWorkspacePage({ params }: Props) {
                 can_manage_leads: boolean;
               }[]
             ).map((m) => (
-              <li key={m.id} className="rounded-lg bg-slate-50 p-3">
+              <li key={m.id} className="rounded-lg bg-surface-elevated p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-800">{m.profiles?.email ?? "Unknown"}</span>
+                  <span className="text-sm font-medium text-ink">{m.profiles?.email ?? "Unknown"}</span>
                   <form action={removeAreaManager.bind(null, areaId, m.id)}>
-                    <button className="text-xs font-semibold text-red-600 hover:text-red-700">
+                    <button className="text-xs font-semibold text-error hover:text-red-700">
                       Remove
                     </button>
                   </form>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-ink-muted">
                   {CAPABILITY_FIELDS.filter((f) => (m as unknown as Record<string, boolean>)[f.key])
                     .map((f) => f.label)
                     .join(", ") || "No capabilities granted"}
@@ -409,7 +410,7 @@ export default async function AreaWorkspacePage({ params }: Props) {
               </li>
             ))}
             {(managers ?? []).length === 0 && (
-              <li className="text-sm text-slate-500">No managers assigned yet.</li>
+              <li className="text-sm text-ink-muted">No managers assigned yet.</li>
             )}
           </ul>
           <form action={addAreaManager.bind(null, areaId)} className="mt-4 space-y-3">
@@ -418,7 +419,7 @@ export default async function AreaWorkspacePage({ params }: Props) {
               type="email"
               required
               placeholder="manager@example.com"
-              className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full max-w-sm rounded-lg border border-border px-3 py-2 text-sm"
             />
             <div className="flex flex-wrap gap-x-4 gap-y-2">
               {CAPABILITY_FIELDS.map((f) => {
@@ -426,7 +427,7 @@ export default async function AreaWorkspacePage({ params }: Props) {
                 return (
                   <label
                     key={f.key}
-                    className={`flex items-center gap-1.5 text-sm ${allowed ? "text-slate-700" : "text-slate-300"}`}
+                    className={`flex items-center gap-1.5 text-sm ${allowed ? "text-ink" : "text-disabled"}`}
                   >
                     <input
                       type="checkbox"
@@ -439,7 +440,7 @@ export default async function AreaWorkspacePage({ params }: Props) {
                 );
               })}
             </div>
-            <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+            <button className={buttonClasses("primary")}>
               Assign manager
             </button>
           </form>
@@ -447,23 +448,23 @@ export default async function AreaWorkspacePage({ params }: Props) {
       )}
 
       {canMarketing && (
-        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900">Marketing requests</h2>
+        <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+          <h2 className="font-semibold text-ink">Marketing requests</h2>
           <ul className="mt-3 space-y-2">
             {(requests ?? []).map((r) => (
-              <li key={r.id} className="rounded-lg bg-slate-50 p-3">
+              <li key={r.id} className="rounded-lg bg-surface-elevated p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-800">{r.title}</span>
-                  <span className="text-xs font-semibold capitalize text-slate-500">{r.status}</span>
+                  <span className="text-sm font-medium text-ink">{r.title}</span>
+                  <span className="text-xs font-semibold capitalize text-ink-muted">{r.status}</span>
                 </div>
-                {r.details && <p className="mt-1 text-sm text-slate-600">{r.details}</p>}
+                {r.details && <p className="mt-1 text-sm text-ink-muted">{r.details}</p>}
                 {r.admin_notes && (
-                  <p className="mt-1 text-xs text-slate-500">National admin note: {r.admin_notes}</p>
+                  <p className="mt-1 text-xs text-ink-muted">National admin note: {r.admin_notes}</p>
                 )}
               </li>
             ))}
             {(requests ?? []).length === 0 && (
-              <li className="text-sm text-slate-500">No requests submitted yet.</li>
+              <li className="text-sm text-ink-muted">No requests submitted yet.</li>
             )}
           </ul>
           <form action={createMarketingRequest.bind(null, areaId)} className="mt-4 space-y-3">
@@ -471,15 +472,15 @@ export default async function AreaWorkspacePage({ params }: Props) {
               name="title"
               required
               placeholder="Request title"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm"
             />
             <textarea
               name="details"
               placeholder="Details"
               rows={3}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm"
             />
-            <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+            <button className={buttonClasses("primary")}>
               Submit request
             </button>
           </form>

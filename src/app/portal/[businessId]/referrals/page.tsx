@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPortalBusinessAccess } from "@/lib/portal-queries";
 import { generateBusinessReferralCode, setCustomBusinessReferralCode } from "../actions";
+import { buttonClasses } from "@/lib/ui-classes";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -37,62 +38,62 @@ export default async function PortalReferralsPage({ params }: Props) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-slate-900">Referral program</h2>
-      <p className="mt-1 text-slate-600">
+      <h2 className="text-2xl font-bold text-ink">Referral program</h2>
+      <p className="mt-1 text-ink-muted">
         Share your referral link. When someone purchases a Passport through your link, your
         business earns credit.
       </p>
 
-      <section className="mt-6 rounded-2xl border border-slate-200 p-6">
-        <h3 className="font-semibold text-slate-900">Your referral code</h3>
+      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
+        <h3 className="font-semibold text-ink">Your referral code</h3>
         {business.referral_code ? (
           <>
             <div className="mt-3 flex items-center gap-2">
-              <span className="rounded-lg bg-slate-100 px-4 py-2 font-mono text-lg font-semibold text-slate-900">
+              <span className="rounded-lg bg-surface-elevated px-4 py-2 font-mono text-lg font-semibold text-ink">
                 {business.referral_code}
               </span>
             </div>
             {referralLink && (
-              <p className="mt-2 break-all text-sm text-slate-500">{referralLink}</p>
+              <p className="mt-2 break-all text-sm text-ink-muted">{referralLink}</p>
             )}
           </>
         ) : (
           <form action={generateBusinessReferralCode.bind(null, businessId)} className="mt-3">
-            <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+            <button className={buttonClasses("primary")}>
               Generate a code
             </button>
           </form>
         )}
 
-        <form action={setCustomBusinessReferralCode.bind(null, businessId)} className="mt-4 flex gap-2 border-t border-slate-100 pt-4">
+        <form action={setCustomBusinessReferralCode.bind(null, businessId)} className="mt-4 flex gap-2 border-t border-border pt-4">
           <input
             name="code"
             placeholder="custom-code"
             defaultValue={business.referral_code ?? ""}
-            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
           />
-          <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
+          <button className={buttonClasses("outline")}>
             Save custom code
           </button>
         </form>
       </section>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Total referrals</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{totalReferrals ?? 0}</p>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Total referrals</p>
+          <p className="mt-1 text-2xl font-bold text-ink">{totalReferrals ?? 0}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Revenue generated</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">${((stats?.revenue_cents ?? 0) / 100).toFixed(2)}</p>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Revenue generated</p>
+          <p className="mt-1 text-2xl font-bold text-ink">${((stats?.revenue_cents ?? 0) / 100).toFixed(2)}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Commission owed</p>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Commission owed</p>
           <p className="mt-1 text-2xl font-bold text-amber-700">${((stats?.payout_owed_cents ?? 0) / 100).toFixed(2)}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Commission paid</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">${((stats?.payout_paid_cents ?? 0) / 100).toFixed(2)}</p>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Commission paid</p>
+          <p className="mt-1 text-2xl font-bold text-ink">${((stats?.payout_paid_cents ?? 0) / 100).toFixed(2)}</p>
         </div>
       </div>
     </div>

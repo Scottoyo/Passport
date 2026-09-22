@@ -36,28 +36,28 @@ export default async function SubareaPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-      <nav className="text-sm text-slate-500">
-        <Link href={`/${state.slug}`} className="hover:text-slate-700">
+      <nav className="text-sm text-ink-muted">
+        <Link href={`/${state.slug}`} className="hover:text-ink">
           {state.name}
         </Link>
         <span className="mx-2">/</span>
-        <Link href={`/${state.slug}/${area.slug}`} className="hover:text-slate-700">
+        <Link href={`/${state.slug}/${area.slug}`} className="hover:text-ink">
           {area.name}
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-slate-700">{subarea.name}</span>
+        <span className="text-ink">{subarea.name}</span>
       </nav>
-      <h1 className="mt-2 text-3xl font-bold text-slate-900">{subarea.name}</h1>
+      <h1 className="mt-2 font-display text-3xl font-bold text-ink">{subarea.name}</h1>
       {subarea.description && (
-        <p className="mt-4 max-w-2xl text-slate-600">{subarea.description}</p>
+        <p className="mt-4 max-w-2xl text-ink-muted">{subarea.description}</p>
       )}
 
       <section className="mt-10">
-        <h2 className="text-xl font-semibold text-slate-900">
+        <h2 className="text-xl font-semibold text-ink">
           Participating businesses
         </h2>
         {businesses.length === 0 ? (
-          <p className="mt-2 text-slate-600">
+          <p className="mt-2 text-ink-muted">
             No businesses are live in {subarea.name} yet.
           </p>
         ) : (

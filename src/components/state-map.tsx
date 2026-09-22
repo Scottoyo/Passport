@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import usaMap from "@svg-maps/usa";
 import type { State } from "@/lib/types/domain";
+import { buttonClasses } from "@/lib/ui-classes";
 
 interface MapLocation {
   id: string;
@@ -37,7 +38,7 @@ export function StateMap({ states }: { states: State[] }) {
   return (
     <div>
       <div className="grid gap-8 lg:grid-cols-[3fr_2fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="rounded-2xl border border-border bg-surface p-4">
           <svg viewBox={viewBox} role="img" aria-label="Map of the United States">
             {locations.map((location) => {
               const active = activeByAbbreviation.get(location.id);
@@ -51,8 +52,8 @@ export function StateMap({ states }: { states: State[] }) {
                   onMouseLeave={() => setHoveredId(null)}
                   className={
                     active
-                      ? `cursor-pointer transition-colors ${isHovered ? "fill-slate-700" : "fill-slate-900"}`
-                      : "fill-slate-200"
+                      ? `cursor-pointer transition-colors ${isHovered ? "fill-brand-primary-dark" : "fill-brand-primary"}`
+                      : "fill-border"
                   }
                 >
                   <title>{active ? `${location.name} - explore Passport Areas` : location.name}</title>
@@ -64,15 +65,11 @@ export function StateMap({ states }: { states: State[] }) {
         <div>
           <ul className="flex flex-wrap gap-2">
             {states.length === 0 && (
-              <li className="text-sm text-slate-500">No states are live yet - check back soon.</li>
+              <li className="text-sm text-ink-muted">No states are live yet - check back soon.</li>
             )}
             {states.map((state) => (
               <li key={state.id}>
-                <button
-                  type="button"
-                  onClick={() => handleSelect(state)}
-                  className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-500"
-                >
+                <button type="button" onClick={() => handleSelect(state)} className={buttonClasses("outline", "sm")}>
                   {state.name}
                 </button>
               </li>

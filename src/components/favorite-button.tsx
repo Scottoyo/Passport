@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { buttonClasses, cardClasses } from "@/lib/ui-classes";
 
 export function FavoriteButton({
   isSignedIn,
@@ -23,11 +24,11 @@ export function FavoriteButton({
       ? `flex h-9 w-9 items-center justify-center rounded-full border shadow-sm ${
           isFavorited
             ? "border-red-200 bg-white text-red-500"
-            : "border-slate-200 bg-white/90 text-slate-500 hover:text-red-500"
+            : "border-border bg-white/90 text-ink-muted hover:text-red-500"
         }`
       : isFavorited
-        ? "rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-700"
-        : "rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500";
+        ? buttonClasses("primary", "sm")
+        : buttonClasses("outline", "sm");
 
   const label = variant === "icon" ? null : isFavorited ? "Favorited ★" : "Favorite";
   const icon =
@@ -64,44 +65,38 @@ export function FavoriteButton({
 
       {showModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 px-4"
           onClick={() => setShowModal(false)}
         >
           <div
-            className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+            className={`w-full max-w-sm p-6 shadow-xl ${cardClasses()}`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">Save this to your favorites</h3>
+              <h3 className="text-lg font-semibold text-ink">Save this to your favorites</h3>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
                 aria-label="Close"
-                className="text-slate-400 hover:text-slate-600"
+                className="text-ink-muted hover:text-ink"
               >
                 &times;
               </button>
             </div>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-ink-muted">
               Create a free profile or get a Passport to start saving your favorite businesses.
             </p>
             <div className="mt-5 space-y-2">
-              <Link
-                href={passportHref}
-                className="block w-full rounded-full bg-slate-900 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-slate-700"
-              >
+              <Link href={passportHref} className={`w-full ${buttonClasses("primary")}`}>
                 Get a Passport
               </Link>
-              <Link
-                href="/create-profile"
-                className="block w-full rounded-full border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700 hover:border-slate-500"
-              >
+              <Link href="/create-profile" className={`w-full ${buttonClasses("outline")}`}>
                 Create a Profile
               </Link>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="block w-full rounded-full px-4 py-2 text-center text-sm font-semibold text-slate-500 hover:text-slate-700"
+                className={`w-full ${buttonClasses("ghost")}`}
               >
                 Not now
               </button>

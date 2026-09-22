@@ -56,57 +56,57 @@ export function NotificationBell({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Notifications"
-        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:text-slate-900"
+        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border text-ink-muted hover:text-ink"
       >
         <BellIcon />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-semibold text-white">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border border-slate-200 bg-white shadow-xl">
+        <div className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border border-border bg-surface shadow-xl">
           <div className="max-h-96 overflow-y-auto">
             {recent.length === 0 ? (
-              <p className="p-4 text-sm text-slate-500">Nothing here yet.</p>
+              <p className="p-4 text-sm text-ink-muted">Nothing here yet.</p>
             ) : (
               recent.map((e) => (
                 <Link
                   key={e.id}
                   href={`/${e.stateSlug}/${e.areaSlug}/businesses/${e.businessSlug}`}
                   onClick={() => setOpen(false)}
-                  className={`block border-b border-slate-100 p-3 text-sm hover:bg-slate-50 ${
-                    isUnread(e.created_at) ? "bg-slate-50" : ""
+                  className={`block border-b border-border p-3 text-sm hover:bg-surface-elevated ${
+                    isUnread(e.created_at) ? "bg-surface-elevated" : ""
                   }`}
                 >
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-ink">
                     {e.event_type === "new_business" ? "New Business Added" : "New Passport Promotion"}
                   </p>
-                  <p className="text-slate-600">
+                  <p className="text-ink-muted">
                     {e.event_type === "new_business"
                       ? `${e.businessName} has joined the Passport!`
                       : `${e.businessName} just added: ${e.offerTitle}`}
                   </p>
-                  <p className="mt-1 text-xs text-slate-400">{new Date(e.created_at).toLocaleDateString()}</p>
+                  <p className="mt-1 text-xs text-ink-muted">{new Date(e.created_at).toLocaleDateString()}</p>
                 </Link>
               ))
             )}
           </div>
-          <div className="flex items-center justify-between gap-2 border-t border-slate-100 p-3">
+          <div className="flex items-center justify-between gap-2 border-t border-border p-3">
             <button
               type="button"
               disabled={isPending || unreadCount === 0}
               onClick={handleMarkAllRead}
-              className="text-xs font-semibold text-slate-600 hover:text-slate-900 disabled:opacity-40"
+              className="text-xs font-semibold text-ink-muted hover:text-ink disabled:opacity-40"
             >
               Mark All as Read
             </button>
             <Link
               href="/account/notifications"
               onClick={() => setOpen(false)}
-              className="text-xs font-semibold text-slate-600 hover:text-slate-900"
+              className="text-xs font-semibold text-ink-muted hover:text-ink"
             >
               View All Notifications
             </Link>

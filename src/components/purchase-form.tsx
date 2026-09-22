@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { startPlaceholderPassport } from "@/app/passport/actions";
+import { buttonClasses } from "@/lib/ui-classes";
 
 export function PurchaseForm({
   passportProductId,
@@ -25,7 +26,7 @@ export function PurchaseForm({
     return (
       <button
         onClick={() => router.push(`/passport/create-profile?next=${encodeURIComponent(next)}`)}
-        className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+        className={buttonClasses("primary")}
       >
         Get Your Passport
       </button>
@@ -35,21 +36,21 @@ export function PurchaseForm({
   return (
     <div>
       <label className="mb-3 block max-w-xs text-sm">
-        <span className="mb-1 block text-slate-600">Referral code (optional)</span>
+        <span className="mb-1 block text-ink-muted">Referral code (optional)</span>
         <input
           value={code}
           onChange={(e) => setCode(e.target.value)}
           placeholder="Business or friend's code"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
         />
       </label>
       <label className="mb-3 block max-w-xs text-sm">
-        <span className="mb-1 block text-slate-600">Promo code (optional)</span>
+        <span className="mb-1 block text-ink-muted">Promo code (optional)</span>
         <input
           value={promoCode}
           onChange={(e) => setPromoCode(e.target.value)}
           placeholder="Discount code"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
         />
       </label>
       <button
@@ -64,16 +65,16 @@ export function PurchaseForm({
             }
           })
         }
-        className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark disabled:opacity-50"
+        className={buttonClasses("primary")}
       >
         {isPending ? "Setting up your Passport..." : "Get my Passport"}
       </button>
-      <p className="mt-2 max-w-md text-xs text-slate-400">
+      <p className="mt-2 max-w-md text-xs text-ink-muted">
         Payments aren&apos;t connected yet in this environment, so this
         creates your Passport without charging anything. See the
         architecture doc for the open decision on a payment processor.
       </p>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-sm text-error">{error}</p>}
     </div>
   );
 }

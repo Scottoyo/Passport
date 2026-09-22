@@ -24,12 +24,13 @@ import {
   restoreHolder,
   sendHolderPasswordReset,
 } from "./actions";
+import { buttonClasses } from "@/lib/ui-classes";
 
 const STATUS_OPTIONS: PassportStatus[] = ["active", "expired", "revoked"];
 const AGE_RANGES = ["Under 18", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
 
-const cardClass = "mt-6 rounded-2xl border border-slate-200 p-6";
-const inputClass = "rounded-lg border border-slate-300 px-3 py-2 text-sm";
+const cardClass = "mt-6 rounded-2xl border border-border bg-surface p-6";
+const inputClass = "rounded-lg border border-border px-3 py-2 text-sm";
 
 function toDateInputValue(iso: string | null) {
   if (!iso) return "";
@@ -91,22 +92,22 @@ export default async function PassportHolderDetailPage({
 
   return (
     <div className="max-w-4xl">
-      <Link href="/admin/passport-holders" className="text-sm text-slate-500 hover:text-slate-700">
+      <Link href="/admin/passport-holders" className="text-sm text-ink-muted hover:text-ink">
         &larr; Back to holders
       </Link>
 
       <div className="mt-2 flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold text-slate-900">{holder.full_name || holder.email || "Unnamed holder"}</h1>
+        <h1 className="text-2xl font-bold text-ink">{holder.full_name || holder.email || "Unnamed holder"}</h1>
         {holder.deleted_at && (
-          <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">Deleted</span>
+          <span className="rounded-full bg-error-bg px-3 py-1 text-xs font-semibold text-error">Deleted</span>
         )}
         {holder.suspended_at && !holder.deleted_at && (
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">Suspended</span>
+          <span className="rounded-full bg-warning-bg px-3 py-1 text-xs font-semibold text-warning">Suspended</span>
         )}
         {!editing && (
           <Link
             href={`${baseHref}?mode=edit`}
-            className="ml-auto rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:border-slate-500"
+            className={`ml-auto ${buttonClasses("outline", "sm")}`}
           >
             Edit
           </Link>
@@ -117,30 +118,30 @@ export default async function PassportHolderDetailPage({
       {/* Profile Information / Edit                                     */}
       {/* -------------------------------------------------------------- */}
       <section className={cardClass}>
-        <h2 className="font-semibold text-slate-900">Profile information</h2>
+        <h2 className="font-semibold text-ink">Profile information</h2>
 
         {editing ? (
           <form action={updateHolderProfile.bind(null, profileId)} className="mt-4 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="text-sm">
-                <span className="mb-1 block text-slate-600">First name</span>
+                <span className="mb-1 block text-ink-muted">First name</span>
                 <input name="first_name" defaultValue={holder.first_name ?? ""} className={`${inputClass} w-full`} />
               </label>
               <label className="text-sm">
-                <span className="mb-1 block text-slate-600">Last name</span>
+                <span className="mb-1 block text-ink-muted">Last name</span>
                 <input name="last_name" defaultValue={holder.last_name ?? ""} className={`${inputClass} w-full`} />
               </label>
               <label className="text-sm">
-                <span className="mb-1 block text-slate-600">Email</span>
-                <input value={holder.email ?? ""} disabled className={`${inputClass} w-full bg-slate-50 text-slate-400`} />
-                <span className="mt-1 block text-xs text-slate-400">Email changes go through account security.</span>
+                <span className="mb-1 block text-ink-muted">Email</span>
+                <input value={holder.email ?? ""} disabled className={`${inputClass} w-full bg-surface-elevated text-ink-muted`} />
+                <span className="mt-1 block text-xs text-ink-muted">Email changes go through account security.</span>
               </label>
               <label className="text-sm">
-                <span className="mb-1 block text-slate-600">Phone</span>
+                <span className="mb-1 block text-ink-muted">Phone</span>
                 <input name="phone" defaultValue={holder.phone ?? ""} className={`${inputClass} w-full`} />
               </label>
               <label className="text-sm">
-                <span className="mb-1 block text-slate-600">Age range</span>
+                <span className="mb-1 block text-ink-muted">Age range</span>
                 <select name="age_range" defaultValue={holder.age_range ?? ""} className={`${inputClass} w-full`}>
                   <option value="">Not set</option>
                   {AGE_RANGES.map((range) => (
@@ -152,12 +153,12 @@ export default async function PassportHolderDetailPage({
               </label>
             </div>
             <div className="flex gap-3">
-              <button className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+              <button className={buttonClasses("primary")}>
                 Save changes
               </button>
               <Link
                 href={baseHref}
-                className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500"
+                className={buttonClasses("outline")}
               >
                 Cancel
               </Link>
@@ -166,24 +167,24 @@ export default async function PassportHolderDetailPage({
         ) : (
           <dl className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
-              <dt className="text-xs text-slate-500">Name</dt>
-              <dd className="text-sm text-slate-900">{holder.full_name || "-"}</dd>
+              <dt className="text-xs text-ink-muted">Name</dt>
+              <dd className="text-sm text-ink">{holder.full_name || "-"}</dd>
             </div>
             <div>
-              <dt className="text-xs text-slate-500">Email</dt>
-              <dd className="text-sm text-slate-900">{holder.email ?? "-"}</dd>
+              <dt className="text-xs text-ink-muted">Email</dt>
+              <dd className="text-sm text-ink">{holder.email ?? "-"}</dd>
             </div>
             <div>
-              <dt className="text-xs text-slate-500">Phone</dt>
-              <dd className="text-sm text-slate-900">{holder.phone ?? "-"}</dd>
+              <dt className="text-xs text-ink-muted">Phone</dt>
+              <dd className="text-sm text-ink">{holder.phone ?? "-"}</dd>
             </div>
             <div>
-              <dt className="text-xs text-slate-500">Age range</dt>
-              <dd className="text-sm text-slate-900">{holder.age_range ?? "-"}</dd>
+              <dt className="text-xs text-ink-muted">Age range</dt>
+              <dd className="text-sm text-ink">{holder.age_range ?? "-"}</dd>
             </div>
             <div>
-              <dt className="text-xs text-slate-500">Joined</dt>
-              <dd className="text-sm text-slate-900">{new Date(holder.created_at).toLocaleDateString()}</dd>
+              <dt className="text-xs text-ink-muted">Joined</dt>
+              <dd className="text-sm text-ink">{new Date(holder.created_at).toLocaleDateString()}</dd>
             </div>
           </dl>
         )}
@@ -193,19 +194,19 @@ export default async function PassportHolderDetailPage({
       {/* State / Region                                                  */}
       {/* -------------------------------------------------------------- */}
       <section className={cardClass}>
-        <h2 className="font-semibold text-slate-900">State / Region</h2>
-        <p className="mt-1 text-xs text-slate-500">
+        <h2 className="font-semibold text-ink">State / Region</h2>
+        <p className="mt-1 text-xs text-ink-muted">
           A Passport is valid only in the region it was purchased for.
           {!currentUser.isNationalAdmin && " Only a national admin can reassign a Passport to a different region."}
         </p>
-        <ul className="mt-4 divide-y divide-slate-100">
+        <ul className="mt-4 divide-y divide-border">
           {passports.map((p) => (
             <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div>
-                <p className="text-sm font-medium text-slate-900">
+                <p className="text-sm font-medium text-ink">
                   {p.areaName ?? "Unknown region"}, {p.stateName ?? "Unknown state"}
                 </p>
-                <p className="text-xs text-slate-500">Expires {new Date(p.expires_at).toLocaleDateString()}</p>
+                <p className="text-xs text-ink-muted">Expires {new Date(p.expires_at).toLocaleDateString()}</p>
               </div>
               {currentUser.isNationalAdmin && productsByState.length > 0 && (
                 <form action={reassignPassportState.bind(null, p.id, profileId)} className="flex items-center gap-2">
@@ -220,14 +221,14 @@ export default async function PassportHolderDetailPage({
                       </optgroup>
                     ))}
                   </select>
-                  <button className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500">
+                  <button className={buttonClasses("outline", "sm")}>
                     Reassign
                   </button>
                 </form>
               )}
             </li>
           ))}
-          {passports.length === 0 && <li className="py-3 text-sm text-slate-500">No Passports yet.</li>}
+          {passports.length === 0 && <li className="py-3 text-sm text-ink-muted">No Passports yet.</li>}
         </ul>
       </section>
 
@@ -238,8 +239,8 @@ export default async function PassportHolderDetailPage({
         <section key={p.id} className={cardClass}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 className="font-semibold text-slate-900">{formatPassportNumber(p.passport_number)}</h2>
-              <p className="text-xs text-slate-500">{p.productName ?? "Unknown product"}</p>
+              <h2 className="font-semibold text-ink">{formatPassportNumber(p.passport_number)}</h2>
+              <p className="text-xs text-ink-muted">{p.productName ?? "Unknown product"}</p>
             </div>
             <form action={updatePassportStatus.bind(null, p.id, profileId)} className="flex items-center gap-2">
               <select name="status" defaultValue={p.status} className={inputClass}>
@@ -249,23 +250,23 @@ export default async function PassportHolderDetailPage({
                   </option>
                 ))}
               </select>
-              <button className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500">
+              <button className={buttonClasses("outline", "sm")}>
                 Save status
               </button>
             </form>
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div className="text-sm text-slate-600">
+            <div className="text-sm text-ink-muted">
               <p>Purchased {new Date(p.purchased_at).toLocaleDateString()}</p>
-              {p.priceCents != null && <p className="text-xs text-slate-400">${(p.priceCents / 100).toFixed(2)}</p>}
+              {p.priceCents != null && <p className="text-xs text-ink-muted">${(p.priceCents / 100).toFixed(2)}</p>}
             </div>
             <form action={updatePassportExpiry.bind(null, p.id, profileId)} className="flex items-end gap-2">
               <label className="text-sm">
-                <span className="mb-1 block text-slate-600">End date</span>
+                <span className="mb-1 block text-ink-muted">End date</span>
                 <input type="date" name="expires_at" defaultValue={toDateInputValue(p.expires_at)} className={inputClass} />
               </label>
-              <button className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500">
+              <button className={buttonClasses("outline", "sm")}>
                 Save
               </button>
             </form>
@@ -273,10 +274,10 @@ export default async function PassportHolderDetailPage({
 
           <form
             action={updatePassportTravelDates.bind(null, p.id, profileId)}
-            className="mt-4 flex flex-wrap items-end gap-3 border-t border-slate-100 pt-4"
+            className="mt-4 flex flex-wrap items-end gap-3 border-t border-border pt-4"
           >
             <label className="text-sm">
-              <span className="mb-1 block text-slate-600">Travel start date</span>
+              <span className="mb-1 block text-ink-muted">Travel start date</span>
               <input
                 type="date"
                 name="travel_start_date"
@@ -285,7 +286,7 @@ export default async function PassportHolderDetailPage({
               />
             </label>
             <label className="text-sm">
-              <span className="mb-1 block text-slate-600">Travel end date</span>
+              <span className="mb-1 block text-ink-muted">Travel end date</span>
               <input
                 type="date"
                 name="travel_end_date"
@@ -293,7 +294,7 @@ export default async function PassportHolderDetailPage({
                 className={inputClass}
               />
             </label>
-            <button className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500">
+            <button className={buttonClasses("outline", "sm")}>
               Save travel dates
             </button>
           </form>
@@ -304,17 +305,17 @@ export default async function PassportHolderDetailPage({
       {/* Redemption History                                              */}
       {/* -------------------------------------------------------------- */}
       <section className={cardClass}>
-        <h2 className="font-semibold text-slate-900">Redemption history</h2>
-        <ul className="mt-3 divide-y divide-slate-100">
+        <h2 className="font-semibold text-ink">Redemption history</h2>
+        <ul className="mt-3 divide-y divide-border">
           {redemptions.map((r) => (
             <li key={r.id} className="flex items-center justify-between py-2 text-sm">
-              <span className="text-slate-800">
+              <span className="text-ink">
                 {r.offerTitle} &middot; {r.businessName}
               </span>
-              <span className="text-slate-500">{new Date(r.redeemed_at).toLocaleDateString()}</span>
+              <span className="text-ink-muted">{new Date(r.redeemed_at).toLocaleDateString()}</span>
             </li>
           ))}
-          {redemptions.length === 0 && <li className="py-2 text-sm text-slate-500">No redemptions found.</li>}
+          {redemptions.length === 0 && <li className="py-2 text-sm text-ink-muted">No redemptions found.</li>}
         </ul>
       </section>
 
@@ -322,23 +323,23 @@ export default async function PassportHolderDetailPage({
       {/* Favorite Businesses                                             */}
       {/* -------------------------------------------------------------- */}
       <section className={cardClass}>
-        <h2 className="font-semibold text-slate-900">Favorite businesses</h2>
-        <ul className="mt-3 divide-y divide-slate-100">
+        <h2 className="font-semibold text-ink">Favorite businesses</h2>
+        <ul className="mt-3 divide-y divide-border">
           {favorites.map((b) => (
             <li key={b.id} className="py-2 text-sm">
               <Link
                 href={`/admin/areas/${b.passport_area_id}/businesses/${b.id}`}
-                className="font-medium text-slate-800 hover:underline"
+                className="font-medium text-ink hover:underline"
               >
                 {b.name}
               </Link>
-              <span className="ml-2 text-slate-500">
+              <span className="ml-2 text-ink-muted">
                 {b.areaName ?? "Unknown area"}
                 {b.stateName ? `, ${b.stateName}` : ""}
               </span>
             </li>
           ))}
-          {favorites.length === 0 && <li className="py-2 text-sm text-slate-500">No favorite businesses found.</li>}
+          {favorites.length === 0 && <li className="py-2 text-sm text-ink-muted">No favorite businesses found.</li>}
         </ul>
       </section>
 
@@ -346,11 +347,11 @@ export default async function PassportHolderDetailPage({
       {/* Account Security                                                */}
       {/* -------------------------------------------------------------- */}
       <section className={cardClass}>
-        <h2 className="font-semibold text-slate-900">Account security</h2>
-        <p className="mt-1 text-sm text-slate-600">Holder email: {holder.email ?? "-"}</p>
+        <h2 className="font-semibold text-ink">Account security</h2>
+        <p className="mt-1 text-sm text-ink-muted">Holder email: {holder.email ?? "-"}</p>
         {holder.email && (
           <form action={sendHolderPasswordReset.bind(null, profileId, holder.email)} className="mt-3">
-            <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
+            <button className={buttonClasses("outline")}>
               Send password reset email
             </button>
           </form>
@@ -381,13 +382,13 @@ export default async function PassportHolderDetailPage({
                           : restoreHolder.bind(null, profileId)
                   }
                 >
-                  <button className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500">
+                  <button className="rounded-full bg-error px-4 py-2 text-sm font-semibold text-white hover:bg-red-500">
                     Confirm
                   </button>
                 </form>
                 <Link
                   href={baseHref}
-                  className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500"
+                  className={buttonClasses("outline")}
                 >
                   Cancel
                 </Link>
@@ -398,7 +399,7 @@ export default async function PassportHolderDetailPage({
               {holder.suspended_at ? (
                 <Link
                   href={`${baseHref}?confirm=reactivate`}
-                  className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500"
+                  className={buttonClasses("outline")}
                 >
                   Reactivate account
                 </Link>
@@ -413,14 +414,14 @@ export default async function PassportHolderDetailPage({
               {holder.deleted_at ? (
                 <Link
                   href={`${baseHref}?confirm=restore`}
-                  className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500"
+                  className={buttonClasses("outline")}
                 >
                   Restore account
                 </Link>
               ) : (
                 <Link
                   href={`${baseHref}?confirm=delete`}
-                  className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
+                  className="rounded-full bg-error px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
                 >
                   Soft delete account
                 </Link>

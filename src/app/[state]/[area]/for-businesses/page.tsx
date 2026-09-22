@@ -57,7 +57,7 @@ export default async function ForBusinessesPage({ params }: Props) {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
               href={registerHref}
-              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-slate-100"
+              className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary hover:bg-surface-elevated"
             >
               List Your Business
             </Link>
@@ -77,10 +77,10 @@ export default async function ForBusinessesPage({ params }: Props) {
           <p className="text-center text-sm font-semibold uppercase tracking-wide text-brand-primary">
             More Than a Discount
           </p>
-          <h2 className="mt-2 text-center font-display text-3xl font-bold text-[#102F3B]">
+          <h2 className="mt-2 text-center font-display text-3xl font-bold text-ink">
             A better way to be discovered.
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-[#102F3B]/70">
+          <p className="mx-auto mt-3 max-w-2xl text-center text-ink/70">
             {area.name} Passport is a local discovery platform designed to turn curiosity into
             visits&mdash;and first visits into lasting customers.
           </p>
@@ -102,12 +102,12 @@ export default async function ForBusinessesPage({ params }: Props) {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="border-t border-[#F2DFC0] bg-[#FFF7E8] scroll-mt-20">
+      <section id="how-it-works" className="border-t border-border bg-bg scroll-mt-20">
         <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20">
           <p className="text-center text-sm font-semibold uppercase tracking-wide text-brand-primary">
             From Listing to Foot Traffic
           </p>
-          <h2 className="mt-2 text-center font-display text-3xl font-bold text-[#102F3B]">
+          <h2 className="mt-2 text-center font-display text-3xl font-bold text-ink">
             Joining is straightforward.
           </h2>
           <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
@@ -134,10 +134,10 @@ export default async function ForBusinessesPage({ params }: Props) {
           <p className="text-center text-sm font-semibold uppercase tracking-wide text-brand-primary">
             You Control the Offer
           </p>
-          <h2 className="mt-2 text-center font-display text-3xl font-bold text-[#102F3B]">
+          <h2 className="mt-2 text-center font-display text-3xl font-bold text-ink">
             Make the first visit irresistible.
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-[#102F3B]/70">
+          <p className="mx-auto mt-3 max-w-2xl text-center text-ink/70">
             A great perk does not have to be complicated. It should be easy to understand, easy
             for your team to honor, and strong enough to inspire a visit.
           </p>
@@ -155,16 +155,16 @@ export default async function ForBusinessesPage({ params }: Props) {
               </PerkTicket>
             ))}
           </div>
-          <p className="mt-8 text-center text-sm text-[#102F3B]/60">
+          <p className="mt-8 text-center text-sm text-ink/60">
             These are examples only. You choose the perk that fits your business.
           </p>
         </div>
       </section>
 
       {/* Fit / category ribbon */}
-      <section className="border-t border-[#F2DFC0] bg-[#FFF7E8]">
+      <section className="border-t border-border bg-bg">
         <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <h2 className="font-display text-2xl font-bold text-[#102F3B] sm:text-3xl">
+          <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">
             If you help people enjoy {area.name}, you belong here.
           </h2>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -178,10 +178,7 @@ export default async function ForBusinessesPage({ params }: Props) {
               "Hospitality",
               "Local Services",
             ].map((category) => (
-              <span
-                key={category}
-                className="rounded-full border border-[#F2DFC0] bg-white px-4 py-2 text-sm font-medium text-[#102F3B]"
-              >
+              <span key={category} className="rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-ink">
                 {category}
               </span>
             ))}
@@ -192,7 +189,7 @@ export default async function ForBusinessesPage({ params }: Props) {
       {/* FAQ */}
       <section className="bg-white">
         <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
-          <h2 className="text-center font-display text-3xl font-bold text-[#102F3B]">
+          <h2 className="text-center font-display text-3xl font-bold text-ink">
             Frequently asked questions
           </h2>
           <div className="mt-10 space-y-3">
@@ -226,9 +223,9 @@ export default async function ForBusinessesPage({ params }: Props) {
       </section>
 
       {/* Final CTA */}
-      <section className="relative overflow-hidden bg-[#102F3B]">
+      <section className="relative overflow-hidden bg-brand-primary-dark">
         <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
-          <p className="text-sm font-semibold uppercase tracking-wide text-[#F47A38]">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent">
             Your Next Customer Is Exploring
           </p>
           <h2 className="mt-2 font-display text-3xl font-bold text-white sm:text-4xl">
@@ -241,7 +238,7 @@ export default async function ForBusinessesPage({ params }: Props) {
           <div className="mt-8">
             <Link
               href={registerHref}
-              className="inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#102F3B] hover:bg-slate-100"
+              className="inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-primary-dark hover:bg-surface-elevated"
             >
               Register Your Business
             </Link>
@@ -258,7 +255,7 @@ export default async function ForBusinessesPage({ params }: Props) {
 function PerkTicket({ children, rotate = "" }: { children: React.ReactNode; rotate?: string }) {
   return (
     <div
-      className={`rounded-xl border border-dashed border-[#E95D4E]/50 bg-white px-5 py-4 text-sm font-medium text-[#102F3B] shadow-sm ${rotate}`}
+      className={`rounded-xl border border-dashed border-accent/50 bg-white px-5 py-4 text-sm font-medium text-ink shadow-sm ${rotate}`}
     >
       {children}
     </div>
@@ -267,8 +264,8 @@ function PerkTicket({ children, rotate = "" }: { children: React.ReactNode; rota
 
 function FaqItem({ question, children }: { question: string; children: React.ReactNode }) {
   return (
-    <details className="group rounded-2xl border border-[#F2DFC0] bg-[#FFF7E8] px-5 py-4 open:bg-white">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-[#102F3B]">
+    <details className="group rounded-2xl border border-border bg-bg px-5 py-4 open:bg-white">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-ink">
         {question}
         <svg
           viewBox="0 0 20 20"
@@ -281,7 +278,7 @@ function FaqItem({ question, children }: { question: string; children: React.Rea
           <path d="M5 7.5 10 12.5 15 7.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </summary>
-      <p className="mt-3 text-sm text-[#102F3B]/70">{children}</p>
+      <p className="mt-3 text-sm text-ink/70">{children}</p>
     </details>
   );
 }

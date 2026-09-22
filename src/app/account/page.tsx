@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getMyPassports, getAreaVisitProgress, getAchievementProgress } from "@/lib/queries";
 import { getFavoriteBusinessesForHolder, getRedemptionsForPassports } from "@/lib/admin-queries";
 import type { PassportArea, Profile } from "@/lib/types/domain";
+import { buttonClasses } from "@/lib/ui-classes";
 
 export const metadata: Metadata = { title: "My Account" };
 
@@ -55,59 +56,59 @@ export default async function AccountDashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">
+      <h1 className="text-2xl font-bold text-ink">
         Welcome back{profile?.first_name ? `, ${profile.first_name}` : ""}!
       </h1>
-      <p className="mt-1 text-slate-600">
+      <p className="mt-1 text-ink-muted">
         Manage your Passport, view your redemptions, and explore local perks.
       </p>
 
       {primary ? (
-        <section className="mt-6 rounded-2xl border border-slate-200 p-6">
+        <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-semibold text-slate-900">{primaryArea?.name ?? "Unknown region"} Passport</h2>
-              <p className="text-sm text-slate-500">
+              <h2 className="font-semibold text-ink">{primaryArea?.name ?? "Unknown region"} Passport</h2>
+              <p className="text-sm text-ink-muted">
                 {passports.length > 1 ? `${passports.length} Passports` : "Passport holder"}
               </p>
             </div>
             <span
               className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                primary.status === "active" ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-600"
+                primary.status === "active" ? "bg-success-bg text-success" : "bg-surface-elevated text-ink-muted"
               }`}
             >
               {primary.status}
             </span>
           </div>
-          <div className="mt-4 grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2">
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-400">Passport holder</p>
-              <p className="text-sm font-medium text-slate-900">{profile?.full_name || user.email}</p>
+              <p className="text-xs uppercase tracking-wide text-ink-muted">Passport holder</p>
+              <p className="text-sm font-medium text-ink">{profile?.full_name || user.email}</p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-400">Passport number</p>
-              <p className="text-sm font-medium text-slate-900">{primary.passport_number}</p>
+              <p className="text-xs uppercase tracking-wide text-ink-muted">Passport number</p>
+              <p className="text-sm font-medium text-ink">{primary.passport_number}</p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-400">Expires</p>
-              <p className="text-sm font-medium text-slate-900">
+              <p className="text-xs uppercase tracking-wide text-ink-muted">Expires</p>
+              <p className="text-sm font-medium text-ink">
                 {new Date(primary.expires_at).toLocaleDateString()}
               </p>
             </div>
           </div>
           <Link
             href="/account/passport"
-            className="mt-4 block rounded-full bg-brand-primary px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-brand-primary-dark"
+            className={`mt-4 block text-center ${buttonClasses("primary")}`}
           >
             View Passport Details
           </Link>
         </section>
       ) : (
-        <section className="mt-6 rounded-2xl border border-slate-200 p-8 text-center">
-          <p className="text-slate-600">You don&apos;t have a Passport yet.</p>
+        <section className="mt-6 rounded-2xl border border-border bg-surface p-8 text-center">
+          <p className="text-ink-muted">You don&apos;t have a Passport yet.</p>
           <Link
             href="/passport"
-            className="mt-4 inline-block rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+            className={`mt-4 ${buttonClasses("primary")}`}
           >
             Get Your Passport
           </Link>
@@ -115,40 +116,40 @@ export default async function AccountDashboardPage() {
       )}
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Redemptions</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{redemptions.length}</p>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Redemptions</p>
+          <p className="mt-1 text-2xl font-bold text-ink">{redemptions.length}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Favorites</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{favorites.length}</p>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Favorites</p>
+          <p className="mt-1 text-2xl font-bold text-ink">{favorites.length}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Available offers</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{activeOfferCount ?? 0}</p>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Available offers</p>
+          <p className="mt-1 text-2xl font-bold text-ink">{activeOfferCount ?? 0}</p>
         </div>
       </div>
 
       {primary && subareaProgress.length > 0 && (
         <section className="mt-8">
-          <h2 className="text-xl font-semibold text-slate-900">Continue Exploring</h2>
+          <h2 className="text-xl font-semibold text-ink">Continue Exploring</h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {subareaProgress.map(({ subarea, totalBusinesses, visitedBusinesses }) => {
               const pct = totalBusinesses > 0 ? Math.round((visitedBusinesses / totalBusinesses) * 100) : 0;
               return (
-                <div key={subarea.id} className="rounded-2xl border border-slate-200 p-4">
-                  <p className="font-semibold text-slate-900">{subarea.name}</p>
-                  <p className="mt-1 text-xs text-slate-500">
+                <div key={subarea.id} className="rounded-2xl border border-border bg-surface p-4">
+                  <p className="font-semibold text-ink">{subarea.name}</p>
+                  <p className="mt-1 text-xs text-ink-muted">
                     {visitedBusinesses} of {totalBusinesses} businesses visited
                   </p>
-                  <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100">
+                  <div className="mt-2 h-1.5 w-full rounded-full bg-surface-elevated">
                     <div className="h-1.5 rounded-full bg-brand-primary" style={{ width: `${pct}%` }} />
                   </div>
-                  <p className="mt-1 text-xs text-slate-400">{pct}% complete</p>
+                  <p className="mt-1 text-xs text-ink-muted">{pct}% complete</p>
                   {primaryArea && primaryState && (
                     <Link
                       href={`/${primaryState.slug}/${primaryArea.slug}/${subarea.slug}`}
-                      className="mt-3 inline-block rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500"
+                      className={`mt-3 ${buttonClasses("outline", "sm")}`}
                     >
                       View Area
                     </Link>
@@ -161,48 +162,48 @@ export default async function AccountDashboardPage() {
       )}
 
       {nextAchievement && (
-        <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900">Next Achievement</h2>
-          <p className="mt-1 text-sm text-slate-900">{nextAchievement.name}</p>
-          <p className="text-sm text-slate-500">{nextAchievement.description}</p>
+        <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+          <h2 className="font-semibold text-ink">Next Achievement</h2>
+          <p className="mt-1 text-sm text-ink">{nextAchievement.name}</p>
+          <p className="text-sm text-ink-muted">{nextAchievement.description}</p>
           <div className="mt-2 flex items-center gap-3">
-            <div className="h-1.5 flex-1 rounded-full bg-slate-100">
+            <div className="h-1.5 flex-1 rounded-full bg-surface-elevated">
               <div
                 className="h-1.5 rounded-full bg-brand-primary"
                 style={{ width: `${(nextAchievement.current / nextAchievement.target) * 100}%` }}
               />
             </div>
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-ink-muted">
               {nextAchievement.current} of {nextAchievement.target}
             </span>
           </div>
           <Link
             href="/account/achievements"
-            className="mt-3 inline-block rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-500"
+            className={`mt-3 ${buttonClasses("outline", "sm")}`}
           >
             View Achievements
           </Link>
         </section>
       )}
 
-      <section className="mt-8 rounded-2xl border border-slate-200 p-6">
-        <h2 className="font-semibold text-slate-900">Recent Activity</h2>
+      <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+        <h2 className="font-semibold text-ink">Recent Activity</h2>
         {recentRedemptions.length === 0 ? (
           <div className="mt-3 text-center">
-            <p className="text-sm text-slate-500">You haven&apos;t redeemed any Passport promotions yet.</p>
+            <p className="text-sm text-ink-muted">You haven&apos;t redeemed any Passport promotions yet.</p>
             <Link
               href="/account/discover"
-              className="mt-3 inline-block rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+              className={`mt-3 ${buttonClasses("primary")}`}
             >
               Discover Businesses
             </Link>
           </div>
         ) : (
-          <ul className="mt-3 divide-y divide-slate-100">
+          <ul className="mt-3 divide-y divide-border">
             {recentRedemptions.map((r) => (
               <li key={r.id} className="py-2">
-                <p className="text-sm font-medium text-slate-900">{r.businessName}</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-sm font-medium text-ink">{r.businessName}</p>
+                <p className="text-xs text-ink-muted">
                   {r.offerTitle} &middot; {new Date(r.redeemed_at).toLocaleDateString()}
                 </p>
               </li>

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
+import { buttonClasses } from "@/lib/ui-classes";
 
 export interface FilterOption {
   value: string;
@@ -43,21 +44,25 @@ export function BusinessDiscoverFilter({
     <form
       onSubmit={onSubmit}
       onChange={(e) => submit(e.currentTarget)}
-      className="mt-6 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 p-4"
+      className="mt-6 flex flex-wrap items-end gap-3 rounded-2xl border border-border p-4"
     >
       <input type="hidden" name="subarea" value={subarea ?? ""} />
       <label className="text-sm">
-        <span className="mb-1 block text-slate-600">Search businesses</span>
+        <span className="mb-1 block text-ink-muted">Search businesses</span>
         <input
           name="q"
           defaultValue={q}
           placeholder="Business name"
-          className="w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-56 rounded-lg border border-border px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
         />
       </label>
       <label className="text-sm">
-        <span className="mb-1 block text-slate-600">Category</span>
-        <select name="category" defaultValue={categoryId} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <span className="mb-1 block text-ink-muted">Category</span>
+        <select
+          name="category"
+          defaultValue={categoryId}
+          className="rounded-lg border border-border px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+        >
           <option value="">All categories</option>
           {categories.map((c) => (
             <option key={c.value} value={c.value}>
@@ -66,15 +71,9 @@ export function BusinessDiscoverFilter({
           ))}
         </select>
       </label>
-      <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-500">
-        Search
-      </button>
+      <button className={buttonClasses("outline", "sm")}>Search</button>
       {(q || categoryId || subarea) && (
-        <button
-          type="button"
-          onClick={() => router.push(basePath)}
-          className="text-sm font-semibold text-slate-500 hover:text-slate-700"
-        >
+        <button type="button" onClick={() => router.push(basePath)} className={buttonClasses("ghost", "sm")}>
           Clear filters
         </button>
       )}

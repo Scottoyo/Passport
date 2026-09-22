@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { buttonClasses, cardClasses } from "@/lib/ui-classes";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -26,41 +27,39 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="mx-auto max-w-sm px-4 py-16 sm:px-6">
-      <h1 className="text-2xl font-bold text-slate-900">Reset your password</h1>
-      <p className="mt-2 text-sm text-slate-600">
-        Enter your email and we&apos;ll send you a link to set a new password.
-      </p>
-
-      {status === "sent" ? (
-        <p className="mt-6 rounded-lg bg-slate-100 p-4 text-sm text-slate-700">
-          Check {email} for a link to reset your password.
+      <div className={`p-8 ${cardClasses()}`}>
+        <h1 className="font-display text-2xl font-bold text-ink">Reset your password</h1>
+        <p className="mt-2 text-sm text-ink-muted">
+          Enter your email and we&apos;ll send you a link to set a new password.
         </p>
-      ) : (
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          />
-          <button
-            type="submit"
-            disabled={status === "sending"}
-            className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
-          >
-            {status === "sending" ? "Sending..." : "Send reset link"}
-          </button>
-          {status === "error" && <p className="text-sm text-red-600">{errorMessage}</p>}
-        </form>
-      )}
 
-      <p className="mt-6 text-sm text-slate-600">
-        <Link href="/sign-in" className="font-semibold text-slate-900 hover:underline">
-          Back to sign in
-        </Link>
-      </p>
+        {status === "sent" ? (
+          <p className="mt-6 rounded-lg bg-surface-elevated p-4 text-sm text-ink">
+            Check {email} for a link to reset your password.
+          </p>
+        ) : (
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full rounded-lg border border-border px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+            />
+            <button type="submit" disabled={status === "sending"} className={`w-full ${buttonClasses("primary")}`}>
+              {status === "sending" ? "Sending..." : "Send reset link"}
+            </button>
+            {status === "error" && <p className="text-sm text-error">{errorMessage}</p>}
+          </form>
+        )}
+
+        <p className="mt-6 text-sm text-ink-muted">
+          <Link href="/sign-in" className="font-semibold text-brand-primary hover:underline">
+            Back to sign in
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
