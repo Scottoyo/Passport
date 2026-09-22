@@ -12,7 +12,7 @@ export const FAQS = [
   {
     question: "How many people does a Passport cover?",
     answer:
-      "It depends on the product you choose - some cover just one person, others cover a group. The exact number is shown on the purchase page before you buy.",
+      "It is specified by the business for each specific perk. Some cover just one person, others cover a group.",
   },
   {
     question: "How long is a Passport valid for?",
