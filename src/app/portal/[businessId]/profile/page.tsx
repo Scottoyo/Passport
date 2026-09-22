@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPortalBusinessAccess } from "@/lib/portal-queries";
-import { getCategories } from "@/lib/queries";
+import { getCategories, getBusinessMedia } from "@/lib/queries";
 import type { Business, BusinessHoursDay } from "@/lib/types/domain";
 import {
   updateBusinessBasicInfo,
@@ -10,9 +10,14 @@ import {
   updateBusinessHours,
   uploadBusinessLogo,
   uploadBusinessCover,
+  clearBusinessLogo,
+  clearBusinessCover,
   addBusinessGalleryImage,
   removeBusinessGalleryImage,
+  updateBusinessGalleryImageAlt,
+  reorderBusinessGalleryImages,
 } from "@/app/admin/areas/[areaId]/businesses/[businessId]/actions";
+import { BusinessMediaEditor } from "@/components/business/media-editor";
 import { buttonClasses } from "@/lib/ui-classes";
 
 interface Props {
@@ -58,6 +63,7 @@ export default async function PortalProfilePage({ params }: Props) {
   const categories = area ? await getCategories([area.state_id]) : [];
   const areaId = business.passport_area_id;
   const hoursByDay = new Map((business.business_hours ?? []).map((h) => [h.day, h]));
+  const media = await getBusinessMedia(businessId);
 
   return (
     <div className="space-y-6">
@@ -263,65 +269,25 @@ export default async function PortalProfilePage({ params }: Props) {
       </section>
 
       <section className="rounded-2xl border border-border bg-surface p-6">
-        <h3 className="font-semibold text-ink">Business media</h3>
+        <h3 className="font-semibold text-ink">Business Images and Media</h3>
         <p className="mt-1 text-sm text-ink-muted">Manage your business logo, cover image, and photo gallery.</p>
 
-        <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div>
-            <p className="mb-2 text-sm font-medium text-ink">Business logo</p>
-            {business.logo_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={business.logo_url} alt="Logo" className="mb-2 h-20 w-20 rounded-lg object-cover" />
-            )}
-            <form action={uploadBusinessLogo.bind(null, areaId, businessId)} className="flex items-center gap-2">
-              <input type="file" name="logo" accept="image/*" required className="text-sm" />
-              <button className={buttonClasses("outline", "sm")}>
-                Upload
-              </button>
-            </form>
-          </div>
-          <div>
-            <p className="mb-2 text-sm font-medium text-ink">Cover image</p>
-            {business.hero_image_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={business.hero_image_url} alt="Cover" className="mb-2 h-20 w-32 rounded-lg object-cover" />
-            )}
-            <form action={uploadBusinessCover.bind(null, areaId, businessId)} className="flex items-center gap-2">
-              <input type="file" name="cover" accept="image/*" required className="text-sm" />
-              <button className={buttonClasses("outline", "sm")}>
-                Upload
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <p className="mb-2 text-sm font-medium text-ink">Gallery images</p>
-          <div className="flex flex-wrap gap-3">
-            {business.gallery_image_urls.map((url) => (
-              <div key={url} className="relative">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="Gallery" className="h-20 w-20 rounded-lg object-cover" />
-                <form action={removeBusinessGalleryImage.bind(null, areaId, businessId, url)}>
-                  <button className="absolute -right-1 -top-1 rounded-full bg-error px-1.5 text-xs font-bold text-white">
-                    &times;
-                  </button>
-                </form>
-              </div>
-            ))}
-            {business.gallery_image_urls.length === 0 && (
-              <p className="text-sm text-ink-muted">No gallery images added yet.</p>
-            )}
-          </div>
-          <form
-            action={addBusinessGalleryImage.bind(null, areaId, businessId)}
-            className="mt-3 flex items-center gap-2"
-          >
-            <input type="file" name="gallery" accept="image/*" required className="text-sm" />
-            <button className={buttonClasses("outline", "sm")}>
-              Add images
-            </button>
-          </form>
+        <div className="mt-4">
+          <BusinessMediaEditor
+            logoUrl={business.logo_url}
+            coverUrl={business.hero_image_url}
+            media={media}
+            uploadLogo={uploadBusinessLogo.bind(null, areaId, businessId)}
+            uploadCover={uploadBusinessCover.bind(null, areaId, businessId)}
+            clearLogo={clearBusinessLogo.bind(null, areaId, businessId)}
+            clearCover={clearBusinessCover.bind(null, areaId, businessId)}
+            addGalleryImage={addBusinessGalleryImage.bind(null, areaId, businessId)}
+            removeGalleryImage={(mediaId) => removeBusinessGalleryImage.bind(null, areaId, businessId, mediaId)}
+            updateGalleryImageAlt={(mediaId) =>
+              updateBusinessGalleryImageAlt.bind(null, areaId, businessId, mediaId)
+            }
+            reorderGalleryImages={(orderedIds) => reorderBusinessGalleryImages(areaId, businessId, orderedIds)}
+          />
         </div>
       </section>
     </div>

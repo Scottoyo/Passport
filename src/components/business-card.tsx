@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Business, Offer } from "@/lib/types/domain";
 import { FavoriteButton } from "@/components/favorite-button";
+import { BusinessPlaceholderIcon } from "@/components/business/business-placeholder-icon";
 import { cardClasses } from "@/lib/ui-classes";
 
 export interface BusinessCardFavorite {
@@ -43,7 +44,7 @@ export function BusinessCard({
 
       <Link href={href} className="flex flex-1 flex-col">
         <div className="relative aspect-[4/3] w-full shrink-0 bg-surface-elevated">
-          {business.hero_image_url && (
+          {business.hero_image_url ? (
             <Image
               src={business.hero_image_url}
               alt=""
@@ -51,6 +52,10 @@ export function BusinessCard({
               sizes={CARD_IMAGE_SIZES}
               className="object-cover"
             />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-ink-muted/40">
+              <BusinessPlaceholderIcon className="h-10 w-10" />
+            </div>
           )}
           {category && (
             <span className="absolute left-3 top-3 z-10 max-w-[75%] truncate rounded-md bg-ink/70 px-2 py-1 text-xs font-semibold text-white">

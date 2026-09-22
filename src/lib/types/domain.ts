@@ -116,7 +116,6 @@ export interface Business {
   linkedin_url: string | null;
   hero_image_url: string | null;
   logo_url: string | null;
-  gallery_image_urls: string[];
   business_hours: BusinessHoursDay[] | null;
   weather_permitting: boolean;
   call_for_appointment: boolean;
@@ -134,6 +133,17 @@ export interface Business {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface BusinessMedia {
+  id: string;
+  business_id: string;
+  storage_path: string;
+  url: string;
+  alt_text: string | null;
+  display_order: number;
+  created_by: string | null;
+  created_at: string;
 }
 
 export type DiscountType =
