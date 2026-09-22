@@ -313,7 +313,7 @@ export async function addBusinessGalleryImage(
   formData: FormData
 ): Promise<MediaActionResult> {
   try {
-    await requireCapability(areaId, businessId, "manage_businesses");
+    const currentUser = await requireCapability(areaId, businessId, "manage_businesses");
     const file = formData.get("gallery") as File | null;
     if (!file || file.size === 0) throw new Error("Choose an image to upload.");
     const altText = String(formData.get("alt_text") ?? "").trim();
@@ -336,6 +336,7 @@ export async function addBusinessGalleryImage(
       url,
       alt_text: altText || null,
       display_order: nextOrder,
+      created_by: currentUser.id,
     });
     if (error) {
       await deleteBusinessMedia(storagePath).catch(() => {});
@@ -348,17 +349,23 @@ export async function addBusinessGalleryImage(
   }
 }
 
+// Server Actions bound to a Client Component prop can only be actual
+// "use server" functions (optionally pre-bound with .bind, which Next.js
+// specifically supports) - a plain closure wrapping one, like
+// `(mediaId) => removeBusinessGalleryImage.bind(null, ..., mediaId)`,
+// cannot cross the server/client boundary and throws at runtime. So each
+// gallery item's mediaId travels through the form's own FormData instead
+// of being bound ahead of time, and every item shares the same action.
 export async function removeBusinessGalleryImage(
   areaId: string,
   businessId: string,
-  mediaId: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by useActionState's (state, payload) shape
   _prevState: MediaActionResult | null,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by useActionState's (state, payload) shape
-  _formData: FormData
+  formData: FormData
 ): Promise<MediaActionResult> {
   try {
     await requireCapability(areaId, businessId, "manage_businesses");
+    const mediaId = String(formData.get("media_id") ?? "");
+    if (!mediaId) throw new Error("Missing image.");
     const supabase = await createClient();
     const { data: media } = await supabase
       .from("business_media")
@@ -379,12 +386,13 @@ export async function removeBusinessGalleryImage(
 export async function updateBusinessGalleryImageAlt(
   areaId: string,
   businessId: string,
-  mediaId: string,
   _prevState: MediaActionResult | null,
   formData: FormData
 ): Promise<MediaActionResult> {
   try {
     await requireCapability(areaId, businessId, "manage_businesses");
+    const mediaId = String(formData.get("media_id") ?? "");
+    if (!mediaId) throw new Error("Missing image.");
     const altText = String(formData.get("alt_text") ?? "").trim();
     const supabase = await createClient();
     const { error } = await supabase
