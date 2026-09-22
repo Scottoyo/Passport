@@ -170,6 +170,33 @@ export async function getPrimaryOffersForBusinesses(
   return byBusiness;
 }
 
+// Whether a region currently has at least one published (status='active')
+// offer at one of its own active businesses - the single condition that
+// decides whether Home/Discover show real business content or the
+// ComingSoonBusinesses section instead. Reuses getBusinessesForArea (already
+// RLS-limited to active businesses for a public session) rather than a
+// direct offers-to-area join, matching the two-step shape already used by
+// the equivalent "active offers in my regions" check in
+// src/app/account/page.tsx. Fails "open" (reports offers exist) on a query
+// error so a transient failure can never surface a false "coming soon"
+// pitch in place of real content.
+export async function hasPublishedOffersForArea(areaId: string): Promise<boolean> {
+  const businesses = await getBusinessesForArea(areaId);
+  if (businesses.length === 0) return false;
+
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("offers")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "active")
+    .in(
+      "business_id",
+      businesses.map((b) => b.id)
+    );
+  if (error) return true;
+  return (count ?? 0) > 0;
+}
+
 export async function getCategories(stateIds?: string[]) {
   const supabase = await createClient();
   let query = supabase.from("categories").select("*").order("sort_order");

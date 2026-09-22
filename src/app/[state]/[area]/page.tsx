@@ -9,9 +9,11 @@ import {
   getFavoritedBusinessIds,
   getActivePassportForArea,
   getCategories,
+  hasPublishedOffersForArea,
 } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { BusinessCard } from "@/components/business-card";
+import { ComingSoonBusinesses } from "@/components/coming-soon-businesses";
 import { RegionHeroBanner, getRegionHeroImage } from "@/components/region-hero-banner";
 import { toggleFavorite } from "@/app/[state]/[area]/businesses/[business]/actions";
 import { buttonClasses } from "@/lib/ui-classes";
@@ -36,9 +38,10 @@ export default async function AreaHomePage({ params }: Props) {
   if (!area) notFound();
 
   const featuredBusinesses = await getBusinessesForArea(area.id, { featured: true });
-  const [primaryOffers, categories] = await Promise.all([
+  const [primaryOffers, categories, hasOffers] = await Promise.all([
     getPrimaryOffersForBusinesses(featuredBusinesses.map((b) => b.id)),
     getCategories([state.id]),
+    hasPublishedOffersForArea(area.id),
   ]);
   const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
 
@@ -189,45 +192,56 @@ export default async function AreaHomePage({ params }: Props) {
         </section>
       )}
 
-      {(featuredBusinesses.length > 0 || ownsAreaPassport) && (
+      {!hasOffers ? (
         <section className={themed ? "border-t border-border bg-brand-surface-alt" : "border-t border-border bg-surface-elevated"}>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            {featuredBusinesses.length > 0 && (
-              <>
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <h2 className="font-display text-2xl font-bold text-ink">Featured Businesses</h2>
-                  <Link href={`/${state.slug}/${area.slug}/discover`} className="text-sm font-semibold text-brand-primary hover:text-brand-primary-dark">
-                    View all businesses &rarr;
-                  </Link>
-                </div>
-                <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {featuredBusinesses.map((business) => (
-                    <BusinessCard
-                      key={business.id}
-                      business={business}
-                      href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
-                      offer={primaryOffers.get(business.id) ?? null}
-                      category={business.category_id ? categoryNameById.get(business.category_id) : null}
-                      favorite={{
-                        isSignedIn: Boolean(user),
-                        isFavorited: favoritedIds.has(business.id),
-                        toggleAction: toggleFavorite.bind(null, business.id, homePath),
-                        passportHref: `/${state.slug}/${area.slug}/passport`,
-                      }}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-            {ownsAreaPassport && (
-              <div className={featuredBusinesses.length > 0 ? "mt-8 text-center" : "text-center"}>
-                <Link href={`/${state.slug}/${area.slug}/discover`} className={buttonClasses("primary")}>
-                  View All Businesses
-                </Link>
-              </div>
-            )}
+            <ComingSoonBusinesses
+              areaName={area.name}
+              registerHref={`/register-business?state=${state.slug}&region=${area.slug}`}
+            />
           </div>
         </section>
+      ) : (
+        (featuredBusinesses.length > 0 || ownsAreaPassport) && (
+          <section className={themed ? "border-t border-border bg-brand-surface-alt" : "border-t border-border bg-surface-elevated"}>
+            <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+              {featuredBusinesses.length > 0 && (
+                <>
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <h2 className="font-display text-2xl font-bold text-ink">Featured Businesses</h2>
+                    <Link href={`/${state.slug}/${area.slug}/discover`} className="text-sm font-semibold text-brand-primary hover:text-brand-primary-dark">
+                      View all businesses &rarr;
+                    </Link>
+                  </div>
+                  <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {featuredBusinesses.map((business) => (
+                      <BusinessCard
+                        key={business.id}
+                        business={business}
+                        href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
+                        offer={primaryOffers.get(business.id) ?? null}
+                        category={business.category_id ? categoryNameById.get(business.category_id) : null}
+                        favorite={{
+                          isSignedIn: Boolean(user),
+                          isFavorited: favoritedIds.has(business.id),
+                          toggleAction: toggleFavorite.bind(null, business.id, homePath),
+                          passportHref: `/${state.slug}/${area.slug}/passport`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+              {ownsAreaPassport && (
+                <div className={featuredBusinesses.length > 0 ? "mt-8 text-center" : "text-center"}>
+                  <Link href={`/${state.slug}/${area.slug}/discover`} className={buttonClasses("primary")}>
+                    View All Businesses
+                  </Link>
+                </div>
+              )}
+            </div>
+          </section>
+        )
       )}
 
       {!ownsAreaPassport && (
