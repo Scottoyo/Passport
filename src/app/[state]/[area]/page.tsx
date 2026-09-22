@@ -159,70 +159,88 @@ export default async function AreaHomePage({ params }: Props) {
         </section>
       )}
 
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <h2 className="text-center font-display text-2xl font-bold text-ink">
-          Why get the {area.name} Passport
-        </h2>
-        <div className="mt-10 grid gap-8 sm:grid-cols-3">
-          <Benefit
-            title="Deep local savings"
-            body={`Your ${area.name} Passport unlocks every participating business across the region.`}
-          />
-          <Benefit
-            title="Real savings, not gimmicks"
-            body="Every offer is a real discount, freebie, or deal from a business that opted in - no fine print designed to make it unusable."
-          />
-          <Benefit
-            title="Bring the family"
-            body="Many Passports cover more than one person, so everyone in your group saves - not just the Passport holder."
-          />
-        </div>
-      </section>
-
-      {featuredBusinesses.length > 0 && (
-        <section className={themed ? "border-t border-border bg-brand-surface-alt" : "border-t border-border bg-surface-elevated"}>
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <h2 className="font-display text-2xl font-bold text-ink">Featured Businesses</h2>
-              <Link href={`/${state.slug}/${area.slug}/discover`} className="text-sm font-semibold text-brand-primary hover:text-brand-primary-dark">
-                View all businesses &rarr;
-              </Link>
-            </div>
-            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredBusinesses.map((business) => (
-                <BusinessCard
-                  key={business.id}
-                  business={business}
-                  href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
-                  offer={primaryOffers.get(business.id) ?? null}
-                  favorite={{
-                    isSignedIn: Boolean(user),
-                    isFavorited: favoritedIds.has(business.id),
-                    toggleAction: toggleFavorite.bind(null, business.id, homePath),
-                    passportHref: `/${state.slug}/${area.slug}/passport`,
-                  }}
-                />
-              ))}
-            </div>
+      {/* Someone who already owns this region's Passport doesn't need the
+          sales pitch for it, or the "why get a Passport"/business-signup
+          upsells that go with it - they're here to browse, not buy. */}
+      {!ownsAreaPassport && (
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <h2 className="text-center font-display text-2xl font-bold text-ink">
+            Why get the {area.name} Passport
+          </h2>
+          <div className="mt-10 grid gap-8 sm:grid-cols-3">
+            <Benefit
+              title="Deep local savings"
+              body={`Your ${area.name} Passport unlocks every participating business across the region.`}
+            />
+            <Benefit
+              title="Real savings, not gimmicks"
+              body="Every offer is a real discount, freebie, or deal from a business that opted in - no fine print designed to make it unusable."
+            />
+            <Benefit
+              title="Bring the family"
+              body="Many Passports cover more than one person, so everyone in your group saves - not just the Passport holder."
+            />
           </div>
         </section>
       )}
 
-      <section className="border-t border-border">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-10 text-center sm:px-6">
-          <h2 className="text-lg font-semibold text-ink">Own a business in {area.name}?</h2>
-          <p className="max-w-xl text-sm text-ink-muted">
-            It&apos;s free to join the {area.name} Passport - no monthly fees - and put your
-            business in front of locals and visitors actively looking for new places to go.
-          </p>
-          <Link
-            href={`/${state.slug}/${area.slug}/for-businesses`}
-            className="text-sm font-semibold text-brand-primary hover:text-brand-primary-dark"
-          >
-            Register Your Business &rarr;
-          </Link>
-        </div>
-      </section>
+      {(featuredBusinesses.length > 0 || ownsAreaPassport) && (
+        <section className={themed ? "border-t border-border bg-brand-surface-alt" : "border-t border-border bg-surface-elevated"}>
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            {featuredBusinesses.length > 0 && (
+              <>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <h2 className="font-display text-2xl font-bold text-ink">Featured Businesses</h2>
+                  <Link href={`/${state.slug}/${area.slug}/discover`} className="text-sm font-semibold text-brand-primary hover:text-brand-primary-dark">
+                    View all businesses &rarr;
+                  </Link>
+                </div>
+                <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {featuredBusinesses.map((business) => (
+                    <BusinessCard
+                      key={business.id}
+                      business={business}
+                      href={`/${state.slug}/${area.slug}/businesses/${business.slug}`}
+                      offer={primaryOffers.get(business.id) ?? null}
+                      favorite={{
+                        isSignedIn: Boolean(user),
+                        isFavorited: favoritedIds.has(business.id),
+                        toggleAction: toggleFavorite.bind(null, business.id, homePath),
+                        passportHref: `/${state.slug}/${area.slug}/passport`,
+                      }}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+            {ownsAreaPassport && (
+              <div className={featuredBusinesses.length > 0 ? "mt-8 text-center" : "text-center"}>
+                <Link href={`/${state.slug}/${area.slug}/discover`} className={buttonClasses("primary")}>
+                  View All Businesses
+                </Link>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {!ownsAreaPassport && (
+        <section className="border-t border-border">
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-10 text-center sm:px-6">
+            <h2 className="text-lg font-semibold text-ink">Own a business in {area.name}?</h2>
+            <p className="max-w-xl text-sm text-ink-muted">
+              It&apos;s free to join the {area.name} Passport - no monthly fees - and put your
+              business in front of locals and visitors actively looking for new places to go.
+            </p>
+            <Link
+              href={`/${state.slug}/${area.slug}/for-businesses`}
+              className="text-sm font-semibold text-brand-primary hover:text-brand-primary-dark"
+            >
+              Register Your Business &rarr;
+            </Link>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
