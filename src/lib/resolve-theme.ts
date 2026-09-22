@@ -2,7 +2,7 @@ import "server-only";
 
 import { getStateBySlug, getAreaBySlug, getMyPrimaryRegion } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
-import { parseRegionSlugsFromPath, parseStateSlugFromPath, getPageTier } from "@/lib/region-path";
+import { parseRegionSlugsFromPath, parseStateSlugFromPath, getPageTier, isForBusinessesPath } from "@/lib/region-path";
 import type { NationalBranding, State } from "@/lib/types/domain";
 
 export const NATIONAL_BRANDING_ID = "00000000-0000-0000-0000-000000000001";
@@ -106,7 +106,10 @@ async function resolveRegionTheme(stateSlug: string, areaSlug: string): Promise<
 // this on every client-side navigation, since Next doesn't re-render a
 // shared layout on plain Link clicks).
 export async function resolveTheme(pathname: string): Promise<ResolvedTheme> {
-  const tier = getPageTier(pathname);
+  // A region's own "For Businesses" page is a standardized national page,
+  // not region-themed like the rest of that region's public pages - see
+  // isForBusinessesPath's own comment.
+  const tier = isForBusinessesPath(pathname) ? "national" : getPageTier(pathname);
 
   if (tier === "national") {
     const national = await getNationalBranding();
