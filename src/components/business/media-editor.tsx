@@ -334,7 +334,7 @@ export function BusinessMediaEditor({
         />
         <ImageSlot
           label="Banner / Cover Image"
-          hint="Wide landscape image, at least 1200×450px (4:3 tiles crop the center)."
+          hint="Wide landscape image, at least 1200×450px - shown at this exact ratio on business tiles."
           fieldName="cover"
           currentUrl={coverUrl}
           shapeClassName="h-32 w-full rounded-xl"

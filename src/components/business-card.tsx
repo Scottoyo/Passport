@@ -43,7 +43,7 @@ export function BusinessCard({
       )}
 
       <Link href={href} className="flex flex-1 flex-col">
-        <div className="relative aspect-[4/3] w-full shrink-0 bg-surface-elevated">
+        <div className="relative aspect-[8/3] w-full shrink-0 bg-surface-elevated">
           {business.hero_image_url ? (
             <Image
               src={business.hero_image_url}
@@ -62,20 +62,20 @@ export function BusinessCard({
               {category}
             </span>
           )}
-          <div className="absolute -bottom-6 left-4 z-10 h-14 w-14 overflow-hidden rounded-full border-4 border-surface bg-surface-elevated shadow-sm">
+          <div className="absolute -bottom-8 left-4 z-10 h-20 w-20 overflow-hidden rounded-full border-4 border-surface bg-surface-elevated shadow-sm">
             {business.logo_url && (
               <Image
                 src={business.logo_url}
                 alt=""
                 fill
-                sizes="56px"
+                sizes="80px"
                 className="object-cover"
               />
             )}
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col px-6 pb-6 pt-9">
+        <div className="flex flex-1 flex-col px-6 pb-6 pt-11">
           <h3 className="truncate text-lg font-semibold text-ink">{business.name}</h3>
           {business.city && (
             <p className="mt-1 truncate text-sm text-ink-muted">
