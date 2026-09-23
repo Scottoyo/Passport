@@ -67,7 +67,10 @@ export function NotificationBell({
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border border-border bg-surface shadow-xl">
+        // Fixed with viewport-relative inset margins below sm - see
+        // AdminNotificationBell for why the sm+ anchored-panel approach
+        // overflows a narrow phone screen.
+        <div className="fixed inset-x-4 top-[4.5rem] z-50 rounded-2xl border border-border bg-surface shadow-xl sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-80">
           <div className="max-h-96 overflow-y-auto">
             {recent.length === 0 ? (
               <p className="p-4 text-sm text-ink-muted">Nothing here yet.</p>
