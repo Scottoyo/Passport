@@ -1,8 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import type {
+  AchievementEvent,
+  AdminAnnouncement,
   Business,
   BusinessMedia,
   Category,
+  NotificationFeedItem,
   NotificationPreferences,
   Offer,
   Passport,
@@ -300,34 +303,16 @@ export async function getActivePassportForArea(userId: string, areaId: string) {
   return data;
 }
 
-export interface RegionEventWithDetails extends RegionEvent {
-  businessName: string;
-  businessSlug: string;
-  areaSlug: string;
-  stateSlug: string;
-  offerTitle: string | null;
-}
-
 // The passport holder's "New business added"/"New promotion added" feed —
-// scoped to the region(s) their own passports are for, and filtered by
-// their notification_preferences.
-export async function getRegionEventsForUser(userId: string): Promise<RegionEventWithDetails[]> {
-  const supabase = await createClient();
-
-  const [{ data: passports }, { data: profile }] = await Promise.all([
-    supabase.from("passports").select("passport_area_id").eq("owner_user_id", userId),
-    supabase.from("profiles").select("notification_preferences").eq("id", userId).maybeSingle(),
-  ]);
-  const areaIds = [...new Set((passports ?? []).map((p) => p.passport_area_id as string))];
-  if (areaIds.length === 0) return [];
-
-  const prefs = (profile?.notification_preferences as NotificationPreferences | undefined) ?? undefined;
-  const wantedTypes: RegionEventType[] = [
-    ...(prefs?.new_business_added ?? true ? (["new_business"] as const) : []),
-    ...(prefs?.new_promotion_added ?? true ? (["new_offer"] as const) : []),
-  ];
-  if (wantedTypes.length === 0) return [];
-
+// scoped to the region(s) their own passports are for. Unlike
+// fetchAchievementItems/fetchAnnouncementItems below, a business-less event
+// is meaningless here (there's nothing to show/link to), so this is the
+// only one of the three that drops rows it can't resolve.
+async function fetchRegionEventItems(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  areaIds: string[],
+  wantedTypes: RegionEventType[]
+): Promise<NotificationFeedItem[]> {
   const { data: events } = await supabase
     .from("region_events")
     .select("*")
@@ -358,14 +343,16 @@ export async function getRegionEventsForUser(userId: string): Promise<RegionEven
   const stateSlugById = new Map((states ?? []).map((s) => [s.id as string, s.slug as string]));
 
   return list
-    .map((e) => {
+    .map((e): NotificationFeedItem | null => {
       const business = e.business_id ? businessById.get(e.business_id) : undefined;
       if (!business) return null;
       const area = areaById.get(business.passport_area_id as string);
       const stateSlug = area ? stateSlugById.get(area.state_id as string) : undefined;
       if (!area || !stateSlug) return null;
       return {
-        ...e,
+        id: e.id,
+        event_type: e.event_type,
+        created_at: e.created_at,
         businessName: business.name as string,
         businessSlug: business.slug as string,
         areaSlug: area.slug as string,
@@ -373,7 +360,88 @@ export async function getRegionEventsForUser(userId: string): Promise<RegionEven
         offerTitle: e.offer_id ? (offerTitleById.get(e.offer_id) ?? null) : null,
       };
     })
-    .filter((e): e is RegionEventWithDetails => e !== null);
+    .filter((e): e is NotificationFeedItem => e !== null);
+}
+
+async function fetchAchievementItems(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+): Promise<NotificationFeedItem[]> {
+  const { data } = await supabase
+    .from("achievement_events")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .returns<AchievementEvent[]>();
+  return (data ?? []).map((e) => {
+    const meta = ACHIEVEMENT_CATALOG.find((a) => a.key === e.achievement_key);
+    return {
+      id: e.id,
+      event_type: "achievement_unlocked",
+      created_at: e.created_at,
+      achievementName: meta?.name ?? e.achievement_key,
+      achievementDescription: meta?.description ?? "",
+    };
+  });
+}
+
+async function fetchAnnouncementItems(
+  supabase: Awaited<ReturnType<typeof createClient>>
+): Promise<NotificationFeedItem[]> {
+  // RLS on admin_announcements already restricts this to exactly what the
+  // signed-in user may see (a national broadcast, or their own scope as a
+  // passport holder/business owner/staff, or their own admin scope) - no
+  // app-side scope filtering needed.
+  const { data } = await supabase
+    .from("admin_announcements")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .returns<AdminAnnouncement[]>();
+  return (data ?? []).map((a) => ({
+    id: a.id,
+    event_type: "admin_announcement",
+    created_at: a.created_at,
+    announcementTitle: a.title,
+    announcementBody: a.body,
+  }));
+}
+
+// The passport holder/business owner's unified notification feed - merges
+// three independently-sourced event kinds (region_events, achievement_events,
+// admin_announcements), each filtered by the caller's own
+// notification_preferences. A business owner with no personal passport still
+// gets achievement/announcement items (only the region-events source needs a
+// passport area to scope to).
+export async function getRegionEventsForUser(userId: string): Promise<NotificationFeedItem[]> {
+  const supabase = await createClient();
+
+  const [{ data: passports }, { data: profile }] = await Promise.all([
+    supabase.from("passports").select("passport_area_id").eq("owner_user_id", userId),
+    supabase.from("profiles").select("notification_preferences").eq("id", userId).maybeSingle(),
+  ]);
+  const areaIds = [...new Set((passports ?? []).map((p) => p.passport_area_id as string))];
+  const prefs = (profile?.notification_preferences as NotificationPreferences | undefined) ?? undefined;
+
+  const wantedRegionTypes: RegionEventType[] = [
+    ...(prefs?.new_business_added ?? true ? (["new_business"] as const) : []),
+    ...(prefs?.new_promotion_added ?? true ? (["new_offer"] as const) : []),
+  ];
+
+  const [regionItems, achievementItems, announcementItems] = await Promise.all([
+    areaIds.length > 0 && wantedRegionTypes.length > 0
+      ? fetchRegionEventItems(supabase, areaIds, wantedRegionTypes)
+      : Promise.resolve([] as NotificationFeedItem[]),
+    (prefs?.achievement_unlocked ?? true)
+      ? fetchAchievementItems(supabase, userId)
+      : Promise.resolve([] as NotificationFeedItem[]),
+    (prefs?.admin_announcement ?? true)
+      ? fetchAnnouncementItems(supabase)
+      : Promise.resolve([] as NotificationFeedItem[]),
+  ]);
+
+  return [...regionItems, ...achievementItems, ...announcementItems].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 }
 
 export async function getNotificationsLastReadAt(userId: string): Promise<string | null> {
@@ -436,6 +504,17 @@ export interface AchievementProgress {
 // A small, honest, hardcoded catalog computed from data that already
 // exists — not a per-business badge system with an admin-configurable
 // catalog, which wasn't asked for and would be a feature of its own.
+// Shared with fetchAchievementItems above for the notification feed's
+// achievement name/description - and with the achievement_events triggers
+// in supabase/migrations/0054_achievement_events.sql, whose thresholds must
+// be kept in sync with these `target` values by hand.
+const ACHIEVEMENT_CATALOG: { key: string; name: string; description: string; target: number }[] = [
+  { key: "first_redemption", name: "First Redemption", description: "Redeem your first Passport perk.", target: 1 },
+  { key: "explorer", name: "Explorer", description: "Visit 5 different participating businesses.", target: 5 },
+  { key: "super_saver", name: "Super Saver", description: "Redeem 10 Passport perks.", target: 10 },
+  { key: "local_favorite", name: "Local Favorite", description: "Save 5 businesses to your favorites.", target: 5 },
+];
+
 export async function getAchievementProgress(userId: string): Promise<AchievementProgress[]> {
   const supabase = await createClient();
 
@@ -462,38 +541,17 @@ export async function getAchievementProgress(userId: string): Promise<Achievemen
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId);
 
-  const catalog: Omit<AchievementProgress, "unlocked">[] = [
-    {
-      key: "first_redemption",
-      name: "First Redemption",
-      description: "Redeem your first Passport perk.",
-      current: Math.min(redemptionCount, 1),
-      target: 1,
-    },
-    {
-      key: "explorer",
-      name: "Explorer",
-      description: "Visit 5 different participating businesses.",
-      current: Math.min(uniqueBusinessCount, 5),
-      target: 5,
-    },
-    {
-      key: "super_saver",
-      name: "Super Saver",
-      description: "Redeem 10 Passport perks.",
-      current: Math.min(redemptionCount, 10),
-      target: 10,
-    },
-    {
-      key: "local_favorite",
-      name: "Local Favorite",
-      description: "Save 5 businesses to your favorites.",
-      current: Math.min(favoriteCount ?? 0, 5),
-      target: 5,
-    },
-  ];
+  const currentByKey: Record<string, number> = {
+    first_redemption: Math.min(redemptionCount, 1),
+    explorer: Math.min(uniqueBusinessCount, 5),
+    super_saver: Math.min(redemptionCount, 10),
+    local_favorite: Math.min(favoriteCount ?? 0, 5),
+  };
 
-  return catalog.map((a) => ({ ...a, unlocked: a.current >= a.target }));
+  return ACHIEVEMENT_CATALOG.map((a) => {
+    const current = currentByKey[a.key] ?? 0;
+    return { ...a, current, unlocked: current >= a.target };
+  });
 }
 
 export async function getActivePassportProductForArea(areaId: string) {

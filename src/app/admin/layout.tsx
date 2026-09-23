@@ -129,6 +129,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
               <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Notifications
               </Link>
+              <Link href="/admin/announcements" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
+                Announcements
+              </Link>
               <Link href="/admin/promo-codes" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                 Promo codes
               </Link>
@@ -177,6 +180,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
                 <Link href="/admin/notifications" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                   Notifications
                 </Link>
+                {hasAnyCapability(currentUser, "manage_announcements") && (
+                  <Link href="/admin/announcements" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
+                    Announcements
+                  </Link>
+                )}
                 <Link href="/admin/promo-codes" className="block rounded-lg px-3 py-2 font-medium text-ink hover:bg-surface-elevated">
                   Promo codes
                 </Link>

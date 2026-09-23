@@ -3,17 +3,10 @@
 import { useRef, useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { markNotificationsRead } from "@/app/account/actions";
+import { describeEvent } from "@/lib/notification-display";
+import type { NotificationFeedItem } from "@/lib/types/domain";
 
-export interface NotificationBellEvent {
-  id: string;
-  event_type: "new_business" | "new_offer";
-  created_at: string;
-  businessName: string;
-  businessSlug: string;
-  areaSlug: string;
-  stateSlug: string;
-  offerTitle: string | null;
-}
+export type NotificationBellEvent = NotificationFeedItem;
 
 export function NotificationBell({
   events,
@@ -75,29 +68,57 @@ export function NotificationBell({
             {recent.length === 0 ? (
               <p className="p-4 text-sm text-ink-muted">Nothing here yet.</p>
             ) : (
-              recent.map((e) => (
-                <Link
-                  key={e.id}
-                  href={`/${e.stateSlug}/${e.areaSlug}/businesses/${e.businessSlug}`}
-                  onClick={() => {
-                    setOpen(false);
-                    handleMarkAllRead();
-                  }}
-                  className={`block border-b border-border p-3 text-sm hover:bg-surface-elevated ${
-                    isUnread(e.created_at) ? "bg-surface-elevated" : ""
-                  }`}
-                >
-                  <p className="font-semibold text-ink">
-                    {e.event_type === "new_business" ? "New Business Added" : "New Passport Promotion"}
-                  </p>
-                  <p className="text-ink-muted">
-                    {e.event_type === "new_business"
-                      ? `${e.businessName} has joined the Passport!`
-                      : `${e.businessName} just added: ${e.offerTitle}`}
-                  </p>
-                  <p className="mt-1 text-xs text-ink-muted">{new Date(e.created_at).toLocaleDateString()}</p>
-                </Link>
-              ))
+              recent.map((e) => {
+                const { label, detail, href } = describeEvent(e);
+                const itemClassName = `block border-b border-border p-3 text-sm hover:bg-surface-elevated ${
+                  isUnread(e.created_at) ? "bg-surface-elevated" : ""
+                }`;
+                const content = (
+                  <>
+                    <p className="font-semibold text-ink">{label}</p>
+                    <p className="text-ink-muted">{detail}</p>
+                    <p className="mt-1 text-xs text-ink-muted">{new Date(e.created_at).toLocaleDateString()}</p>
+                  </>
+                );
+                if (href) {
+                  return (
+                    <Link
+                      key={e.id}
+                      href={href}
+                      onClick={() => {
+                        setOpen(false);
+                        handleMarkAllRead();
+                      }}
+                      className={itemClassName}
+                    >
+                      {content}
+                    </Link>
+                  );
+                }
+                // admin_announcement: no detail page to navigate to, but
+                // clicking anywhere in the row should still mark read, same
+                // as every other item.
+                return (
+                  <div
+                    key={e.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      setOpen(false);
+                      handleMarkAllRead();
+                    }}
+                    onKeyDown={(ev) => {
+                      if (ev.key === "Enter" || ev.key === " ") {
+                        setOpen(false);
+                        handleMarkAllRead();
+                      }
+                    }}
+                    className={`${itemClassName} cursor-pointer`}
+                  >
+                    {content}
+                  </div>
+                );
+              })
             )}
           </div>
           <div className="flex items-center justify-between gap-2 border-t border-border p-3">

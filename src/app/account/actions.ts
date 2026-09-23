@@ -81,7 +81,6 @@ export async function updateNotificationPreferences(formData: FormData) {
   const preferences: NotificationPreferences = {
     achievement_unlocked: formData.get("achievement_unlocked") === "on",
     admin_announcement: formData.get("admin_announcement") === "on",
-    new_achievement_available: formData.get("new_achievement_available") === "on",
     new_business_added: formData.get("new_business_added") === "on",
     new_promotion_added: formData.get("new_promotion_added") === "on",
   };

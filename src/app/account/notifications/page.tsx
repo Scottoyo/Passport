@@ -5,6 +5,7 @@ import { getRegionEventsForUser } from "@/lib/queries";
 import type { Profile } from "@/lib/types/domain";
 import { markNotificationsRead } from "../actions";
 import { MarkReadLink } from "@/components/notifications/mark-read-link";
+import { describeEvent } from "@/lib/notification-display";
 import { buttonClasses } from "@/lib/ui-classes";
 
 interface Props {
@@ -19,7 +20,10 @@ export default async function NotificationsPage({ searchParams }: Props) {
   if (!user) redirect("/sign-in?next=/account/notifications");
 
   const { tab } = await searchParams;
-  const activeTab = tab === "unread" || tab === "businesses" || tab === "promotions" ? tab : "all";
+  const activeTab =
+    tab === "unread" || tab === "businesses" || tab === "promotions" || tab === "achievements" || tab === "announcements"
+      ? tab
+      : "all";
 
   const [events, { data: profile }] = await Promise.all([
     getRegionEventsForUser(user.id),
@@ -31,6 +35,8 @@ export default async function NotificationsPage({ searchParams }: Props) {
     if (activeTab === "unread") return !lastRead || new Date(e.created_at) > lastRead;
     if (activeTab === "businesses") return e.event_type === "new_business";
     if (activeTab === "promotions") return e.event_type === "new_offer";
+    if (activeTab === "achievements") return e.event_type === "achievement_unlocked";
+    if (activeTab === "announcements") return e.event_type === "admin_announcement";
     return true;
   });
 
@@ -39,6 +45,8 @@ export default async function NotificationsPage({ searchParams }: Props) {
     { key: "unread", label: "Unread" },
     { key: "businesses", label: "Businesses" },
     { key: "promotions", label: "Promotions" },
+    { key: "achievements", label: "Achievements" },
+    { key: "announcements", label: "Announcements" },
   ];
 
   return (
@@ -76,6 +84,7 @@ export default async function NotificationsPage({ searchParams }: Props) {
       <div className="mt-6 space-y-3">
         {filtered.map((e) => {
           const isUnread = !lastRead || new Date(e.created_at) > lastRead;
+          const { label, detail, href } = describeEvent(e);
           return (
             <div
               key={e.id}
@@ -84,23 +93,15 @@ export default async function NotificationsPage({ searchParams }: Props) {
               }`}
             >
               <div>
-                <p className="text-sm font-semibold text-ink">
-                  {e.event_type === "new_business" ? "New Business Added" : "New Passport Promotion"}
-                </p>
-                <p className="text-sm text-ink-muted">
-                  {e.event_type === "new_business"
-                    ? `${e.businessName} has joined the Passport!`
-                    : `${e.businessName} just added: ${e.offerTitle}`}
-                </p>
+                <p className="text-sm font-semibold text-ink">{label}</p>
+                <p className="text-sm text-ink-muted">{detail}</p>
                 <p className="mt-1 text-xs text-ink-muted">{new Date(e.created_at).toLocaleString()}</p>
               </div>
-              <MarkReadLink
-                href={`/${e.stateSlug}/${e.areaSlug}/businesses/${e.businessSlug}`}
-                markAction={markNotificationsRead}
-                className={buttonClasses("outline", "sm")}
-              >
-                View
-              </MarkReadLink>
+              {href && (
+                <MarkReadLink href={href} markAction={markNotificationsRead} className={buttonClasses("outline", "sm")}>
+                  View
+                </MarkReadLink>
+              )}
             </div>
           );
         })}
