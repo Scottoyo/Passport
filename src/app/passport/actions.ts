@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sendPassportWelcomeEmail } from "@/lib/email/send-passport-welcome";
 
 // Placeholder "checkout." No payment processor is wired up yet — see
 // docs/ARCHITECTURE.md "Open decisions before payments." This exists so the
@@ -97,25 +99,43 @@ export async function startPlaceholderPassport(
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + product.duration_days);
 
-  const { error } = await supabase.from("passports").insert({
-    owner_user_id: user.id,
-    passport_product_id: passportProductId,
-    state_id: product.state_id,
-    passport_area_id: product.passport_area_id,
-    status: "active",
-    expires_at: expiresAt.toISOString(),
-    payment_reference: "PLACEHOLDER-NO-PAYMENT-PROCESSOR",
-    referred_by_business_id: referredByBusinessId,
-    referred_by_profile_id: referredByProfileId,
-    amount_paid_cents: amountPaidCents,
-    promo_code_id: promoCodeId,
-    discount_cents: discountCents,
-    referral_payout_cents: referredByBusinessId || referredByProfileId ? referralPayoutCents : 0,
-  });
+  const { data: newPassport, error } = await supabase
+    .from("passports")
+    .insert({
+      owner_user_id: user.id,
+      passport_product_id: passportProductId,
+      state_id: product.state_id,
+      passport_area_id: product.passport_area_id,
+      status: "active",
+      expires_at: expiresAt.toISOString(),
+      payment_reference: "PLACEHOLDER-NO-PAYMENT-PROCESSOR",
+      referred_by_business_id: referredByBusinessId,
+      referred_by_profile_id: referredByProfileId,
+      amount_paid_cents: amountPaidCents,
+      promo_code_id: promoCodeId,
+      discount_cents: discountCents,
+      referral_payout_cents: referredByBusinessId || referredByProfileId ? referralPayoutCents : 0,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     return { error: error.message };
   }
+
+  // Fire-and-forget via after() (not a bare un-awaited call, which risks
+  // the serverless function freezing mid-send) - a failed welcome email
+  // must never fail a successful purchase, and sendPassportWelcomeEmail
+  // itself never throws, but the .catch is a backstop against anything
+  // upstream (e.g. a template bug) throwing synchronously.
+  after(() =>
+    sendPassportWelcomeEmail({
+      passportId: newPassport.id,
+      userId: user.id,
+      recipientEmail: user.email ?? "",
+      areaId: product.passport_area_id,
+    }).catch((e) => console.error("passport welcome email failed", e))
+  );
 
   revalidatePath("/account");
   return { error: null };

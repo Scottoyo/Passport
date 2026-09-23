@@ -1,6 +1,8 @@
 "use server";
 
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sendBusinessWelcomeEmail } from "@/lib/email/send-business-welcome";
 
 function slugify(value: string) {
   return value
@@ -70,7 +72,7 @@ export async function registerBusiness(formData: FormData) {
   // always belongs to exactly one state.
   const { data: area } = await supabase
     .from("passport_areas")
-    .select("state_id")
+    .select("state_id, name")
     .eq("id", areaId)
     .maybeSingle();
   if (!area) {
@@ -83,22 +85,44 @@ export async function registerBusiness(formData: FormData) {
     .maybeSingle();
   const stateCode = state?.abbreviation ?? null;
 
-  const { error: businessError } = await supabase.from("businesses").insert({
-    passport_area_id: areaId,
-    name: businessName,
-    slug: slugify(businessName),
-    phone: businessPhone || null,
-    website_url: website || null,
-    address_line1: address || null,
-    city: city || null,
-    state_code: stateCode || null,
-    postal_code: zip || null,
-    created_by: signUpData.user.id,
-  });
+  const { data: newBusiness, error: businessError } = await supabase
+    .from("businesses")
+    .insert({
+      passport_area_id: areaId,
+      name: businessName,
+      slug: slugify(businessName),
+      phone: businessPhone || null,
+      website_url: website || null,
+      address_line1: address || null,
+      city: city || null,
+      state_code: stateCode || null,
+      postal_code: zip || null,
+      created_by: signUpData.user.id,
+    })
+    .select("id, approval_status")
+    .single();
 
   if (businessError) {
     return { error: businessError.message };
   }
+
+  // Fire-and-forget via after() - see src/app/passport/actions.ts for the
+  // same reasoning (serverless freeze risk with a bare un-awaited call). A
+  // failed welcome email must never fail a successful registration.
+  // (ownerUserId captured as a local const - TS's null-narrowing on
+  // signUpData.user doesn't survive into a closure passed to after().)
+  const ownerUserId = signUpData.user.id;
+  after(() =>
+    sendBusinessWelcomeEmail({
+      businessId: newBusiness.id,
+      approvalStatus: newBusiness.approval_status,
+      ownerUserId,
+      ownerEmail: workEmail,
+      ownerFirstName: firstName || null,
+      businessName,
+      areaId,
+    }).catch((e) => console.error("business welcome email failed", e))
+  );
 
   return { error: null, signedIn };
 }
