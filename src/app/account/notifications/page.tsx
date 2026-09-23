@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getRegionEventsForUser } from "@/lib/queries";
 import type { Profile } from "@/lib/types/domain";
 import { markNotificationsRead } from "../actions";
+import { MarkReadLink } from "@/components/notifications/mark-read-link";
 import { buttonClasses } from "@/lib/ui-classes";
 
 interface Props {
@@ -93,12 +94,13 @@ export default async function NotificationsPage({ searchParams }: Props) {
                 </p>
                 <p className="mt-1 text-xs text-ink-muted">{new Date(e.created_at).toLocaleString()}</p>
               </div>
-              <Link
+              <MarkReadLink
                 href={`/${e.stateSlug}/${e.areaSlug}/businesses/${e.businessSlug}`}
+                markAction={markNotificationsRead}
                 className={buttonClasses("outline", "sm")}
               >
                 View
-              </Link>
+              </MarkReadLink>
             </div>
           );
         })}

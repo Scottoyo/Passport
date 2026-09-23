@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/permissions";
 import { getAdminScopedAreaIds } from "@/lib/admin-scope";
 import { getAdminNotifications, getAdminNotificationsLastReadAt, type AdminNotificationWithDetails } from "@/lib/admin-queries";
 import { markAdminNotificationsRead } from "../notifications-actions";
+import { MarkReadLink } from "@/components/notifications/mark-read-link";
 import { buttonClasses } from "@/lib/ui-classes";
 
 interface Props {
@@ -110,12 +111,13 @@ export default async function AdminNotificationsPage({ searchParams }: Props) {
                 <p className="text-sm text-ink-muted">{detail}</p>
                 <p className="mt-1 text-xs text-ink-muted">{new Date(n.created_at).toLocaleString()}</p>
               </div>
-              <Link
+              <MarkReadLink
                 href={href}
+                markAction={markAdminNotificationsRead}
                 className={buttonClasses("outline", "sm")}
               >
                 View
-              </Link>
+              </MarkReadLink>
             </div>
           );
         })}
