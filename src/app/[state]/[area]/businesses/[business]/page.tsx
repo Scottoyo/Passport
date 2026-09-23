@@ -42,6 +42,14 @@ function formatTime(value: string | null) {
   return `${hour12}:${minute} ${period}`;
 }
 
+// Business owners commonly type a bare domain (the editor's own placeholder
+// text is "example.com") - without a protocol, an <a href> like that
+// resolves as a RELATIVE path against the current page instead of an
+// external link, landing back on this same site under a nonsense URL.
+function externalUrl(url: string) {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { state: stateSlug, area: areaSlug, business: businessSlug } = await params;
   const state = await getStateBySlug(stateSlug);
@@ -164,12 +172,12 @@ export default async function BusinessPage({ params }: Props) {
           </a>
         )}
         {business.website_url && (
-          <a href={business.website_url} target="_blank" rel="noreferrer" className={buttonClasses("outline", "sm")}>
+          <a href={externalUrl(business.website_url)} target="_blank" rel="noreferrer" className={buttonClasses("outline", "sm")}>
             Website
           </a>
         )}
         {socialLinks.map((s) => (
-          <a key={s.label} href={s.url!} target="_blank" rel="noreferrer" className={buttonClasses("outline", "sm")}>
+          <a key={s.label} href={externalUrl(s.url!)} target="_blank" rel="noreferrer" className={buttonClasses("outline", "sm")}>
             {s.label}
           </a>
         ))}
