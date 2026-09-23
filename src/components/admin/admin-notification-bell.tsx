@@ -94,7 +94,10 @@ export function AdminNotificationBell({
                   <Link
                     key={e.id}
                     href={href}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpen(false);
+                      handleMarkAllRead();
+                    }}
                     className={`block border-b border-border p-3 text-sm hover:bg-surface-elevated ${
                       isUnread(e.created_at) ? "bg-surface-elevated" : ""
                     }`}
