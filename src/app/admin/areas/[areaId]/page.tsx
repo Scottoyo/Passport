@@ -6,6 +6,7 @@ import type { Business, BusinessApprovalStatus, MarketingRequest, PassportArea, 
 import { StatusBadge } from "@/components/status-badge";
 import { buttonClasses } from "@/lib/ui-classes";
 import { SaveButton } from "@/components/save-button";
+import { SingleFileUploadForm } from "@/components/single-file-upload-form";
 import {
   createSubarea,
   setSubareaStatus,
@@ -222,22 +223,16 @@ export default async function AreaWorkspacePage({ params }: Props) {
             </form>
           )}
 
-          <form action={uploadAreaHeroImage.bind(null, areaId)} className="mt-6 flex flex-wrap items-end gap-3 border-t border-border pt-4">
-            <label className="text-sm">
-              <span className="mb-1 block text-ink-muted">Hero image</span>
-              <input
-                name="hero_image"
-                type="file"
-                accept="image/*"
-                required
-                className="text-sm"
-              />
-            </label>
-            <button className={buttonClasses("outline")}>Upload hero image</button>
+          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+            <SingleFileUploadForm
+              action={uploadAreaHeroImage.bind(null, areaId)}
+              fieldName="hero_image"
+              label="Upload hero image"
+            />
             {area.hero_image_url && (
               <span className="text-xs text-ink-muted">Current hero image is set.</span>
             )}
-          </form>
+          </div>
         </section>
       )}
 

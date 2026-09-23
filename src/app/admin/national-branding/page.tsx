@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { getCurrentUser } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { NATIONAL_BRANDING_ID } from "@/lib/resolve-theme";
-import { buttonClasses } from "@/lib/ui-classes";
 import { SaveButton } from "@/components/save-button";
+import { SingleFileUploadForm } from "@/components/single-file-upload-form";
 import type { NationalBranding } from "@/lib/types/domain";
 import { updateNationalBranding, uploadNationalHeroImage } from "./actions";
 
@@ -118,13 +118,9 @@ export default async function NationalBrandingPage() {
         {branding.hero_image_url && (
           <p className="mt-2 text-xs text-ink-muted break-all">Current: {branding.hero_image_url}</p>
         )}
-        <form action={uploadNationalHeroImage} className="mt-3 flex flex-wrap items-end gap-3">
-          <label className="text-sm">
-            <span className="mb-1 block text-ink-muted">Hero image</span>
-            <input name="hero_image" type="file" accept="image/*" required className="text-sm" />
-          </label>
-          <button className={buttonClasses("outline")}>Upload hero image</button>
-        </form>
+        <div className="mt-3">
+          <SingleFileUploadForm action={uploadNationalHeroImage} fieldName="hero_image" label="Upload hero image" />
+        </div>
       </section>
     </div>
   );

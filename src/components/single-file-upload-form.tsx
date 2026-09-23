@@ -1,29 +1,35 @@
 "use client";
 
 import { useRef } from "react";
-import { buttonClasses } from "@/lib/ui-classes";
+import { buttonClasses, type ButtonSize } from "@/lib/ui-classes";
 
 // Same shape as the business Logo/Cover upload slots
 // (src/components/business/media-editor.tsx's ImageSlot): a styled label
 // wrapping a hidden file input, picking a file auto-submits - no separate
 // "Choose File" native control and no second submit button needed for a
 // single-field form like this one.
-export function PassportPhotoUploadForm({
+export function SingleFileUploadForm({
   action,
-  hasPhoto,
+  fieldName,
+  label,
+  size = "md",
+  className,
 }: {
   action: (formData: FormData) => void | Promise<void>;
-  hasPhoto: boolean;
+  fieldName: string;
+  label: string;
+  size?: ButtonSize;
+  className?: string;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
-    <form ref={formRef} action={action}>
-      <label className={`${buttonClasses("outline", "sm")} cursor-pointer`}>
-        {hasPhoto ? "Replace Photo" : "Upload Photo"}
+    <form ref={formRef} action={action} className={className}>
+      <label className={`${buttonClasses("outline", size)} cursor-pointer`}>
+        {label}
         <input
           type="file"
-          name="photo"
+          name={fieldName}
           accept="image/*"
           required
           className="sr-only"

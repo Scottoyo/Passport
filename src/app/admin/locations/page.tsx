@@ -20,6 +20,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { Overlay } from "@/components/admin/overlay";
 import { buttonClasses } from "@/lib/ui-classes";
 import { SaveButton } from "@/components/save-button";
+import { SingleFileUploadForm } from "@/components/single-file-upload-form";
 
 const CAPABILITY_FIELDS: { key: string; label: string }[] = [
   { key: "can_view_metrics", label: "View metrics" },
@@ -390,17 +391,15 @@ function StateEditPanel({
             </form>
           )}
 
-          <form
-            action={uploadStateHeroImage.bind(null, state.id)}
-            className="mt-4 flex flex-wrap items-end gap-3 border-t border-border pt-3"
-          >
-            <label className="text-sm">
-              <span className="mb-1 block text-ink-muted">Hero image</span>
-              <input name="hero_image" type="file" accept="image/*" required className="text-sm" />
-            </label>
-            <button className={buttonClasses("outline", "sm")}>Upload hero image</button>
+          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-3">
+            <SingleFileUploadForm
+              action={uploadStateHeroImage.bind(null, state.id)}
+              fieldName="hero_image"
+              label="Upload hero image"
+              size="sm"
+            />
             {state.hero_image_url && <span className="text-xs text-ink-muted">Current hero image is set.</span>}
-          </form>
+          </div>
         </section>
       )}
 
