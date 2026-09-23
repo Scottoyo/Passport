@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { NotificationPreferences, Profile } from "@/lib/types/domain";
 import { updateMyProfile, updateNotificationPreferences } from "../actions";
-import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 
 const AGE_RANGES = ["Under 18", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
 const inputClass = "w-full rounded-lg border border-border px-3 py-2 text-sm";
@@ -100,9 +100,7 @@ export default async function SettingsPage() {
               <input name="postal_code" defaultValue={profile?.postal_code ?? ""} className={inputClass} />
             </label>
           </div>
-          <button className={buttonClasses("primary")}>
-            Save Changes
-          </button>
+          <SaveButton>Save Changes</SaveButton>
         </form>
       </section>
 
@@ -127,9 +125,7 @@ export default async function SettingsPage() {
               />
             </label>
           ))}
-          <button className={buttonClasses("primary")}>
-            Save Preferences
-          </button>
+          <SaveButton>Save Preferences</SaveButton>
         </form>
       </section>
     </div>

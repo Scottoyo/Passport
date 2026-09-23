@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getPortalBusinessAccess } from "@/lib/portal-queries";
 import { generateBusinessReferralCode, setCustomBusinessReferralCode } from "../actions";
 import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -72,9 +73,7 @@ export default async function PortalReferralsPage({ params }: Props) {
             defaultValue={business.referral_code ?? ""}
             className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
           />
-          <button className={buttonClasses("outline")}>
-            Save custom code
-          </button>
+          <SaveButton variant="outline">Save custom code</SaveButton>
         </form>
       </section>
 

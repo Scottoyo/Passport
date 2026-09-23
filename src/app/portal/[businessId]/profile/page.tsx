@@ -18,7 +18,7 @@ import {
   reorderBusinessGalleryImages,
 } from "@/app/admin/areas/[areaId]/businesses/[businessId]/actions";
 import { BusinessMediaEditor } from "@/components/business/media-editor";
-import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -119,9 +119,7 @@ export default async function PortalProfilePage({ params }: Props) {
               className="w-full rounded-lg border border-border px-3 py-2 text-sm"
             />
           </label>
-          <button className={buttonClasses("primary")}>
-            Save
-          </button>
+          <SaveButton>Save</SaveButton>
         </form>
       </section>
 
@@ -198,9 +196,7 @@ export default async function PortalProfilePage({ params }: Props) {
               />
             </label>
           </div>
-          <button className={buttonClasses("primary")}>
-            Save
-          </button>
+          <SaveButton>Save</SaveButton>
         </form>
       </section>
 
@@ -218,9 +214,7 @@ export default async function PortalProfilePage({ params }: Props) {
               />
             </label>
           ))}
-          <button className={buttonClasses("primary")}>
-            Save
-          </button>
+          <SaveButton>Save</SaveButton>
         </form>
       </section>
 
@@ -262,9 +256,7 @@ export default async function PortalProfilePage({ params }: Props) {
               Call for appointment
             </label>
           </div>
-          <button className={buttonClasses("primary")}>
-            Save hours
-          </button>
+          <SaveButton>Save hours</SaveButton>
         </form>
       </section>
 

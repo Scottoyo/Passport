@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { NATIONAL_BRANDING_ID } from "@/lib/resolve-theme";
 import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 import type { NationalBranding } from "@/lib/types/domain";
 import { updateNationalBranding, uploadNationalHeroImage } from "./actions";
 
@@ -103,7 +104,7 @@ export default async function NationalBrandingPage() {
               className="w-64 rounded-lg border border-border px-3 py-2 text-sm"
             />
           </label>
-          <button className={buttonClasses("primary")}>Save branding</button>
+          <SaveButton>Save branding</SaveButton>
         </form>
       </section>
 

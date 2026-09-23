@@ -25,6 +25,7 @@ import {
   sendHolderPasswordReset,
 } from "./actions";
 import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 
 const STATUS_OPTIONS: PassportStatus[] = ["active", "expired", "revoked"];
 const AGE_RANGES = ["Under 18", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
@@ -153,9 +154,7 @@ export default async function PassportHolderDetailPage({
               </label>
             </div>
             <div className="flex gap-3">
-              <button className={buttonClasses("primary")}>
-                Save changes
-              </button>
+              <SaveButton>Save changes</SaveButton>
               <Link
                 href={baseHref}
                 className={buttonClasses("outline")}
@@ -250,9 +249,7 @@ export default async function PassportHolderDetailPage({
                   </option>
                 ))}
               </select>
-              <button className={buttonClasses("outline", "sm")}>
-                Save status
-              </button>
+              <SaveButton variant="outline" size="sm">Save status</SaveButton>
             </form>
           </div>
 
@@ -266,9 +263,7 @@ export default async function PassportHolderDetailPage({
                 <span className="mb-1 block text-ink-muted">End date</span>
                 <input type="date" name="expires_at" defaultValue={toDateInputValue(p.expires_at)} className={inputClass} />
               </label>
-              <button className={buttonClasses("outline", "sm")}>
-                Save
-              </button>
+              <SaveButton variant="outline" size="sm">Save</SaveButton>
             </form>
           </div>
 
@@ -294,9 +289,7 @@ export default async function PassportHolderDetailPage({
                 className={inputClass}
               />
             </label>
-            <button className={buttonClasses("outline", "sm")}>
-              Save travel dates
-            </button>
+            <SaveButton variant="outline" size="sm">Save travel dates</SaveButton>
           </form>
         </section>
       ))}

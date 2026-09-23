@@ -4,6 +4,7 @@ import { getMyPassports } from "@/lib/queries";
 import type { Profile } from "@/lib/types/domain";
 import { generateMyReferralCode, setMyCustomReferralCode } from "../actions";
 import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 
 export default async function AccountReferralsPage() {
   const supabase = await createClient();
@@ -69,9 +70,7 @@ export default async function AccountReferralsPage() {
             defaultValue={profile?.referral_code ?? ""}
             className="flex-1 rounded-lg border border-border px-3 py-2 text-sm"
           />
-          <button className={buttonClasses("outline")}>
-            Save Custom Code
-          </button>
+          <SaveButton variant="outline">Save Custom Code</SaveButton>
         </form>
       </section>
 
