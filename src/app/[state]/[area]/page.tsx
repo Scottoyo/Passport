@@ -178,31 +178,6 @@ export default async function AreaHomePage({ params }: Props) {
         </section>
       )}
 
-      {/* Someone who already owns this region's Passport doesn't need the
-          sales pitch for it, or the "why get a Passport"/business-signup
-          upsells that go with it - they're here to browse, not buy. */}
-      {!ownsAreaPassport && (
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="text-center font-display text-2xl font-bold text-ink">
-            Why get the {area.name} Passport
-          </h2>
-          <div className="mt-10 grid gap-8 sm:grid-cols-3">
-            <Benefit
-              title="Deep local savings"
-              body={`Your ${area.name} Passport unlocks every participating business across the region.`}
-            />
-            <Benefit
-              title="Real savings, not gimmicks"
-              body="Every offer is a real discount, freebie, or deal from a business that opted in - no fine print designed to make it unusable."
-            />
-            <Benefit
-              title="Bring the family"
-              body="Many Passports cover more than one person, so everyone in your group saves - not just the Passport holder."
-            />
-          </div>
-        </section>
-      )}
-
       {hasOffers && (featuredBusinesses.length > 0 || ownsAreaPassport) && (
         <section className={themed ? "border-t border-border bg-brand-surface-alt" : "border-t border-border bg-surface-elevated"}>
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
@@ -240,6 +215,31 @@ export default async function AreaHomePage({ params }: Props) {
                 </Link>
               </div>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* Someone who already owns this region's Passport doesn't need the
+          sales pitch for it, or the "why get a Passport"/business-signup
+          upsells that go with it - they're here to browse, not buy. */}
+      {!ownsAreaPassport && (
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <h2 className="text-center font-display text-2xl font-bold text-ink">
+            Why get the {area.name} Passport
+          </h2>
+          <div className="mt-10 grid gap-8 sm:grid-cols-3">
+            <Benefit
+              title="Deep local savings"
+              body={`Your ${area.name} Passport unlocks every participating business across the region.`}
+            />
+            <Benefit
+              title="Real savings, not gimmicks"
+              body="Every offer is a real discount, freebie, or deal from a business that opted in - no fine print designed to make it unusable."
+            />
+            <Benefit
+              title="Bring the family"
+              body="Many Passports cover more than one person, so everyone in your group saves - not just the Passport holder."
+            />
           </div>
         </section>
       )}
