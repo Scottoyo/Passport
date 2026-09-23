@@ -19,6 +19,7 @@ import { addAreaManager, removeAreaManager } from "../areas/[areaId]/actions";
 import { StatusBadge } from "@/components/status-badge";
 import { Overlay } from "@/components/admin/overlay";
 import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 
 const CAPABILITY_FIELDS: { key: string; label: string }[] = [
   { key: "can_view_metrics", label: "View metrics" },
@@ -373,7 +374,7 @@ function StateEditPanel({
                 className="w-64 rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
-            <button className={buttonClasses("primary", "sm")}>Save branding</button>
+            <SaveButton size="sm">Save branding</SaveButton>
           </form>
           {(state.brand_primary_color ||
             state.brand_secondary_color ||
@@ -434,9 +435,7 @@ function StateEditPanel({
                 className="w-full rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
-            <button className={buttonClasses("primary")}>
-              Save changes
-            </button>
+            <SaveButton>Save changes</SaveButton>
           </form>
 
           <div className="mt-4 flex items-center gap-3">

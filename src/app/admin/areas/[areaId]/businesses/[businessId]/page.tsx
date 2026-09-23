@@ -6,6 +6,7 @@ import { getCategories, getBusinessMedia } from "@/lib/queries";
 import type { Business, BusinessApprovalStatus, BusinessHoursDay, Offer, PassportArea, State } from "@/lib/types/domain";
 import { StatusBadge } from "@/components/status-badge";
 import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 import { OfferForm } from "@/components/business/offer-form";
 import { BusinessMediaEditor } from "@/components/business/media-editor";
 import { addStaff, removeStaff } from "../../actions";
@@ -438,9 +439,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm"
                   />
                 </label>
-                <button className={buttonClasses("primary")}>
-                  Save
-                </button>
+                <SaveButton>Save</SaveButton>
               </form>
             </section>
           )}
@@ -536,9 +535,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                     />
                   </label>
                 </div>
-                <button className={buttonClasses("primary")}>
-                  Save
-                </button>
+                <SaveButton>Save</SaveButton>
               </form>
             </section>
           )}
@@ -558,9 +555,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                     />
                   </label>
                 ))}
-                <button className={buttonClasses("primary")}>
-                  Save
-                </button>
+                <SaveButton>Save</SaveButton>
               </form>
             </section>
           )}
@@ -611,9 +606,7 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
                     By appointment only
                   </label>
                 </div>
-                <button className={buttonClasses("primary")}>
-                  Save
-                </button>
+                <SaveButton>Save</SaveButton>
               </form>
             </section>
           )}

@@ -6,6 +6,7 @@ import type { PassportArea, PassportProduct, Profile } from "@/lib/types/domain"
 import { updateMyPassportDates, uploadMyPassportPhoto } from "../actions";
 import { SharePassportButton } from "@/components/share-passport-button";
 import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 
 function toDateInputValue(iso: string | null) {
   if (!iso) return "";
@@ -149,9 +150,7 @@ export default async function MyPassportPage() {
                 />
               </label>
             </div>
-            <button className={buttonClasses("primary")}>
-              Save Vacation Dates
-            </button>
+            <SaveButton>Save Vacation Dates</SaveButton>
           </form>
 
           <div className="mt-4 border-t border-border pt-4 text-sm text-ink-muted">

@@ -7,6 +7,7 @@ import {
   type ReferralKind,
 } from "@/app/admin/referrals-actions";
 import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -58,7 +59,7 @@ export function ReferralReportTable({ kind, rows }: { kind: ReferralKind; rows: 
                       defaultValue={(r.payoutRateCents / 100).toFixed(2)}
                       className="w-20 rounded-lg border border-border px-2 py-1 text-xs"
                     />
-                    <button className={buttonClasses("outline", "sm")}>Save</button>
+                    <SaveButton variant="outline" size="sm">Save</SaveButton>
                   </form>
                   <div className="flex flex-wrap gap-2">
                     <form action={setReferralSuspended.bind(null, kind, r.referrerId, !r.suspended)}>

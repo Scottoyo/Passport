@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Business, BusinessApprovalStatus, MarketingRequest, PassportArea, Subarea } from "@/lib/types/domain";
 import { StatusBadge } from "@/components/status-badge";
 import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 import {
   createSubarea,
   setSubareaStatus,
@@ -205,9 +206,7 @@ export default async function AreaWorkspacePage({ params }: Props) {
                 className="w-64 rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
-            <button className={buttonClasses("primary")}>
-              Save branding
-            </button>
+            <SaveButton>Save branding</SaveButton>
           </form>
           {(area.brand_primary_color ||
             area.brand_secondary_color ||

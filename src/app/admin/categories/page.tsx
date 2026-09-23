@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createCategory, renameCategory, deleteCategory } from "./actions";
 import type { Category, State } from "@/lib/types/domain";
 import { buttonClasses } from "@/lib/ui-classes";
+import { SaveButton } from "@/components/save-button";
 
 export default async function CategoriesAdminPage() {
   const currentUser = await getCurrentUser();
@@ -60,9 +61,7 @@ export default async function CategoriesAdminPage() {
                       defaultValue={c.name}
                       className="rounded-lg border border-border px-3 py-2 text-sm"
                     />
-                    <button className={buttonClasses("outline", "sm")}>
-                      Save
-                    </button>
+                    <SaveButton variant="outline" size="sm">Save</SaveButton>
                   </form>
                   <form action={deleteCategory.bind(null, c.id)}>
                     <button className="rounded-full border border-red-200 px-3 py-1 text-xs font-semibold text-red-700 hover:border-red-400">
