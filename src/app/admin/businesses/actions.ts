@@ -39,9 +39,54 @@ async function requireBusinessCapability(businessId: string) {
   return { currentUser, supabase };
 }
 
-export async function setBusinessFeatured(businessId: string, featured: boolean) {
+function computeFeaturedWindow(formData: FormData): { startsAt: string; endsAt: string } {
+  const preset = String(formData.get("preset") ?? "");
+  if (preset === "7" || preset === "30") {
+    const now = new Date();
+    const days = Number(preset);
+    return {
+      startsAt: now.toISOString(),
+      endsAt: new Date(now.getTime() + days * 24 * 60 * 60 * 1000).toISOString(),
+    };
+  }
+
+  const startRaw = String(formData.get("starts_at") ?? "").trim();
+  const endRaw = String(formData.get("ends_at") ?? "").trim();
+  if (!startRaw || !endRaw) throw new Error("Choose a start and end date.");
+  const startsAt = new Date(startRaw);
+  const endsAt = new Date(endRaw);
+  if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) {
+    throw new Error("Enter valid dates.");
+  }
+  if (endsAt <= startsAt) throw new Error("The end date must be after the start date.");
+  return { startsAt: startsAt.toISOString(), endsAt: endsAt.toISOString() };
+}
+
+// Feature for a fixed 7/30-day window (formData carries preset="7"|"30") or
+// a custom range (preset="custom" plus starts_at/ends_at date inputs) - one
+// action handles all three, since they only differ in how the window gets
+// computed. Visibility on the public Home page is entirely window-driven
+// (see getBusinessesForArea) - no scheduled job flips `featured` back off
+// when the window passes, the read-side query just stops matching it.
+export async function featureBusiness(businessId: string, formData: FormData) {
   const { supabase } = await requireBusinessCapability(businessId);
-  const { error } = await supabase.from("businesses").update({ featured }).eq("id", businessId);
+  const { startsAt, endsAt } = computeFeaturedWindow(formData);
+  const { error } = await supabase
+    .from("businesses")
+    .update({ featured: true, featured_starts_at: startsAt, featured_ends_at: endsAt })
+    .eq("id", businessId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/businesses");
+  revalidatePath("/admin");
+}
+
+export async function unfeatureBusiness(businessId: string) {
+  const { supabase } = await requireBusinessCapability(businessId);
+  const { error } = await supabase
+    .from("businesses")
+    .update({ featured: false, featured_starts_at: null, featured_ends_at: null })
+    .eq("id", businessId);
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/businesses");

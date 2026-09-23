@@ -9,7 +9,8 @@ import { buttonClasses } from "@/lib/ui-classes";
 import { OfferForm } from "@/components/business/offer-form";
 import { BusinessMediaEditor } from "@/components/business/media-editor";
 import { addStaff, removeStaff } from "../../actions";
-import { setBusinessApproval, setBusinessFeatured } from "../../../../businesses/actions";
+import { setBusinessApproval, featureBusiness, unfeatureBusiness } from "../../../../businesses/actions";
+import { featuredStatusLabel } from "@/lib/business-featured";
 import {
   setBusinessActiveStatus,
   updateBusinessBasicInfo,
@@ -229,16 +230,49 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Featured listing</p>
-              <div className="mt-1 flex items-center gap-2">
-                <span className="text-sm text-ink">{business.featured ? "Featured" : "Not featured"}</span>
-                {business.approval_status === "approved" && (
-                  <form action={setBusinessFeatured.bind(null, businessId, !business.featured)}>
-                    <button className={buttonClasses("outline", "sm")}>
-                      {business.featured ? "Unfeature" : "Feature"}
-                    </button>
-                  </form>
-                )}
-              </div>
+              <p className="mt-1 text-sm text-ink">{featuredStatusLabel(business)}</p>
+              {business.approval_status === "approved" && (
+                <div className="mt-2 flex flex-wrap items-end gap-2">
+                  {business.featured ? (
+                    <form action={unfeatureBusiness.bind(null, businessId)}>
+                      <button className={buttonClasses("outline", "sm")}>Unfeature</button>
+                    </form>
+                  ) : (
+                    <>
+                      <form action={featureBusiness.bind(null, businessId)}>
+                        <input type="hidden" name="preset" value="7" />
+                        <button className={buttonClasses("outline", "sm")}>Feature for 7 days</button>
+                      </form>
+                      <form action={featureBusiness.bind(null, businessId)}>
+                        <input type="hidden" name="preset" value="30" />
+                        <button className={buttonClasses("outline", "sm")}>Feature for 30 days</button>
+                      </form>
+                      <form action={featureBusiness.bind(null, businessId)} className="flex flex-wrap items-end gap-2">
+                        <input type="hidden" name="preset" value="custom" />
+                        <label className="text-xs">
+                          <span className="mb-1 block text-ink-muted">Start</span>
+                          <input
+                            type="date"
+                            name="starts_at"
+                            required
+                            className="rounded-lg border border-border px-2 py-1 text-sm"
+                          />
+                        </label>
+                        <label className="text-xs">
+                          <span className="mb-1 block text-ink-muted">End</span>
+                          <input
+                            type="date"
+                            name="ends_at"
+                            required
+                            className="rounded-lg border border-border px-2 py-1 text-sm"
+                          />
+                        </label>
+                        <button className={buttonClasses("outline", "sm")}>Feature (custom)</button>
+                      </form>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </section>

@@ -127,6 +127,8 @@ export interface Business {
   referral_payout_rate_cents: number;
   referral_suspended_at: string | null;
   featured: boolean;
+  featured_starts_at: string | null;
+  featured_ends_at: string | null;
   approval_status: BusinessApprovalStatus;
   reviewed_by: string | null;
   reviewed_at: string | null;

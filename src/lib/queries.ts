@@ -121,7 +121,17 @@ export async function getBusinessesForArea(
   if (opts.subareaId) query = query.eq("subarea_id", opts.subareaId);
   if (opts.categoryId) query = query.eq("category_id", opts.categoryId);
   if (opts.q) query = query.ilike("name", `%${opts.q}%`);
-  if (opts.featured) query = query.eq("featured", true);
+  if (opts.featured) {
+    // A featured business only shows while it's within its featured
+    // window - a null bound on either side means unbounded on that side
+    // (matches rows from before the windowed-featuring feature, which
+    // keep showing until someone turns featured off).
+    const now = new Date().toISOString();
+    query = query
+      .eq("featured", true)
+      .or(`featured_starts_at.is.null,featured_starts_at.lte.${now}`)
+      .or(`featured_ends_at.is.null,featured_ends_at.gte.${now}`);
+  }
   const { data } = await query.returns<Business[]>();
   return data ?? [];
 }
