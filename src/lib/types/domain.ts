@@ -248,6 +248,7 @@ export interface AreaAssignment {
   can_manage_staff: boolean;
   can_manage_leads: boolean;
   can_manage_branding: boolean;
+  can_manage_announcements: boolean;
 }
 
 export interface StateAssignment {
@@ -262,6 +263,7 @@ export interface StateAssignment {
   can_manage_staff: boolean;
   can_manage_leads: boolean;
   can_manage_branding: boolean;
+  can_manage_announcements: boolean;
 }
 
 export type AreaCapability =
@@ -272,7 +274,8 @@ export type AreaCapability =
   | "submit_marketing_requests"
   | "manage_staff"
   | "manage_leads"
-  | "manage_branding";
+  | "manage_branding"
+  | "manage_announcements";
 
 export interface MarketingRequest {
   id: string;
@@ -292,7 +295,6 @@ export interface MarketingRequest {
 export interface NotificationPreferences {
   achievement_unlocked: boolean;
   admin_announcement: boolean;
-  new_achievement_available: boolean;
   new_business_added: boolean;
   new_promotion_added: boolean;
 }
@@ -335,6 +337,43 @@ export interface BusinessFavorite {
   user_id: string;
   business_id: string;
   created_at: string;
+}
+
+export interface AchievementEvent {
+  id: string;
+  user_id: string;
+  achievement_key: string;
+  created_at: string;
+}
+
+export interface AdminAnnouncement {
+  id: string;
+  title: string;
+  body: string;
+  scope_state_id: string | null;
+  scope_area_id: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+export type NotificationFeedEventType = "new_business" | "new_offer" | "achievement_unlocked" | "admin_announcement";
+
+export interface NotificationFeedItem {
+  id: string;
+  event_type: NotificationFeedEventType;
+  created_at: string;
+  // new_business / new_offer
+  businessName?: string;
+  businessSlug?: string;
+  areaSlug?: string;
+  stateSlug?: string;
+  offerTitle?: string | null;
+  // achievement_unlocked
+  achievementName?: string;
+  achievementDescription?: string;
+  // admin_announcement
+  announcementTitle?: string;
+  announcementBody?: string;
 }
 
 export type AdminNotificationType = "business_pending_review" | "marketing_request_submitted";

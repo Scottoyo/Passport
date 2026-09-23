@@ -8,7 +8,10 @@ export interface ScopeStateOption {
   areas: { id: string; name: string }[];
 }
 
-export function PromoCodeScopeSelect({
+// Generic national/state/region scope picker - shared by anything an admin
+// creates with a 3-tier scope (promo codes, announcements): a hidden
+// "scope" field valued "national" | "state:<id>" | "area:<id>".
+export function ScopeSelect({
   states,
   allowNational,
 }: {

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser, getAccessibleAreaIds } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { getAllStatesForAdmin } from "@/lib/admin-scope";
-import { PromoCodeScopeSelect, type ScopeStateOption } from "@/components/admin/promo-code-scope-select";
+import { ScopeSelect, type ScopeStateOption } from "@/components/admin/scope-select";
 import type { PromoCode, PassportArea, State } from "@/lib/types/domain";
 import { createPromoCode, setPromoCodeStatus, deletePromoCode } from "./actions";
 import { buttonClasses } from "@/lib/ui-classes";
@@ -158,7 +158,7 @@ export default async function PromoCodesAdminPage() {
               </select>
             </label>
           ) : (
-            <PromoCodeScopeSelect states={scopeStates} allowNational={isNationalAdmin} />
+            <ScopeSelect states={scopeStates} allowNational={isNationalAdmin} />
           )}
           <button className={buttonClasses("primary")}>
             Create code

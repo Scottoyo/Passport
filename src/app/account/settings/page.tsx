@@ -19,11 +19,6 @@ const PREFERENCE_FIELDS: { key: keyof NotificationPreferences; label: string; de
     description: "Receive important announcements from the team.",
   },
   {
-    key: "new_achievement_available",
-    label: "New Achievement Available",
-    description: "Receive a notification when a new achievement becomes available.",
-  },
-  {
     key: "new_business_added",
     label: "New Business Added",
     description: "Receive a notification when a new participating business joins your region.",
