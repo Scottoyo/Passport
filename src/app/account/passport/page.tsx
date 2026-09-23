@@ -77,7 +77,7 @@ export default async function MyPassportPage() {
             <img
               src={primary.photo_url}
               alt="Your Passport photo"
-              className="mb-4 h-48 w-full rounded-xl object-cover"
+              className="mb-4 h-32 w-32 rounded-full object-cover"
             />
           )}
           <PassportPhotoUploadForm
