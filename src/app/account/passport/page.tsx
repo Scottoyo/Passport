@@ -5,7 +5,7 @@ import { getMyPassports } from "@/lib/queries";
 import type { PassportArea, PassportProduct, Profile } from "@/lib/types/domain";
 import { updateMyPassportDates, uploadMyPassportPhoto } from "../actions";
 import { SharePassportButton } from "@/components/share-passport-button";
-import { PassportPhotoUploadForm } from "@/components/passport-photo-upload-form";
+import { SingleFileUploadForm } from "@/components/single-file-upload-form";
 import { buttonClasses } from "@/lib/ui-classes";
 import { SaveButton } from "@/components/save-button";
 
@@ -80,9 +80,11 @@ export default async function MyPassportPage() {
               className="mb-4 h-32 w-32 rounded-full object-cover"
             />
           )}
-          <PassportPhotoUploadForm
+          <SingleFileUploadForm
             action={uploadMyPassportPhoto.bind(null, primary.id)}
-            hasPhoto={Boolean(primary.photo_url)}
+            fieldName="photo"
+            label={primary.photo_url ? "Replace Photo" : "Upload Photo"}
+            size="sm"
           />
 
           {referralPath && (
