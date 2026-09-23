@@ -267,6 +267,7 @@ export function BusinessMediaEditor({
   reorderGalleryImages: (orderedMediaIds: string[]) => Promise<MediaActionResult>;
 }) {
   const [galleryPreview, setGalleryPreview] = useState<string | null>(null);
+  const [galleryFileName, setGalleryFileName] = useState<string | null>(null);
   const addFormRef = useRef<HTMLFormElement>(null);
   const pendingSlots = useRef(new Set<string>());
 
@@ -279,6 +280,7 @@ export function BusinessMediaEditor({
         if (prev) URL.revokeObjectURL(prev);
         return null;
       });
+      setGalleryFileName(null);
       addFormRef.current?.reset();
     }
     return result;
@@ -372,18 +374,23 @@ export function BusinessMediaEditor({
           }}
           className="mt-3 flex flex-wrap items-center gap-2"
         >
-          <input
-            type="file"
-            name="gallery"
-            accept="image/jpeg,image/png,image/webp"
-            required
-            className="text-sm"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (galleryPreview) URL.revokeObjectURL(galleryPreview);
-              setGalleryPreview(file ? URL.createObjectURL(file) : null);
-            }}
-          />
+          <label className={`${buttonClasses("outline", "sm")} cursor-pointer`}>
+            Upload
+            <input
+              type="file"
+              name="gallery"
+              accept="image/jpeg,image/png,image/webp"
+              required
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (galleryPreview) URL.revokeObjectURL(galleryPreview);
+                setGalleryPreview(file ? URL.createObjectURL(file) : null);
+                setGalleryFileName(file ? file.name : null);
+              }}
+            />
+          </label>
+          {galleryFileName && <span className="text-sm text-ink-muted">{galleryFileName}</span>}
           <input
             type="text"
             name="alt_text"
