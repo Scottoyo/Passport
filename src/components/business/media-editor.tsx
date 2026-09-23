@@ -4,6 +4,7 @@ import { useActionState, useEffect, useOptimistic, useRef, useState, useTransiti
 import { useFormStatus } from "react-dom";
 import { buttonClasses } from "@/lib/ui-classes";
 import { BusinessPlaceholderIcon } from "./business-placeholder-icon";
+import { ImageCropper } from "./image-cropper";
 import type { BusinessMedia } from "@/lib/types/domain";
 
 export type MediaActionResult = { ok: true } | { ok: false; error: string };
@@ -26,6 +27,12 @@ function ResultMessage({ result }: { result: MediaActionResult | null }) {
   return <p className="mt-1 text-xs font-medium text-error">{result.error}</p>;
 }
 
+function PendingStatus() {
+  const { pending } = useFormStatus();
+  if (!pending) return null;
+  return <p className="mt-1 text-xs font-medium text-ink-muted">Uploading…</p>;
+}
+
 // Logo and cover share this exact shape: preview (saved image, or the
 // not-yet-uploaded file the user just picked), an Upload form, and a Remove
 // form - the only differences are the field name, image dimensions, and
@@ -36,6 +43,10 @@ function ImageSlot({
   fieldName,
   currentUrl,
   shapeClassName,
+  cropAspect,
+  cropOutputWidth,
+  cropOutputHeight,
+  cropShape,
   uploadAction,
   clearAction,
   onPendingChange,
@@ -45,12 +56,18 @@ function ImageSlot({
   fieldName: string;
   currentUrl: string | null;
   shapeClassName: string;
+  cropAspect: number;
+  cropOutputWidth: number;
+  cropOutputHeight: number;
+  cropShape: "circle" | "rect";
   uploadAction: FormAction;
   clearAction: FormAction;
   onPendingChange: (pending: boolean) => void;
 }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // A successful upload clears the local "not yet saved" preview right from
   // the action itself (not a useEffect reacting to the result) - the
@@ -78,6 +95,24 @@ function ImageSlot({
     };
   }, [previewUrl]);
 
+  function handleCropConfirm(blob: Blob) {
+    const ext = cropShape === "circle" ? "logo.png" : "cover.png";
+    const croppedFile = new File([blob], ext, { type: "image/png" });
+    const dt = new DataTransfer();
+    dt.items.add(croppedFile);
+    if (fileInputRef.current) fileInputRef.current.files = dt.files;
+
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(URL.createObjectURL(blob));
+    setCropFile(null);
+    formRef.current?.requestSubmit();
+  }
+
+  function handleCropCancel() {
+    setCropFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   const displayUrl = previewUrl ?? currentUrl;
 
   return (
@@ -94,28 +129,23 @@ function ImageSlot({
           </div>
         )}
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <form
-          ref={formRef}
-          action={uploadFormAction}
-          onSubmit={(e) => {
-            if (!formRef.current?.[fieldName]?.value) e.preventDefault();
-          }}
-          className="flex items-center gap-2"
-        >
-          <input
-            type="file"
-            name={fieldName}
-            accept="image/jpeg,image/png,image/webp"
-            required
-            className="text-sm"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (previewUrl) URL.revokeObjectURL(previewUrl);
-              setPreviewUrl(file ? URL.createObjectURL(file) : null);
-            }}
-          />
-          <SubmitButton>{currentUrl ? "Replace" : "Upload"}</SubmitButton>
+      <div className="flex items-center gap-3">
+        <form ref={formRef} action={uploadFormAction} className="flex items-center gap-3">
+          <label className={`${buttonClasses("outline", "sm")} cursor-pointer`}>
+            {currentUrl ? "Replace" : "Upload"}
+            <input
+              ref={fileInputRef}
+              type="file"
+              name={fieldName}
+              accept="image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) setCropFile(file);
+              }}
+            />
+          </label>
+          <PendingStatus />
         </form>
         {currentUrl && (
           <form action={clearFormAction}>
@@ -125,6 +155,17 @@ function ImageSlot({
       </div>
       <ResultMessage result={uploadState} />
       <ResultMessage result={clearState} />
+      {cropFile && (
+        <ImageCropper
+          file={cropFile}
+          aspect={cropAspect}
+          outputWidth={cropOutputWidth}
+          outputHeight={cropOutputHeight}
+          shape={cropShape}
+          onCancel={handleCropCancel}
+          onConfirm={handleCropConfirm}
+        />
+      )}
     </div>
   );
 }
@@ -283,6 +324,10 @@ export function BusinessMediaEditor({
           fieldName="logo"
           currentUrl={logoUrl}
           shapeClassName="h-32 w-32 rounded-full"
+          cropAspect={1}
+          cropOutputWidth={600}
+          cropOutputHeight={600}
+          cropShape="circle"
           uploadAction={uploadLogo}
           clearAction={clearLogo}
           onPendingChange={(p) => (p ? pendingSlots.current.add("logo") : pendingSlots.current.delete("logo"))}
@@ -293,6 +338,10 @@ export function BusinessMediaEditor({
           fieldName="cover"
           currentUrl={coverUrl}
           shapeClassName="h-32 w-full rounded-xl"
+          cropAspect={1200 / 450}
+          cropOutputWidth={1200}
+          cropOutputHeight={450}
+          cropShape="rect"
           uploadAction={uploadCover}
           clearAction={clearCover}
           onPendingChange={(p) => (p ? pendingSlots.current.add("cover") : pendingSlots.current.delete("cover"))}
