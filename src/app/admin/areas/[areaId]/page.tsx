@@ -19,7 +19,8 @@ import {
   resetAreaBranding,
   uploadAreaHeroImage,
 } from "./actions";
-import { setBusinessApproval, setBusinessFeatured } from "../../businesses/actions";
+import { setBusinessApproval, featureBusiness, unfeatureBusiness } from "../../businesses/actions";
+import { featuredStatusLabel } from "@/lib/business-featured";
 
 const APPROVAL_STYLES: Record<BusinessApprovalStatus, string> = {
   pending_review: "bg-warning-bg text-warning",
@@ -303,6 +304,9 @@ export default async function AreaWorkspacePage({ params }: Props) {
                 </div>
                 <div className="flex items-center gap-2">
                   <StatusBadge status={business.status} />
+                  {business.featured && (
+                    <span className="text-xs text-ink-muted">{featuredStatusLabel(business)}</span>
+                  )}
                   {canBusinesses && business.approval_status === "pending_review" && (
                     <>
                       <form action={setBusinessApproval.bind(null, business.id, "approved")}>
@@ -325,11 +329,28 @@ export default async function AreaWorkspacePage({ params }: Props) {
                     </form>
                   )}
                   {canBusinesses && business.approval_status === "approved" && (
-                    <form action={setBusinessFeatured.bind(null, business.id, !business.featured)}>
-                      <button className={buttonClasses("outline", "sm")}>
-                        {business.featured ? "Unfeature" : "Feature"}
-                      </button>
-                    </form>
+                    business.featured ? (
+                      <form action={unfeatureBusiness.bind(null, business.id)}>
+                        <button className={buttonClasses("outline", "sm")}>Unfeature</button>
+                      </form>
+                    ) : (
+                      <>
+                        <form action={featureBusiness.bind(null, business.id)}>
+                          <input type="hidden" name="preset" value="7" />
+                          <button className={buttonClasses("outline", "sm")}>Feature 7d</button>
+                        </form>
+                        <form action={featureBusiness.bind(null, business.id)}>
+                          <input type="hidden" name="preset" value="30" />
+                          <button className={buttonClasses("outline", "sm")}>Feature 30d</button>
+                        </form>
+                        <Link
+                          href={`/admin/areas/${areaId}/businesses/${business.id}`}
+                          className={buttonClasses("outline", "sm")}
+                        >
+                          Custom…
+                        </Link>
+                      </>
+                    )
                   )}
                   {canBusinesses &&
                     (business.status !== "active" ? (

@@ -10,7 +10,8 @@ import { buttonClasses } from "@/lib/ui-classes";
 import { BusinessesFilterBar } from "@/components/admin/businesses-filter-bar";
 import { BusinessActionsMenu } from "@/components/admin/business-actions-menu";
 import { ExportBusinessesCsvButton } from "@/components/admin/export-businesses-csv-button";
-import { setBusinessFeatured, setBusinessApproval } from "./actions";
+import { featureBusiness, unfeatureBusiness, setBusinessApproval } from "./actions";
+import { isBusinessCurrentlyFeatured, featuredStatusLabel } from "@/lib/business-featured";
 import type { BusinessApprovalStatus } from "@/lib/types/domain";
 
 const APPROVAL_STYLES: Record<BusinessApprovalStatus, string> = {
@@ -112,7 +113,7 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
     state: b.stateName ?? "",
     status: b.status,
     approvalStatus: APPROVAL_LABELS[b.approval_status],
-    featured: b.featured,
+    featured: isBusinessCurrentlyFeatured(b),
     updatedAt: new Date(b.updated_at).toLocaleDateString(),
   }));
 
@@ -187,7 +188,7 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
                   <td className="px-4 py-3">
                     <StatusBadge status={b.status} />
                   </td>
-                  <td className="px-4 py-3 text-ink-muted">{b.featured ? "Yes" : "No"}</td>
+                  <td className="px-4 py-3 text-ink-muted">{featuredStatusLabel(b)}</td>
                   <td className="px-4 py-3 text-ink-muted">{new Date(b.updated_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-right">
                     <BusinessActionsMenu viewHref={`${detailBase}?mode=view`} editHref={`${detailBase}?mode=edit`}>
@@ -213,11 +214,34 @@ export default async function BusinessesAdminPage({ searchParams }: Props) {
                         </form>
                       )}
                       {canManage && b.approval_status === "approved" && (
-                        <form action={setBusinessFeatured.bind(null, b.id, !b.featured)}>
-                          <button className="block w-full px-3 py-1.5 text-left text-sm text-ink hover:bg-surface-elevated">
-                            {b.featured ? "Unfeature" : "Feature"}
-                          </button>
-                        </form>
+                        b.featured ? (
+                          <form action={unfeatureBusiness.bind(null, b.id)}>
+                            <button className="block w-full px-3 py-1.5 text-left text-sm text-ink hover:bg-surface-elevated">
+                              Unfeature
+                            </button>
+                          </form>
+                        ) : (
+                          <>
+                            <form action={featureBusiness.bind(null, b.id)}>
+                              <input type="hidden" name="preset" value="7" />
+                              <button className="block w-full px-3 py-1.5 text-left text-sm text-ink hover:bg-surface-elevated">
+                                Feature for 7 days
+                              </button>
+                            </form>
+                            <form action={featureBusiness.bind(null, b.id)}>
+                              <input type="hidden" name="preset" value="30" />
+                              <button className="block w-full px-3 py-1.5 text-left text-sm text-ink hover:bg-surface-elevated">
+                                Feature for 30 days
+                              </button>
+                            </form>
+                            <Link
+                              href={`${detailBase}?mode=view`}
+                              className="block w-full px-3 py-1.5 text-left text-sm text-ink hover:bg-surface-elevated"
+                            >
+                              Feature (custom dates)…
+                            </Link>
+                          </>
+                        )
                       )}
                     </BusinessActionsMenu>
                   </td>
