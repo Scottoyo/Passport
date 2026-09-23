@@ -5,6 +5,7 @@ import { getMyPassports } from "@/lib/queries";
 import type { PassportArea, PassportProduct, Profile } from "@/lib/types/domain";
 import { updateMyPassportDates, uploadMyPassportPhoto } from "../actions";
 import { SharePassportButton } from "@/components/share-passport-button";
+import { PassportPhotoUploadForm } from "@/components/passport-photo-upload-form";
 import { buttonClasses } from "@/lib/ui-classes";
 import { SaveButton } from "@/components/save-button";
 
@@ -79,12 +80,10 @@ export default async function MyPassportPage() {
               className="mb-4 h-48 w-full rounded-xl object-cover"
             />
           )}
-          <form action={uploadMyPassportPhoto.bind(null, primary.id)} className="flex items-center gap-2">
-            <input type="file" name="photo" accept="image/*" required className="text-sm" />
-            <button className={buttonClasses("outline", "sm")}>
-              {primary.photo_url ? "Replace Photo" : "Upload Photo"}
-            </button>
-          </form>
+          <PassportPhotoUploadForm
+            action={uploadMyPassportPhoto.bind(null, primary.id)}
+            hasPhoto={Boolean(primary.photo_url)}
+          />
 
           {referralPath && (
             <div className="mt-4">
