@@ -1,10 +1,13 @@
 "use server";
 
+import crypto from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, canManageArea } from "@/lib/permissions";
 import { uploadBusinessMedia, deleteBusinessMedia, businessMediaPathFromUrl } from "@/lib/storage";
+import { sendBusinessOwnerInvitationEmail } from "@/lib/email/send-business-owner-invitation";
 import type { AreaCapability, BusinessHoursDay, ContentStatus, DiscountType } from "@/lib/types/domain";
 
 export type MediaActionResult = { ok: true } | { ok: false; error: string };
@@ -56,6 +59,141 @@ async function requireCapability(areaId: string, businessId: string, capability:
 
 function path(areaId: string, businessId: string) {
   return `/admin/areas/${areaId}/businesses/${businessId}`;
+}
+
+// Owner or admin - explicitly no staff fallback (unlike requireCapability
+// above), since owner contact details are a narrower surface than every
+// other business field.
+async function requireOwnerOrAdmin(areaId: string, businessId: string) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("You don't have permission to manage this business.");
+
+  const supabase = await createClient();
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("created_by")
+    .eq("id", businessId)
+    .maybeSingle();
+  if (business?.created_by === currentUser.id) return currentUser;
+
+  let stateId: string | null = null;
+  if (!currentUser.isNationalAdmin) {
+    const { data: area } = await supabase.from("passport_areas").select("state_id").eq("id", areaId).maybeSingle();
+    stateId = area?.state_id ?? null;
+  }
+  if (canManageArea(currentUser, areaId, "manage_businesses", stateId)) return currentUser;
+
+  throw new Error("Only this business's owner or a manager/admin can do that.");
+}
+
+// Pure admin/manager - no owner or staff fallback at all. Inviting or
+// transferring ownership must stay admin-only; the current owner editing
+// their own contact info must never be able to grant anyone else access.
+async function requireBusinessManagerCapability(areaId: string) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("You don't have permission to manage this business.");
+
+  let stateId: string | null = null;
+  if (!currentUser.isNationalAdmin) {
+    const supabase = await createClient();
+    const { data: area } = await supabase.from("passport_areas").select("state_id").eq("id", areaId).maybeSingle();
+    stateId = area?.state_id ?? null;
+  }
+  if (!canManageArea(currentUser, areaId, "manage_businesses", stateId)) {
+    throw new Error("Only a manager or admin can do that.");
+  }
+  return currentUser;
+}
+
+export async function updateBusinessOwnerContact(areaId: string, businessId: string, formData: FormData) {
+  await requireOwnerOrAdmin(areaId, businessId);
+  const supabase = await createClient();
+
+  const ownerFirstName = String(formData.get("owner_first_name") ?? "").trim();
+  const ownerLastName = String(formData.get("owner_last_name") ?? "").trim();
+  const ownerPhone = String(formData.get("owner_phone") ?? "").trim();
+  const ownerContactEmail = String(formData.get("owner_contact_email") ?? "").trim();
+
+  const { error } = await supabase
+    .from("businesses")
+    .update({
+      owner_first_name: ownerFirstName || null,
+      owner_last_name: ownerLastName || null,
+      owner_phone: ownerPhone || null,
+      owner_contact_email: ownerContactEmail || null,
+    })
+    .eq("id", businessId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(path(areaId, businessId));
+  revalidatePath(`/portal/${businessId}/profile`);
+}
+
+export async function inviteBusinessOwner(areaId: string, businessId: string, formData: FormData) {
+  const currentUser = await requireBusinessManagerCapability(areaId);
+  const supabase = await createClient();
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!email) throw new Error("An email is required to send an invitation.");
+
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("name, created_by")
+    .eq("id", businessId)
+    .maybeSingle();
+  if (!business) throw new Error("Business not found.");
+
+  await supabase
+    .from("business_owner_invitations")
+    .update({ status: "revoked" })
+    .eq("business_id", businessId)
+    .eq("status", "pending");
+
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: invitation, error } = await supabase
+    .from("business_owner_invitations")
+    .insert({
+      business_id: businessId,
+      email,
+      token_hash: tokenHash,
+      expires_at: expiresAt,
+      invited_by: currentUser.id,
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+
+  const isTransfer = business.created_by !== null;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  after(() =>
+    sendBusinessOwnerInvitationEmail({
+      invitationId: invitation.id,
+      businessId,
+      businessName: business.name,
+      recipientEmail: email,
+      claimUrl: `${siteUrl}/claim-business?token=${rawToken}`,
+      isTransfer,
+    }).catch((e) => console.error("business owner invitation email failed", e))
+  );
+
+  revalidatePath(path(areaId, businessId));
+  revalidatePath(`/portal/${businessId}/profile`);
+}
+
+export async function revokeBusinessOwnerInvitation(areaId: string, businessId: string, invitationId: string) {
+  await requireBusinessManagerCapability(areaId);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("business_owner_invitations")
+    .update({ status: "revoked" })
+    .eq("id", invitationId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(path(areaId, businessId));
+  revalidatePath(`/portal/${businessId}/profile`);
 }
 
 export async function setBusinessActiveStatus(areaId: string, businessId: string, active: boolean) {

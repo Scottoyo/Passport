@@ -1,4 +1,8 @@
-export type EmailType = "passport_welcome" | "business_welcome" | "contact_notification";
+export type EmailType =
+  | "passport_welcome"
+  | "business_welcome"
+  | "contact_notification"
+  | "business_owner_invitation";
 
 export interface SendEmailParams {
   emailType: EmailType;

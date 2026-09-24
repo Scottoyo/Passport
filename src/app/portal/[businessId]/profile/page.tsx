@@ -16,6 +16,7 @@ import {
   removeBusinessGalleryImage,
   updateBusinessGalleryImageAlt,
   reorderBusinessGalleryImages,
+  updateBusinessOwnerContact,
 } from "@/app/admin/areas/[areaId]/businesses/[businessId]/actions";
 import { BusinessMediaEditor } from "@/components/business/media-editor";
 import { SaveButton } from "@/components/save-button";
@@ -63,7 +64,22 @@ export default async function PortalProfilePage({ params }: Props) {
   const categories = area ? await getCategories([area.state_id]) : [];
   const areaId = business.passport_area_id;
   const hoursByDay = new Map((business.business_hours ?? []).map((h) => [h.day, h]));
-  const media = await getBusinessMedia(businessId);
+  const isOwner = business.created_by === user.id;
+
+  const [media, { data: ownerAccount }, { data: ownerInvitations }] = await Promise.all([
+    getBusinessMedia(businessId),
+    business.created_by
+      ? supabase.from("profiles").select("email").eq("id", business.created_by).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("business_owner_invitations")
+      .select("id, email, status, expires_at")
+      .eq("business_id", businessId)
+      .order("created_at", { ascending: false }),
+  ]);
+  const pendingInvitation = (ownerInvitations ?? []).find(
+    (i) => i.status === "pending" && new Date(i.expires_at as string) > new Date()
+  );
 
   return (
     <div className="space-y-6">
@@ -73,6 +89,100 @@ export default async function PortalProfilePage({ params }: Props) {
           Update and manage your business information displayed on the passport portal.
         </p>
       </div>
+
+      <section className="rounded-2xl border border-border bg-surface p-6">
+        <h3 className="font-semibold text-ink">Business owner</h3>
+        <p className="mt-1 text-sm text-ink-muted">
+          {isOwner
+            ? "Your contact details for this business. Only you or an admin can change these."
+            : "Contact details for this business's owner. Only the owner or an admin can change these."}
+        </p>
+
+        <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Account access</dt>
+            <dd className="text-sm text-ink">
+              Active
+              {(ownerAccount as { email: string } | null)?.email &&
+                (ownerAccount as { email: string }).email !== business.owner_contact_email && (
+                  <span className="ml-2 text-xs text-ink-muted">
+                    (signs in as {(ownerAccount as { email: string }).email})
+                  </span>
+                )}
+            </dd>
+          </div>
+          {pendingInvitation && (
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Transfer pending</dt>
+              <dd className="text-sm text-ink">
+                An ownership transfer to {pendingInvitation.email} is pending. Contact an admin to cancel it.
+              </dd>
+            </div>
+          )}
+        </dl>
+
+        {isOwner ? (
+          <form
+            action={updateBusinessOwnerContact.bind(null, areaId, businessId)}
+            className="mt-4 grid gap-3 sm:grid-cols-2"
+          >
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">First name</span>
+              <input
+                name="owner_first_name"
+                defaultValue={business.owner_first_name ?? ""}
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Last name</span>
+              <input
+                name="owner_last_name"
+                defaultValue={business.owner_last_name ?? ""}
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Phone</span>
+              <input
+                name="owner_phone"
+                type="tel"
+                defaultValue={business.owner_phone ?? ""}
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-ink-muted">Contact email</span>
+              <input
+                name="owner_contact_email"
+                type="email"
+                defaultValue={business.owner_contact_email ?? ""}
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+              />
+            </label>
+            <div className="sm:col-span-2">
+              <SaveButton>Save owner details</SaveButton>
+            </div>
+          </form>
+        ) : (
+          <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Name</dt>
+              <dd className="text-sm text-ink">
+                {[business.owner_first_name, business.owner_last_name].filter(Boolean).join(" ") || "Not set"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Phone</dt>
+              <dd className="text-sm text-ink">{business.owner_phone || "Not set"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Contact email</dt>
+              <dd className="text-sm text-ink">{business.owner_contact_email || "Not set"}</dd>
+            </div>
+          </dl>
+        )}
+      </section>
 
       <section className="rounded-2xl border border-border bg-surface p-6">
         <h3 className="font-semibold text-ink">Basic information</h3>

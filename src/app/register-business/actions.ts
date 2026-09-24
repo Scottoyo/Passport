@@ -98,6 +98,10 @@ export async function registerBusiness(formData: FormData) {
       state_code: stateCode || null,
       postal_code: zip || null,
       created_by: signUpData.user.id,
+      owner_first_name: firstName || null,
+      owner_last_name: lastName || null,
+      owner_contact_email: workEmail || null,
+      owner_phone: contactPhone || null,
     })
     .select("id, approval_status")
     .single();
