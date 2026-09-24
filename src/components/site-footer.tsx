@@ -32,6 +32,9 @@ export function SiteFooter() {
           >
             For Businesses
           </Link>
+          <Link href="/contact" className="hover:text-white">
+            Contact Us
+          </Link>
           <Link href="/admin" className="hover:text-white">
             Admin
           </Link>
