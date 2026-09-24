@@ -6,7 +6,6 @@ import type { PassportArea, PassportProduct, Profile } from "@/lib/types/domain"
 import { updateMyPassportDates, uploadMyPassportPhoto, clearMyPassportPhoto } from "../actions";
 import { SharePassportButton } from "@/components/share-passport-button";
 import { PassportCard } from "@/components/passport-card";
-import { ShareMyPassportCardButton } from "@/components/share-passport-card-button";
 import { buttonClasses } from "@/lib/ui-classes";
 import { SaveButton } from "@/components/save-button";
 
@@ -93,15 +92,6 @@ export default async function MyPassportPage() {
             uploadAction={uploadMyPassportPhoto.bind(null, primary.id)}
             clearAction={clearMyPassportPhoto.bind(null, primary.id)}
           />
-
-          <div className="mt-6 border-t border-border pt-6">
-            <ShareMyPassportCardButton
-              holderFirstName={holderFirstName}
-              title={cardTitle}
-              photoUrl={primary.photo_url}
-              heroImageUrl={cardHeroImageUrl}
-            />
-          </div>
 
           {referralPath && (
             <div className="mt-4">
