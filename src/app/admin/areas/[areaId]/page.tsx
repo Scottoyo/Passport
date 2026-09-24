@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser, canManageArea, isStateManager } from "@/lib/permissions";
+import { getAllStatesForAdmin } from "@/lib/admin-scope";
 import { createClient } from "@/lib/supabase/server";
 import type { Business, BusinessApprovalStatus, MarketingRequest, PassportArea, Subarea } from "@/lib/types/domain";
 import { StatusBadge } from "@/components/status-badge";
@@ -20,6 +21,7 @@ import {
   updateAreaBranding,
   resetAreaBranding,
   uploadAreaHeroImage,
+  updateAreaSecondaryStates,
 } from "./actions";
 import { setBusinessApproval, featureBusiness, unfeatureBusiness } from "../../businesses/actions";
 import { featuredStatusLabel } from "@/lib/business-featured";
@@ -88,38 +90,52 @@ export default async function AreaWorkspacePage({ params }: Props) {
     return Boolean((ownStateAssignment as unknown as Record<string, boolean>)[key]);
   }
 
-  const [{ data: subareas }, { data: businesses }, { data: staff }, { data: requests }, { data: managers }] =
-    await Promise.all([
-      supabase.from("subareas").select("*").eq("passport_area_id", areaId).order("name").returns<Subarea[]>(),
-      supabase
-        .from("businesses")
-        .select("*")
-        .eq("passport_area_id", areaId)
-        .order("name")
-        .returns<Business[]>(),
-      canStaff
-        ? supabase
-            .from("local_staff")
-            .select("id, business_id, profiles:user_id(email)")
-            .eq("passport_area_id", areaId)
-        : Promise.resolve({ data: null }),
-      canMarketing
-        ? supabase
-            .from("marketing_requests")
-            .select("*")
-            .eq("passport_area_id", areaId)
-            .order("created_at", { ascending: false })
-            .returns<MarketingRequest[]>()
-        : Promise.resolve({ data: null }),
-      canManageUsers
-        ? supabase
-            .from("area_assignments")
-            .select(
-              "id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, can_manage_leads, can_manage_branding, profiles:user_id(email)"
-            )
-            .eq("passport_area_id", areaId)
-        : Promise.resolve({ data: null }),
-    ]);
+  const [
+    { data: subareas },
+    { data: businesses },
+    { data: staff },
+    { data: requests },
+    { data: managers },
+    allStates,
+    { data: secondaryLinks },
+  ] = await Promise.all([
+    supabase.from("subareas").select("*").eq("passport_area_id", areaId).order("name").returns<Subarea[]>(),
+    supabase
+      .from("businesses")
+      .select("*")
+      .eq("passport_area_id", areaId)
+      .order("name")
+      .returns<Business[]>(),
+    canStaff
+      ? supabase
+          .from("local_staff")
+          .select("id, business_id, profiles:user_id(email)")
+          .eq("passport_area_id", areaId)
+      : Promise.resolve({ data: null }),
+    canMarketing
+      ? supabase
+          .from("marketing_requests")
+          .select("*")
+          .eq("passport_area_id", areaId)
+          .order("created_at", { ascending: false })
+          .returns<MarketingRequest[]>()
+      : Promise.resolve({ data: null }),
+    canManageUsers
+      ? supabase
+          .from("area_assignments")
+          .select(
+            "id, can_view_metrics, can_manage_businesses, can_manage_offers, can_manage_subareas, can_submit_marketing_requests, can_manage_staff, can_manage_leads, can_manage_branding, profiles:user_id(email)"
+          )
+          .eq("passport_area_id", areaId)
+      : Promise.resolve({ data: null }),
+    isNationalAdmin ? getAllStatesForAdmin() : Promise.resolve([]),
+    isNationalAdmin
+      ? supabase.from("passport_area_secondary_states").select("state_id").eq("passport_area_id", areaId)
+      : Promise.resolve({ data: null }),
+  ]);
+
+  const otherStates = allStates.filter((s) => s.id !== area.state_id);
+  const secondaryStateIds = new Set((secondaryLinks ?? []).map((l) => l.state_id as string));
 
   return (
     <div>
@@ -233,6 +249,50 @@ export default async function AreaWorkspacePage({ params }: Props) {
               <span className="text-xs text-ink-muted">Current hero image is set.</span>
             )}
           </div>
+        </section>
+      )}
+
+      {isNationalAdmin && (
+        <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+          <h2 className="font-semibold text-ink">Also show on these state pages</h2>
+          <p className="mt-1 text-sm text-ink-muted">
+            {area.name} always lives at its own page under its primary state. Selecting another
+            state below also lists it on that state&apos;s page - labeled with the primary
+            state&apos;s abbreviation - and links back to this same region. It does not create a
+            second copy of it.
+          </p>
+          <details className="mt-4">
+            <summary className="cursor-pointer text-sm font-semibold text-brand-primary">Edit</summary>
+            <form action={updateAreaSecondaryStates.bind(null, areaId)} className="mt-3 space-y-3">
+              <div className="grid max-h-64 gap-2 overflow-y-auto rounded-lg border border-border p-3 sm:grid-cols-2">
+                {otherStates.map((s) => (
+                  <label key={s.id} className="flex items-center gap-2 text-sm text-ink">
+                    <input
+                      type="checkbox"
+                      name="secondary_state_ids"
+                      value={s.id}
+                      defaultChecked={secondaryStateIds.has(s.id)}
+                    />
+                    {s.name}
+                  </label>
+                ))}
+                {otherStates.length === 0 && (
+                  <p className="text-sm text-ink-muted">No other states exist yet.</p>
+                )}
+              </div>
+              <SaveButton>Save states</SaveButton>
+            </form>
+          </details>
+          {secondaryStateIds.size > 0 && (
+            <p className="mt-3 text-xs text-ink-muted">
+              Currently also shown on:{" "}
+              {otherStates
+                .filter((s) => secondaryStateIds.has(s.id))
+                .map((s) => s.name)
+                .join(", ")}
+              .
+            </p>
+          )}
         </section>
       )}
 

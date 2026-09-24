@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getStateBySlug, getAreasForState } from "@/lib/queries";
+import { getStateBySlug, getAreasForState, getSecondaryAreasForState } from "@/lib/queries";
 import { cardClasses } from "@/lib/ui-classes";
 import { RegionHeroBanner, getRegionHeroImage } from "@/components/region-hero-banner";
 
@@ -20,7 +20,11 @@ export default async function StatePage({ params }: Props) {
   const state = await getStateBySlug(stateSlug);
   if (!state) notFound();
 
-  const areas = await getAreasForState(state.id);
+  const [areas, secondaryAreas] = await Promise.all([
+    getAreasForState(state.id),
+    getSecondaryAreasForState(state.id),
+  ]);
+  const sortedSecondaryAreas = [...secondaryAreas].sort((a, b) => a.area.name.localeCompare(b.area.name));
   const heroImage = getRegionHeroImage(state);
   const heroOverlay = state.brand_hero_overlay === "scrim" ? "scrim" : "none";
 
@@ -39,7 +43,7 @@ export default async function StatePage({ params }: Props) {
       <h2 className="mt-10 text-xl font-semibold text-ink">
         Passport Areas in {state.name}
       </h2>
-      {areas.length === 0 ? (
+      {areas.length === 0 && sortedSecondaryAreas.length === 0 ? (
         <p className="mt-2 text-ink-muted">
           No Passport Areas are live in {state.name} yet.
         </p>
@@ -52,6 +56,20 @@ export default async function StatePage({ params }: Props) {
               className={`p-6 transition-colors hover:border-brand-primary ${cardClasses()}`}
             >
               <h3 className="text-lg font-semibold text-ink">{area.name}</h3>
+              {area.tagline && (
+                <p className="mt-1 text-sm text-ink-muted">{area.tagline}</p>
+              )}
+            </Link>
+          ))}
+          {sortedSecondaryAreas.map(({ area, primaryStateSlug, primaryStateAbbreviation }) => (
+            <Link
+              key={`secondary-${area.id}`}
+              href={`/${primaryStateSlug}/${area.slug}`}
+              className={`p-6 transition-colors hover:border-brand-primary ${cardClasses()}`}
+            >
+              <h3 className="text-lg font-semibold text-ink">
+                {area.name} ({primaryStateAbbreviation})
+              </h3>
               {area.tagline && (
                 <p className="mt-1 text-sm text-ink-muted">{area.tagline}</p>
               )}

@@ -240,6 +240,14 @@ export interface Redemption {
   holder_authorized_at: string | null;
 }
 
+export interface PassportAreaSecondaryState {
+  id: string;
+  passport_area_id: string;
+  state_id: string;
+  created_at: string;
+  created_by: string | null;
+}
+
 export interface AreaAssignment {
   id: string;
   user_id: string;

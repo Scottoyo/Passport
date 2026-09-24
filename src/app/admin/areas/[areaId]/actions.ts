@@ -268,6 +268,57 @@ export async function resetAreaBranding(areaId: string) {
   revalidatePath(`/admin/areas/${areaId}`);
 }
 
+// National-admin-only, no capability delegation - only a national admin may
+// change which states a region also appears on. Re-fetches the area's own
+// primary state_id server-side (never trusts client input for it) so it can
+// never be smuggled in as a "secondary" state even if the rendered
+// checklist were tampered with - belt-and-suspenders alongside the DB
+// trigger and the RLS write policies, which are the real boundary.
+export async function updateAreaSecondaryStates(areaId: string, formData: FormData) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser?.isNationalAdmin) {
+    throw new Error("Only national admins can change which states a region appears on.");
+  }
+
+  const supabase = await createClient();
+  const { data: area } = await supabase.from("passport_areas").select("state_id").eq("id", areaId).maybeSingle();
+  if (!area) throw new Error("Passport area not found.");
+
+  const selectedStateIds = [...new Set(formData.getAll("secondary_state_ids").map(String))].filter(
+    (id) => id && id !== area.state_id
+  );
+
+  const { data: existing } = await supabase
+    .from("passport_area_secondary_states")
+    .select("id, state_id")
+    .eq("passport_area_id", areaId);
+  const existingRows = existing ?? [];
+  const existingStateIds = new Set(existingRows.map((r) => r.state_id as string));
+
+  const toInsert = selectedStateIds.filter((id) => !existingStateIds.has(id));
+  const toDeleteIds = existingRows
+    .filter((r) => !selectedStateIds.includes(r.state_id as string))
+    .map((r) => r.id as string);
+  const changedStateIds = new Set<string>([...selectedStateIds, ...existingStateIds]);
+
+  if (toInsert.length > 0) {
+    const { error } = await supabase
+      .from("passport_area_secondary_states")
+      .insert(toInsert.map((state_id) => ({ passport_area_id: areaId, state_id, created_by: currentUser.id })));
+    if (error) throw new Error(error.message);
+  }
+  if (toDeleteIds.length > 0) {
+    const { error } = await supabase.from("passport_area_secondary_states").delete().in("id", toDeleteIds);
+    if (error) throw new Error(error.message);
+  }
+
+  revalidatePath(`/admin/areas/${areaId}`);
+  if (changedStateIds.size > 0) {
+    const { data: changedStates } = await supabase.from("states").select("slug").in("id", [...changedStateIds]);
+    for (const s of changedStates ?? []) revalidatePath(`/${s.slug as string}`);
+  }
+}
+
 export async function uploadAreaHeroImage(areaId: string, formData: FormData) {
   await requireCapability(areaId, "manage_branding");
   const file = formData.get("hero_image") as File | null;

@@ -52,6 +52,51 @@ export async function getAreasForState(stateId: string) {
   return data ?? [];
 }
 
+export interface SecondaryAreaListing {
+  area: PassportArea;
+  primaryStateSlug: string;
+  primaryStateAbbreviation: string;
+}
+
+// Regions whose national admin also listed this state as a secondary
+// showcase state (passport_area_secondary_states). RLS on that table,
+// passport_areas, and states each independently gate this to public/active
+// rows for anon/unprivileged callers, so no app-side status filtering is
+// needed here - same trust model as every other query in this file.
+export async function getSecondaryAreasForState(stateId: string): Promise<SecondaryAreaListing[]> {
+  const supabase = await createClient();
+  const { data: links } = await supabase
+    .from("passport_area_secondary_states")
+    .select("passport_area_id")
+    .eq("state_id", stateId);
+  const areaIds = [...new Set((links ?? []).map((l) => l.passport_area_id as string))];
+  if (areaIds.length === 0) return [];
+
+  const { data: areas } = await supabase
+    .from("passport_areas")
+    .select("*")
+    .in("id", areaIds)
+    .returns<PassportArea[]>();
+  if (!areas || areas.length === 0) return [];
+
+  const primaryStateIds = [...new Set(areas.map((a) => a.state_id))];
+  const { data: primaryStates } = await supabase
+    .from("states")
+    .select("id, slug, abbreviation")
+    .in("id", primaryStateIds)
+    .returns<Pick<State, "id" | "slug" | "abbreviation">[]>();
+  const stateById = new Map((primaryStates ?? []).map((s) => [s.id, s]));
+
+  return areas
+    .map((area) => {
+      const primary = stateById.get(area.state_id);
+      return primary
+        ? { area, primaryStateSlug: primary.slug, primaryStateAbbreviation: primary.abbreviation }
+        : null;
+    })
+    .filter((x): x is SecondaryAreaListing => x !== null);
+}
+
 export interface AreaWithState extends PassportArea {
   stateName: string;
   stateSlug: string;
