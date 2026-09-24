@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import type { Business } from "@/lib/types/domain";
+import type { Business, Offer } from "@/lib/types/domain";
 
 // Every business a signed-in user owns (created_by) or staffs (local_staff),
 // RLS-backed by the owner/staff policies in 0032 — this is what decides
@@ -132,4 +132,45 @@ export async function getRedemptionsForBusiness(businessId: string): Promise<Bus
     offerTitle: offerTitleById.get(r.offer_id as string) ?? "Unknown offer",
     redeemedAt: r.redeemed_at as string,
   }));
+}
+
+export type OfferIneligibleReason = "not_active" | "limit_reached";
+
+export interface RedeemableOffer {
+  offer: Offer;
+  eligible: boolean;
+  reason: OfferIneligibleReason | null;
+}
+
+// Plain, already-RLS-legal queries (0032_business_portal.sql) — no RPC
+// needed for reads, only the write path (confirm_manual_redemption) needs
+// security definer. The redemption count intentionally counts BOTH
+// redemption methods together, same cap redeem_offer enforces.
+export async function getRedeemableOffersForPassport(
+  businessId: string,
+  passportId: string
+): Promise<RedeemableOffer[]> {
+  const supabase = await createClient();
+
+  const [{ data: offers }, { data: redemptions }] = await Promise.all([
+    supabase.from("offers").select("*").eq("business_id", businessId).returns<Offer[]>(),
+    supabase.from("redemptions").select("offer_id").eq("passport_id", passportId),
+  ]);
+
+  const redemptionCountByOffer = new Map<string, number>();
+  for (const r of redemptions ?? []) {
+    const offerId = r.offer_id as string;
+    redemptionCountByOffer.set(offerId, (redemptionCountByOffer.get(offerId) ?? 0) + 1);
+  }
+
+  return (offers ?? []).map((offer) => {
+    if (offer.status !== "active") {
+      return { offer, eligible: false, reason: "not_active" as const };
+    }
+    const cap = offer.redemptions_per_passport;
+    if (cap !== null && (redemptionCountByOffer.get(offer.id) ?? 0) >= cap) {
+      return { offer, eligible: false, reason: "limit_reached" as const };
+    }
+    return { offer, eligible: true, reason: null };
+  });
 }

@@ -25,6 +25,7 @@ export default async function PortalBusinessLayout({ children, params }: Props) 
     { href: `/portal/${businessId}/profile`, label: "Profile" },
     { href: `/portal/${businessId}/offers`, label: "Offers" },
     { href: `/portal/${businessId}/redemptions`, label: "Redemptions" },
+    { href: `/portal/${businessId}/redeem`, label: "Redeem" },
     { href: `/portal/${businessId}/marketing`, label: "Marketing" },
     { href: `/portal/${businessId}/referrals`, label: "Referrals" },
     { href: `/portal/${businessId}/staff`, label: "Business Users" },

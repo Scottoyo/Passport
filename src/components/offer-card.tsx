@@ -3,7 +3,7 @@ import type { Offer } from "@/lib/types/domain";
 import { RedeemOfferButton } from "@/components/redeem-offer-button";
 import { buttonClasses, cardClasses } from "@/lib/ui-classes";
 
-const DISCOUNT_LABEL: Record<Offer["discount_type"], (value: number | null) => string> = {
+export const DISCOUNT_LABEL: Record<Offer["discount_type"], (value: number | null) => string> = {
   percent_off: (v) => `${v}% off`,
   amount_off: (v) => `$${v} off`,
   bogo: () => "Buy one, get one",
