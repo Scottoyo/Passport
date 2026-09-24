@@ -30,6 +30,9 @@ import {
   createOffer,
   updateOffer,
   setOfferStatus,
+  updateBusinessOwnerContact,
+  inviteBusinessOwner,
+  revokeBusinessOwnerInvitation,
 } from "./actions";
 
 const APPROVAL_STYLES: Record<BusinessApprovalStatus, string> = {
@@ -99,25 +102,37 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
     .maybeSingle<Business>();
   if (!business) notFound();
 
-  const [{ data: offers }, categoryList, { data: staff }, { data: owner }, media] = await Promise.all([
-    supabase
-      .from("offers")
-      .select("*")
-      .eq("business_id", businessId)
-      .order("created_at", { ascending: false })
-      .returns<Offer[]>(),
-    getCategories([area.state_id]),
-    canStaff
-      ? supabase
-          .from("local_staff")
-          .select("id, profiles:user_id(email)")
-          .eq("business_id", businessId)
-      : Promise.resolve({ data: null }),
-    business.created_by
-      ? supabase.from("profiles").select("email, full_name").eq("id", business.created_by).maybeSingle()
-      : Promise.resolve({ data: null }),
-    getBusinessMedia(businessId),
-  ]);
+  const [{ data: offers }, categoryList, { data: staff }, { data: owner }, media, { data: ownerInvitations }] =
+    await Promise.all([
+      supabase
+        .from("offers")
+        .select("*")
+        .eq("business_id", businessId)
+        .order("created_at", { ascending: false })
+        .returns<Offer[]>(),
+      getCategories([area.state_id]),
+      canStaff
+        ? supabase
+            .from("local_staff")
+            .select("id, profiles:user_id(email)")
+            .eq("business_id", businessId)
+        : Promise.resolve({ data: null }),
+      business.created_by
+        ? supabase.from("profiles").select("email, full_name").eq("id", business.created_by).maybeSingle()
+        : Promise.resolve({ data: null }),
+      getBusinessMedia(businessId),
+      canBusinesses
+        ? supabase
+            .from("business_owner_invitations")
+            .select("id, email, status, invited_by, expires_at, accepted_at, accepted_by, created_at")
+            .eq("business_id", businessId)
+            .order("created_at", { ascending: false })
+        : Promise.resolve({ data: null }),
+    ]);
+
+  const pendingInvitation = (ownerInvitations ?? []).find(
+    (i) => i.status === "pending" && new Date(i.expires_at as string) > new Date()
+  );
 
   let reassignAreas: (PassportArea & { stateName: string })[] = [];
   if (canBusinesses) {
@@ -669,14 +684,111 @@ export default async function BusinessAdminPage({ params, searchParams }: Props)
             </section>
           )}
 
+          {canBusinesses && (
+            <section className="rounded-2xl border border-border bg-surface p-6">
+              <h2 className="font-semibold text-ink">Business owner</h2>
+              <p className="mt-1 text-sm text-ink-muted">
+                Contact details for whoever runs this business. Editable by the owner themselves or a
+                manager/admin - staff cannot change these.
+              </p>
+
+              <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Account access</dt>
+                  <dd className="text-sm text-ink">
+                    {business.created_by ? "Active" : "No account linked"}
+                    {business.created_by &&
+                      (owner as { email: string } | null)?.email &&
+                      (owner as { email: string } | null)?.email !== business.owner_contact_email && (
+                        <span className="ml-2 text-xs text-ink-muted">
+                          (signs in as {(owner as { email: string }).email})
+                        </span>
+                      )}
+                  </dd>
+                </div>
+                {pendingInvitation && (
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                      {business.created_by ? "Transfer pending" : "Invitation pending"}
+                    </dt>
+                    <dd className="text-sm text-ink">{pendingInvitation.email}</dd>
+                  </div>
+                )}
+              </dl>
+
+              <form
+                action={updateBusinessOwnerContact.bind(null, areaId, businessId)}
+                className="mt-4 flex flex-wrap items-end gap-3"
+              >
+                <label className="text-sm">
+                  <span className="mb-1 block text-ink-muted">First name</span>
+                  <input
+                    name="owner_first_name"
+                    defaultValue={business.owner_first_name ?? ""}
+                    className="rounded-lg border border-border px-3 py-2 text-sm"
+                  />
+                </label>
+                <label className="text-sm">
+                  <span className="mb-1 block text-ink-muted">Last name</span>
+                  <input
+                    name="owner_last_name"
+                    defaultValue={business.owner_last_name ?? ""}
+                    className="rounded-lg border border-border px-3 py-2 text-sm"
+                  />
+                </label>
+                <label className="text-sm">
+                  <span className="mb-1 block text-ink-muted">Phone</span>
+                  <input
+                    name="owner_phone"
+                    type="tel"
+                    defaultValue={business.owner_phone ?? ""}
+                    className="rounded-lg border border-border px-3 py-2 text-sm"
+                  />
+                </label>
+                <label className="text-sm">
+                  <span className="mb-1 block text-ink-muted">Contact email</span>
+                  <input
+                    name="owner_contact_email"
+                    type="email"
+                    defaultValue={business.owner_contact_email ?? ""}
+                    className="rounded-lg border border-border px-3 py-2 text-sm"
+                  />
+                </label>
+                <SaveButton>Save owner details</SaveButton>
+              </form>
+
+              <div className="mt-4 border-t border-border pt-4">
+                {pendingInvitation ? (
+                  <form action={revokeBusinessOwnerInvitation.bind(null, areaId, businessId, pendingInvitation.id)}>
+                    <button className="text-xs font-semibold text-error hover:text-red-700">
+                      Revoke pending invitation to {pendingInvitation.email}
+                    </button>
+                  </form>
+                ) : (
+                  <form action={inviteBusinessOwner.bind(null, areaId, businessId)} className="flex flex-wrap items-end gap-3">
+                    <label className="text-sm">
+                      <span className="mb-1 block text-ink-muted">
+                        {business.created_by ? "New owner's email" : "Owner's email"}
+                      </span>
+                      <input
+                        name="email"
+                        type="email"
+                        required
+                        className="rounded-lg border border-border px-3 py-2 text-sm"
+                      />
+                    </label>
+                    <button className={buttonClasses("outline")}>
+                      {business.created_by ? "Send ownership transfer" : "Invite owner"}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </section>
+          )}
+
           {canStaff && (
             <section className="rounded-2xl border border-border bg-surface p-6">
               <h2 className="font-semibold text-ink">Business users</h2>
-              <p className="mt-1 text-sm text-ink-muted">
-                Owner: {(owner as { email: string; full_name: string | null } | null)?.full_name ||
-                  (owner as { email: string } | null)?.email ||
-                  "Unknown"}
-              </p>
               <ul className="mt-3 divide-y divide-border">
                 {((staff ?? []) as unknown as { id: string; profiles: { email: string } | null }[]).map((s) => (
                   <li key={s.id} className="flex items-center justify-between py-2">

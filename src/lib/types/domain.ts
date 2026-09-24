@@ -133,8 +133,26 @@ export interface Business {
   reviewed_by: string | null;
   reviewed_at: string | null;
   created_by: string | null;
+  owner_first_name: string | null;
+  owner_last_name: string | null;
+  owner_phone: string | null;
+  owner_contact_email: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export type OwnerInvitationStatus = "pending" | "accepted" | "expired" | "revoked";
+
+export interface BusinessOwnerInvitation {
+  id: string;
+  business_id: string;
+  email: string;
+  status: OwnerInvitationStatus;
+  invited_by: string | null;
+  expires_at: string;
+  accepted_at: string | null;
+  accepted_by: string | null;
+  created_at: string;
 }
 
 export interface BusinessMedia {
