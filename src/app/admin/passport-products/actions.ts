@@ -46,6 +46,19 @@ export async function createPassportProduct(formData: FormData) {
   revalidatePath("/admin/passport-products");
 }
 
+export async function updatePassportProductName(productId: string, formData: FormData) {
+  await requireNationalAdmin();
+  const supabase = await createClient();
+
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) throw new Error("A Passport product needs a name.");
+
+  const { error } = await supabase.from("passport_products").update({ name }).eq("id", productId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/passport-products");
+}
+
 export async function setPassportProductStatus(productId: string, status: ContentStatus) {
   await requireNationalAdmin();
   const supabase = await createClient();

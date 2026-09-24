@@ -4,7 +4,7 @@ import { getCurrentAdminScope, getAllStatesForAdmin } from "@/lib/admin-scope";
 import { getAllPassportProducts } from "@/lib/admin-queries";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/status-badge";
-import { createPassportProduct, setPassportProductStatus } from "./actions";
+import { createPassportProduct, setPassportProductStatus, updatePassportProductName } from "./actions";
 import type { PassportArea, PassportProduct } from "@/lib/types/domain";
 import { buttonClasses } from "@/lib/ui-classes";
 
@@ -76,6 +76,26 @@ export default async function PassportProductsAdminPage() {
                           ${(p.price_cents / 100).toFixed(2)} &middot; {p.duration_days} days
                         </p>
                         {p.description && <p className="mt-1 text-sm text-ink-muted">{p.description}</p>}
+                        <details className="mt-3">
+                          <summary className="cursor-pointer text-xs font-semibold text-ink-muted hover:text-ink">
+                            Edit name
+                          </summary>
+                          <form
+                            action={updatePassportProductName.bind(null, p.id)}
+                            className="mt-3 flex flex-wrap items-end gap-3 border-t border-border pt-3"
+                          >
+                            <label className="text-sm">
+                              <span className="mb-1 block text-ink-muted">Name</span>
+                              <input
+                                name="name"
+                                required
+                                defaultValue={p.name}
+                                className="rounded-lg border border-border px-3 py-2 text-sm"
+                              />
+                            </label>
+                            <button className={buttonClasses("outline", "sm")}>Save</button>
+                          </form>
+                        </details>
                       </div>
                     ))}
                     {(productsByArea.get(area.id) ?? []).length === 0 && (
