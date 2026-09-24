@@ -4,7 +4,7 @@ import { useActionState, useEffect, useOptimistic, useRef, useState, useTransiti
 import { useFormStatus } from "react-dom";
 import { buttonClasses } from "@/lib/ui-classes";
 import { BusinessPlaceholderIcon } from "./business-placeholder-icon";
-import { ImageCropper } from "./image-cropper";
+import { ImageCropper } from "@/components/image-cropper";
 import type { BusinessMedia } from "@/lib/types/domain";
 
 export type MediaActionResult = { ok: true } | { ok: false; error: string };

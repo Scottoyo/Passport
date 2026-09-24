@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { uploadPassportPhoto } from "@/lib/storage";
+import { uploadPassportPhoto, deletePassportPhoto, passportPhotoPathFromUrl } from "@/lib/storage";
 import type { NotificationPreferences } from "@/lib/types/domain";
+
+export type MediaActionResult = { ok: true } | { ok: false; error: string };
 
 async function requireSelf() {
   const supabase = await createClient();
@@ -63,16 +65,61 @@ export async function updateMyPassportDates(passportId: string, formData: FormDa
   revalidatePath("/account/passport");
 }
 
-export async function uploadMyPassportPhoto(passportId: string, formData: FormData) {
-  const { supabase } = await requireSelf();
-  const file = formData.get("photo") as File | null;
-  if (!file || file.size === 0) throw new Error("Choose an image to upload.");
+export async function uploadMyPassportPhoto(
+  passportId: string,
+  _prevState: MediaActionResult | null,
+  formData: FormData
+): Promise<MediaActionResult> {
+  try {
+    const { supabase } = await requireSelf();
+    const file = formData.get("photo") as File | null;
+    if (!file || file.size === 0) throw new Error("Choose an image to upload.");
 
-  const url = await uploadPassportPhoto(passportId, file);
-  const { error } = await supabase.from("passports").update({ photo_url: url }).eq("id", passportId);
-  if (error) throw new Error(error.message);
+    const { data: passport } = await supabase.from("passports").select("photo_url").eq("id", passportId).maybeSingle();
+    const previousUrl = passport?.photo_url ?? null;
 
-  revalidatePath("/account/passport");
+    const { path: newPath, url } = await uploadPassportPhoto(passportId, file);
+    const { error } = await supabase.from("passports").update({ photo_url: url }).eq("id", passportId);
+    if (error) {
+      await deletePassportPhoto(newPath).catch(() => {});
+      throw new Error(error.message);
+    }
+
+    const oldPath = previousUrl ? passportPhotoPathFromUrl(previousUrl) : null;
+    if (oldPath && oldPath !== newPath) {
+      await deletePassportPhoto(oldPath).catch(() => {});
+    }
+
+    revalidatePath("/account/passport");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Upload failed." };
+  }
+}
+
+export async function clearMyPassportPhoto(
+  passportId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by useActionState's (state, payload) shape
+  _prevState: MediaActionResult | null,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by useActionState's (state, payload) shape
+  _formData: FormData
+): Promise<MediaActionResult> {
+  try {
+    const { supabase } = await requireSelf();
+    const { data: passport } = await supabase.from("passports").select("photo_url").eq("id", passportId).maybeSingle();
+    const previousUrl = passport?.photo_url ?? null;
+
+    const { error } = await supabase.from("passports").update({ photo_url: null }).eq("id", passportId);
+    if (error) throw new Error(error.message);
+
+    const oldPath = previousUrl ? passportPhotoPathFromUrl(previousUrl) : null;
+    if (oldPath) await deletePassportPhoto(oldPath).catch(() => {});
+
+    revalidatePath("/account/passport");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Remove failed." };
+  }
 }
 
 export async function updateNotificationPreferences(formData: FormData) {

@@ -3,9 +3,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getMyPassports } from "@/lib/queries";
 import type { PassportArea, PassportProduct, Profile } from "@/lib/types/domain";
-import { updateMyPassportDates, uploadMyPassportPhoto } from "../actions";
+import { updateMyPassportDates, uploadMyPassportPhoto, clearMyPassportPhoto } from "../actions";
 import { SharePassportButton } from "@/components/share-passport-button";
-import { SingleFileUploadForm } from "@/components/single-file-upload-form";
+import { PassportCard } from "@/components/passport-card";
+import { ShareMyPassportCardButton } from "@/components/share-passport-card-button";
 import { buttonClasses } from "@/lib/ui-classes";
 import { SaveButton } from "@/components/save-button";
 
@@ -51,20 +52,32 @@ export default async function MyPassportPage() {
 
   const { data: states } = await supabase
     .from("states")
-    .select("id, slug")
+    .select("id, slug, status")
     .in(
       "id",
       [...new Set((areas ?? []).map((a) => a.state_id))]
     );
   const stateSlugById = new Map((states ?? []).map((s) => [s.id as string, s.slug as string]));
+  const stateById = new Map((states ?? []).map((s) => [s.id as string, s]));
 
   const primary = passports[0];
   const primaryArea = areaById.get(primary.passport_area_id);
+  const primaryState = primaryArea ? stateById.get(primaryArea.state_id) : null;
   const primaryStateSlug = primaryArea ? stateSlugById.get(primaryArea.state_id) : null;
   const referralPath =
     primaryArea && primaryStateSlug
       ? `/${primaryStateSlug}/${primaryArea.slug}/passport${profile?.referral_code ? `?ref=${profile.referral_code}` : ""}`
       : null;
+
+  // "Published region" mirrors the exact condition the real RLS policy
+  // already enforces for public page visibility (0003_rls.sql /
+  // 0015_state_manager_draft_area_visibility.sql) - a holder who's also
+  // area/state staff for their own draft region can still read that row, so
+  // this can't be inferred from "did the fetch return something."
+  const isPublishedRegion = primaryArea?.status === "active" && primaryState?.status === "active";
+  const cardTitle = isPublishedRegion ? `${primaryArea!.name} Passport` : "Local Perks Passport";
+  const holderFirstName = profile?.first_name || profile?.full_name?.split(" ")[0] || "Passport Holder";
+  const cardHeroImageUrl = isPublishedRegion ? (primaryArea!.hero_image_url ?? null) : null;
 
   return (
     <div>
@@ -72,20 +85,23 @@ export default async function MyPassportPage() {
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border border-border bg-surface p-6">
-          {primary.photo_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={primary.photo_url}
-              alt="Your Passport photo"
-              className="mb-4 h-32 w-32 rounded-full object-cover"
-            />
-          )}
-          <SingleFileUploadForm
-            action={uploadMyPassportPhoto.bind(null, primary.id)}
-            fieldName="photo"
-            label={primary.photo_url ? "Replace Photo" : "Upload Photo"}
-            size="sm"
+          <PassportCard
+            holderFirstName={holderFirstName}
+            title={cardTitle}
+            heroImageUrl={cardHeroImageUrl}
+            photoUrl={primary.photo_url}
+            uploadAction={uploadMyPassportPhoto.bind(null, primary.id)}
+            clearAction={clearMyPassportPhoto.bind(null, primary.id)}
           />
+
+          <div className="mt-6 border-t border-border pt-6">
+            <ShareMyPassportCardButton
+              holderFirstName={holderFirstName}
+              title={cardTitle}
+              photoUrl={primary.photo_url}
+              heroImageUrl={cardHeroImageUrl}
+            />
+          </div>
 
           {referralPath && (
             <div className="mt-4">
