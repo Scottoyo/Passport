@@ -26,7 +26,7 @@ const MAGIC_BYTES: { ext: "jpg" | "png" | "webp"; matches: (bytes: Uint8Array) =
 // filename extension or MIME type (both are attacker-controlled) - only
 // JPEG/PNG/WebP are accepted, and the returned extension always matches
 // what's actually in the bytes, not what the browser claims.
-async function validateImageFile(file: File, maxBytes: number): Promise<string> {
+export async function validateImageFile(file: File, maxBytes: number): Promise<string> {
   if (file.size === 0) throw new Error("Choose an image to upload.");
   if (file.size > maxBytes) {
     throw new Error(`That image is too large - please use one under ${Math.round(maxBytes / (1024 * 1024))} MB.`);
@@ -90,12 +90,13 @@ export function withCacheBust(url: string): string {
 }
 
 const PASSPORT_PHOTOS_BUCKET = "passport-photos";
+const PASSPORT_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 
 // Same shape as uploadBusinessMedia — storage RLS (0035) gates writes to
 // the passport's own owner, keyed off the "{passportId}/..." path prefix.
-export async function uploadPassportPhoto(passportId: string, file: File): Promise<string> {
+export async function uploadPassportPhoto(passportId: string, file: File): Promise<{ path: string; url: string }> {
+  const ext = await validateImageFile(file, PASSPORT_PHOTO_MAX_BYTES);
   const supabase = await createClient();
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `${passportId}/photo.${ext}`;
 
   const { error } = await supabase.storage.from(PASSPORT_PHOTOS_BUCKET).upload(path, file, {
@@ -105,7 +106,23 @@ export async function uploadPassportPhoto(passportId: string, file: File): Promi
   if (error) throw new Error(error.message);
 
   const { data } = supabase.storage.from(PASSPORT_PHOTOS_BUCKET).getPublicUrl(path);
-  return data.publicUrl;
+  return { path, url: withCacheBust(data.publicUrl) };
+}
+
+export async function deletePassportPhoto(path: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.storage.from(PASSPORT_PHOTOS_BUCKET).remove([path]);
+  if (error) throw new Error(error.message);
+}
+
+// Same shape as businessMediaPathFromUrl — recovers the storage path from a
+// stored public URL (which may carry a cache-busting ?v= suffix) so the OLD
+// photo object can be cleaned up after a replace, or removed entirely.
+export function passportPhotoPathFromUrl(url: string): string | null {
+  const marker = `/${PASSPORT_PHOTOS_BUCKET}/`;
+  const i = url.indexOf(marker);
+  if (i === -1) return null;
+  return url.slice(i + marker.length).split("?")[0];
 }
 
 const BRANDING_MEDIA_BUCKET = "branding-media";

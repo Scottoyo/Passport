@@ -31,7 +31,7 @@ export function SharePassportButton({ path }: { path: string }) {
       onClick={handleShare}
       className={`w-full ${buttonClasses("primary")}`}
     >
-      {copied ? "Link copied!" : "Share My Passport"}
+      {copied ? "Link copied!" : "Invite a Friend"}
     </button>
   );
 }
