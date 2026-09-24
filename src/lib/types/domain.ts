@@ -227,6 +227,8 @@ export interface PromoCode {
   updated_at: string;
 }
 
+export type RedemptionMethod = "code" | "manual_passport_number";
+
 export interface Redemption {
   id: string;
   passport_id: string;
@@ -234,6 +236,8 @@ export interface Redemption {
   redeemed_member_id: string | null;
   redeemed_by_staff_id: string | null;
   redeemed_at: string;
+  redemption_method: RedemptionMethod;
+  holder_authorized_at: string | null;
 }
 
 export interface AreaAssignment {
